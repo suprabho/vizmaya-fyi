@@ -1777,10 +1777,21 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$use$2d$in$2d$view$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/use-in-view.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/shared/lib/app-dynamic.js [app-ssr] (ecmascript)");
+;
 'use client';
 ;
 ;
 ;
+;
+const ReactECharts = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$shared$2f$lib$2f$app$2d$dynamic$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(async ()=>{}, {
+    loadableGenerated: {
+        modules: [
+            "[project]/node_modules/echarts-for-react/esm/index.js [app-client] (ecmascript, next/dynamic entry)"
+        ]
+    },
+    ssr: false
+});
 function stripMarkdown(text) {
     return text.replace(/\*\*/g, '').replace(/\*/g, '');
 }
@@ -1792,127 +1803,112 @@ const SCENARIO_COLORS = [
     AMBER,
     ACCENT
 ];
-// Exact data from reference HTML
-const COST_LAYERS = [
-    [
-        {
-            name: 'Helium',
-            pct: 3,
-            desc: '+40-50% spot',
-            color: TEAL
-        },
-        {
-            name: 'Korean energy',
-            pct: 8,
-            desc: '+40-60% spot',
-            color: TEAL
-        },
-        {
-            name: 'Petrochemicals',
-            pct: 5,
-            desc: '+10-15%',
-            color: TEAL
-        },
-        {
-            name: 'Korean fabs',
-            pct: 2,
-            desc: 'Stockpiles hold',
-            color: TEAL
-        },
-        {
-            name: 'GPU module',
-            pct: 1,
-            desc: '+0-2%',
-            color: TEAL
-        },
-        {
-            name: 'Cloud GPU hour',
-            pct: 3,
-            desc: '+2-4%',
-            color: TEAL
-        }
-    ],
-    [
-        {
-            name: 'Helium',
-            pct: 35,
-            desc: '+100-200%',
-            color: AMBER
-        },
-        {
-            name: 'Korean energy',
-            pct: 28,
-            desc: '+25-35%',
-            color: AMBER
-        },
-        {
-            name: 'Petrochemicals',
-            pct: 18,
-            desc: '+20-30%',
-            color: AMBER
-        },
-        {
-            name: 'Korean fabs',
-            pct: 55,
-            desc: '-10-30% util.',
-            color: AMBER
-        },
-        {
-            name: 'GPU module',
-            pct: 40,
-            desc: '+8-15%',
-            color: AMBER
-        },
-        {
-            name: 'Cloud GPU hour',
-            pct: 48,
-            desc: '+12-20%',
-            color: AMBER
-        }
-    ],
-    [
-        {
-            name: 'Helium',
-            pct: 80,
-            desc: 'New floor',
-            color: ACCENT
-        },
-        {
-            name: 'Korean energy',
-            pct: 45,
-            desc: '+15-20%',
-            color: ACCENT
-        },
-        {
-            name: 'Petrochemicals',
-            pct: 30,
-            desc: '+10-15%',
-            color: ACCENT
-        },
-        {
-            name: 'Korean fabs',
-            pct: 70,
-            desc: 'Cost edge lost',
-            color: ACCENT
-        },
-        {
-            name: 'GPU module',
-            pct: 58,
-            desc: '+15-25%',
-            color: ACCENT
-        },
-        {
-            name: 'Cloud GPU hour',
-            pct: 75,
-            desc: '+30-50%',
-            color: ACCENT
-        }
-    ]
-];
-const TOTAL_LABELS = [
-    '+2-4%',
-    '+12-20%',
-    '+30-50%'
+const SCENARIO_DATA = [
+    {
+        layers: [
+            {
+                name: 'Helium',
+                value: 45,
+                desc: '+40-50% spot'
+            },
+            {
+                name: 'Korean energy',
+                value: 50,
+                desc: '+40-60% spot LNG'
+            },
+            {
+                name: 'Petrochemicals',
+                value: 12,
+                desc: '+10-15%'
+            },
+            {
+                name: 'Korean fab output',
+                value: 0,
+                desc: 'Stockpiles hold'
+            },
+            {
+                name: 'GPU module',
+                value: 1,
+                desc: '+0-2%'
+            },
+            {
+                name: 'Cloud GPU hour',
+                value: 3,
+                desc: '+2-4%'
+            }
+        ],
+        total: '+2-4%'
+    },
+    {
+        layers: [
+            {
+                name: 'Helium',
+                value: 150,
+                desc: '+100-200% contract'
+            },
+            {
+                name: 'Korean energy',
+                value: 30,
+                desc: '+25-35% sustained'
+            },
+            {
+                name: 'Petrochemicals',
+                value: 25,
+                desc: '+20-30%'
+            },
+            {
+                name: 'Korean fab output',
+                value: 20,
+                desc: '-10-30% utilisation'
+            },
+            {
+                name: 'GPU module',
+                value: 12,
+                desc: '+8-15%'
+            },
+            {
+                name: 'Cloud GPU hour',
+                value: 16,
+                desc: '+12-20%'
+            }
+        ],
+        total: '+12-20%'
+    },
+    {
+        layers: [
+            {
+                name: 'Helium',
+                value: 100,
+                desc: 'New structural price floor'
+            },
+            {
+                name: 'Korean energy',
+                value: 18,
+                desc: '+15-20% new normal'
+            },
+            {
+                name: 'Petrochemicals',
+                value: 12,
+                desc: '+10-15% sustained'
+            },
+            {
+                name: 'Korean fab output',
+                value: 50,
+                desc: 'Cost advantage lost'
+            },
+            {
+                name: 'GPU module',
+                value: 20,
+                desc: '+15-25%'
+            },
+            {
+                name: 'Cloud GPU hour',
+                value: 40,
+                desc: '+30-50%'
+            }
+        ],
+        total: '+30-50%'
+    }
 ];
 function ScenarioToggle({ block }) {
     const [active, setActive] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
@@ -1921,8 +1917,107 @@ function ScenarioToggle({ block }) {
         threshold: 0.1
     });
     const color = SCENARIO_COLORS[active];
-    const layers = COST_LAYERS[active];
+    const data = SCENARIO_DATA[active];
     const labels = block.scenarios.map((s)=>s.label);
+    const chartOption = {
+        backgroundColor: 'transparent',
+        grid: {
+            left: 130,
+            right: 80,
+            top: 10,
+            bottom: 20
+        },
+        xAxis: {
+            type: 'value',
+            axisLabel: {
+                show: false
+            },
+            splitLine: {
+                show: false
+            },
+            axisLine: {
+                show: false
+            },
+            axisTick: {
+                show: false
+            }
+        },
+        yAxis: {
+            type: 'category',
+            data: data.layers.map((l)=>l.name).reverse(),
+            axisLabel: {
+                color: '#e0ddd5',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 12
+            },
+            axisLine: {
+                show: false
+            },
+            axisTick: {
+                show: false
+            }
+        },
+        series: [
+            {
+                type: 'bar',
+                data: data.layers.map((l)=>l.value).reverse(),
+                itemStyle: {
+                    color: {
+                        type: 'linear',
+                        x: 0,
+                        y: 0,
+                        x2: 1,
+                        y2: 0,
+                        colorStops: [
+                            {
+                                offset: 0,
+                                color: color + '90'
+                            },
+                            {
+                                offset: 1,
+                                color
+                            }
+                        ]
+                    },
+                    borderRadius: [
+                        0,
+                        4,
+                        4,
+                        0
+                    ]
+                },
+                barWidth: '55%',
+                label: {
+                    show: true,
+                    position: 'right',
+                    color: '#8a9a9f',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    formatter: (params)=>{
+                        const idx = data.layers.length - 1 - params.dataIndex;
+                        return data.layers[idx].desc;
+                    }
+                },
+                animationDuration: 800,
+                animationEasing: 'cubicOut'
+            }
+        ],
+        tooltip: {
+            show: true,
+            backgroundColor: '#111820',
+            borderColor: color,
+            borderWidth: 1,
+            textStyle: {
+                color: '#e0ddd5',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12
+            },
+            formatter: (params)=>{
+                const idx = data.layers.length - 1 - params.dataIndex;
+                return `<strong>${params.name}</strong><br/>${data.layers[idx].desc}`;
+            }
+        }
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
         ref: ref,
         className: "py-8",
@@ -1940,83 +2035,40 @@ function ScenarioToggle({ block }) {
                         children: label
                     }, i, false, {
                         fileName: "[project]/components/story/ScenarioToggle.tsx",
-                        lineNumber: 61,
+                        lineNumber: 134,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/components/story/ScenarioToggle.tsx",
-                lineNumber: 59,
+                lineNumber: 132,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "max-w-[860px] mx-auto px-8 transition-opacity duration-500",
+                className: "max-w-[860px] mx-auto px-4 transition-opacity duration-500",
                 style: {
                     opacity: isInView ? 1 : 0
                 },
-                children: layers.map((layer, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "grid gap-4 py-4 items-center",
-                        style: {
-                            gridTemplateColumns: '140px 1fr 100px',
-                            borderBottom: '0.5px solid var(--color-line, #1a2830)'
-                        },
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "font-[family-name:var(--font-sans)] text-[0.9rem]",
-                                style: {
-                                    color: 'var(--color-text)'
-                                },
-                                children: layer.name
-                            }, void 0, false, {
-                                fileName: "[project]/components/story/ScenarioToggle.tsx",
-                                lineNumber: 90,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "h-1.5 rounded-full",
-                                style: {
-                                    background: 'var(--color-line, #1a2830)'
-                                },
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "h-full rounded-full",
-                                    style: {
-                                        background: layer.color,
-                                        width: isInView ? `${layer.pct}%` : '0%',
-                                        transition: 'width 1s ease'
-                                    }
-                                }, void 0, false, {
-                                    fileName: "[project]/components/story/ScenarioToggle.tsx",
-                                    lineNumber: 100,
-                                    columnNumber: 15
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/components/story/ScenarioToggle.tsx",
-                                lineNumber: 96,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "font-[family-name:var(--font-mono)] text-[0.85rem] text-right font-bold",
-                                style: {
-                                    color: layer.color
-                                },
-                                children: layer.desc
-                            }, void 0, false, {
-                                fileName: "[project]/components/story/ScenarioToggle.tsx",
-                                lineNumber: 109,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, `${active}-${i}`, true, {
-                        fileName: "[project]/components/story/ScenarioToggle.tsx",
-                        lineNumber: 82,
-                        columnNumber: 11
-                    }, this))
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(ReactECharts, {
+                    option: chartOption,
+                    style: {
+                        height: 320
+                    },
+                    opts: {
+                        renderer: 'svg'
+                    },
+                    notMerge: true
+                }, active, false, {
+                    fileName: "[project]/components/story/ScenarioToggle.tsx",
+                    lineNumber: 154,
+                    columnNumber: 9
+                }, this)
             }, void 0, false, {
                 fileName: "[project]/components/story/ScenarioToggle.tsx",
-                lineNumber: 77,
+                lineNumber: 150,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center mt-6 mb-12",
+                className: "text-center mt-4 mb-12",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.1em]",
@@ -2026,7 +2078,7 @@ function ScenarioToggle({ block }) {
                         children: "End-to-end GPU hour impact"
                     }, void 0, false, {
                         fileName: "[project]/components/story/ScenarioToggle.tsx",
-                        lineNumber: 121,
+                        lineNumber: 165,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2034,22 +2086,22 @@ function ScenarioToggle({ block }) {
                         style: {
                             color
                         },
-                        children: TOTAL_LABELS[active]
+                        children: data.total
                     }, void 0, false, {
                         fileName: "[project]/components/story/ScenarioToggle.tsx",
-                        lineNumber: 127,
+                        lineNumber: 171,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/story/ScenarioToggle.tsx",
-                lineNumber: 120,
+                lineNumber: 164,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/story/ScenarioToggle.tsx",
-        lineNumber: 57,
+        lineNumber: 130,
         columnNumber: 5
     }, this);
 }

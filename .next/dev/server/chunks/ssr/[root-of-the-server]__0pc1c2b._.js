@@ -394,6 +394,10 @@ function tryParseScrollySection(lines, start) {
         }
     }
     if (steps.length < 2) return null;
+    // If any step contains table data, this isn't a scrolly section —
+    // let normal parsing handle the tables (e.g. scenario toggles)
+    const hasEmbeddedTables = steps.some((step)=>step.content.split('\n\n').some((line)=>line.trim().startsWith('|')));
+    if (hasEmbeddedTables) return null;
     return {
         block: {
             type: 'scrolly-section',
@@ -1293,57 +1297,11 @@ function StoryRenderer({ blocks, theme, meta }) {
     }, this);
 }
 }),
-"[project]/app/story/[id]/page.tsx [app-rsc] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
+"[project]/app/story/[id]/page.tsx [app-rsc] (ecmascript)", ((__turbopack_context__, module, exports) => {
 
-__turbopack_context__.s([
-    "default",
-    ()=>StoryPage,
-    "generateMetadata",
-    ()=>generateMetadata,
-    "generateStaticParams",
-    ()=>generateStaticParams
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.js [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$stories$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/stories.ts [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$markdown$2d$parser$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/markdown-parser.ts [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$story$2f$StoryRenderer$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/story/StoryRenderer.tsx [app-rsc] (ecmascript)");
-;
-;
-;
-;
-async function generateStaticParams() {
-    const ids = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$stories$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getAllStoryIds"])();
-    return ids.map((id)=>({
-            id
-        }));
-}
-async function generateMetadata({ params }) {
-    const { id } = await params;
-    const { frontmatter } = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$stories$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getStoryById"])(id);
-    return {
-        title: `${frontmatter.title} — ${frontmatter.subtitle}`,
-        description: frontmatter.subtitle,
-        openGraph: {
-            title: frontmatter.title,
-            description: frontmatter.subtitle
-        }
-    };
-}
-async function StoryPage({ params }) {
-    const { id } = await params;
-    const { frontmatter, content } = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$stories$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getStoryById"])(id);
-    const blocks = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$markdown$2d$parser$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["parseMarkdown"])(content);
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$story$2f$StoryRenderer$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
-        blocks: blocks,
-        theme: frontmatter.theme,
-        meta: frontmatter
-    }, void 0, false, {
-        fileName: "[project]/app/story/[id]/page.tsx",
-        lineNumber: 38,
-        columnNumber: 5
-    }, this);
-}
+const e = new Error("Could not parse module '[project]/app/story/[id]/page.tsx', file not found");
+e.code = 'MODULE_UNPARSABLE';
+throw e;
 }),
 "[project]/app/story/[id]/page.tsx [app-rsc] (ecmascript, Next.js Server Component)", ((__turbopack_context__) => {
 

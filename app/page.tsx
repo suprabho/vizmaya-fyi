@@ -1,8 +1,8 @@
-import { getAllStories } from '@/lib/stories'
+import { getAllStories } from '@/lib/content'
 import Link from 'next/link'
 
 export default async function HomePage() {
-  const stories = await getAllStories()
+  const stories = getAllStories()
 
   return (
     <div
@@ -26,8 +26,8 @@ export default async function HomePage() {
         <div className="space-y-1">
           {stories.map((story) => (
             <Link
-              key={story.id}
-              href={`/story/${story.id}`}
+              key={story.slug}
+              href={`/story/${story.slug}`}
               className="group block py-6 border-b transition-colors"
               style={{ borderColor: '#1a2830' }}
             >

@@ -21,16 +21,7 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [
-    {
-      "page": "/story/[id]",
-      "regex": "^/story/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPid": "nxtPid"
-      },
-      "namedRegex": "^/story/(?<nxtPid>[^/]+?)(?:/)?$"
-    }
-  ],
+  "dynamicRoutes": [],
   "staticRoutes": [
     {
       "page": "/",
@@ -55,6 +46,12 @@
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/story/south-korea-gpu-hour",
+      "regex": "^/story/south\\-korea\\-gpu\\-hour(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/story/south\\-korea\\-gpu\\-hour(?:/)?$"
     }
   ],
   "dataRoutes": [],

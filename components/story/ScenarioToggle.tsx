@@ -3,6 +3,9 @@
 import { useState, useRef } from 'react'
 import { useInView } from '@/lib/use-in-view'
 import { ScenarioToggleBlock } from '@/types/story'
+import dynamic from 'next/dynamic'
+
+const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 function stripMarkdown(text: string): string {
   return text.replace(/\*\*/g, '').replace(/\*/g, '')
@@ -14,48 +17,118 @@ const ACCENT = '#D85A30'
 
 const SCENARIO_COLORS = [TEAL, AMBER, ACCENT]
 
-// Exact data from reference HTML
-const COST_LAYERS = [
-  [
-    { name: 'Helium', pct: 3, desc: '+40-50% spot', color: TEAL },
-    { name: 'Korean energy', pct: 8, desc: '+40-60% spot', color: TEAL },
-    { name: 'Petrochemicals', pct: 5, desc: '+10-15%', color: TEAL },
-    { name: 'Korean fabs', pct: 2, desc: 'Stockpiles hold', color: TEAL },
-    { name: 'GPU module', pct: 1, desc: '+0-2%', color: TEAL },
-    { name: 'Cloud GPU hour', pct: 3, desc: '+2-4%', color: TEAL },
-  ],
-  [
-    { name: 'Helium', pct: 35, desc: '+100-200%', color: AMBER },
-    { name: 'Korean energy', pct: 28, desc: '+25-35%', color: AMBER },
-    { name: 'Petrochemicals', pct: 18, desc: '+20-30%', color: AMBER },
-    { name: 'Korean fabs', pct: 55, desc: '-10-30% util.', color: AMBER },
-    { name: 'GPU module', pct: 40, desc: '+8-15%', color: AMBER },
-    { name: 'Cloud GPU hour', pct: 48, desc: '+12-20%', color: AMBER },
-  ],
-  [
-    { name: 'Helium', pct: 80, desc: 'New floor', color: ACCENT },
-    { name: 'Korean energy', pct: 45, desc: '+15-20%', color: ACCENT },
-    { name: 'Petrochemicals', pct: 30, desc: '+10-15%', color: ACCENT },
-    { name: 'Korean fabs', pct: 70, desc: 'Cost edge lost', color: ACCENT },
-    { name: 'GPU module', pct: 58, desc: '+15-25%', color: ACCENT },
-    { name: 'Cloud GPU hour', pct: 75, desc: '+30-50%', color: ACCENT },
-  ],
+const SCENARIO_DATA = [
+  {
+    layers: [
+      { name: 'Helium', value: 45, desc: '+40-50% spot' },
+      { name: 'Korean energy', value: 50, desc: '+40-60% spot LNG' },
+      { name: 'Petrochemicals', value: 12, desc: '+10-15%' },
+      { name: 'Korean fab output', value: 0, desc: 'Stockpiles hold' },
+      { name: 'GPU module', value: 1, desc: '+0-2%' },
+      { name: 'Cloud GPU hour', value: 3, desc: '+2-4%' },
+    ],
+    total: '+2-4%',
+  },
+  {
+    layers: [
+      { name: 'Helium', value: 150, desc: '+100-200% contract' },
+      { name: 'Korean energy', value: 30, desc: '+25-35% sustained' },
+      { name: 'Petrochemicals', value: 25, desc: '+20-30%' },
+      { name: 'Korean fab output', value: 20, desc: '-10-30% utilisation' },
+      { name: 'GPU module', value: 12, desc: '+8-15%' },
+      { name: 'Cloud GPU hour', value: 16, desc: '+12-20%' },
+    ],
+    total: '+12-20%',
+  },
+  {
+    layers: [
+      { name: 'Helium', value: 100, desc: 'New structural price floor' },
+      { name: 'Korean energy', value: 18, desc: '+15-20% new normal' },
+      { name: 'Petrochemicals', value: 12, desc: '+10-15% sustained' },
+      { name: 'Korean fab output', value: 50, desc: 'Cost advantage lost' },
+      { name: 'GPU module', value: 20, desc: '+15-25%' },
+      { name: 'Cloud GPU hour', value: 40, desc: '+30-50%' },
+    ],
+    total: '+30-50%',
+  },
 ]
-
-const TOTAL_LABELS = ['+2-4%', '+12-20%', '+30-50%']
 
 export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }) {
   const [active, setActive] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { threshold: 0.1 })
   const color = SCENARIO_COLORS[active]
-  const layers = COST_LAYERS[active]
-
+  const data = SCENARIO_DATA[active]
   const labels = block.scenarios.map((s) => s.label)
+
+  const chartOption = {
+    backgroundColor: 'transparent',
+    grid: { left: 130, right: 80, top: 10, bottom: 20 },
+    xAxis: {
+      type: 'value' as const,
+      axisLabel: { show: false },
+      splitLine: { show: false },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
+    yAxis: {
+      type: 'category' as const,
+      data: data.layers.map((l) => l.name).reverse(),
+      axisLabel: {
+        color: '#e0ddd5',
+        fontFamily: 'var(--font-sans)',
+        fontSize: 12,
+      },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
+    series: [
+      {
+        type: 'bar',
+        data: data.layers.map((l) => l.value).reverse(),
+        itemStyle: {
+          color: {
+            type: 'linear' as const,
+            x: 0, y: 0, x2: 1, y2: 0,
+            colorStops: [
+              { offset: 0, color: color + '90' },
+              { offset: 1, color },
+            ],
+          },
+          borderRadius: [0, 4, 4, 0],
+        },
+        barWidth: '55%',
+        label: {
+          show: true,
+          position: 'right' as const,
+          color: '#8a9a9f',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 11,
+          formatter: (params: { dataIndex: number }) => {
+            const idx = data.layers.length - 1 - params.dataIndex
+            return data.layers[idx].desc
+          },
+        },
+        animationDuration: 800,
+        animationEasing: 'cubicOut' as const,
+      },
+    ],
+    tooltip: {
+      show: true,
+      backgroundColor: '#111820',
+      borderColor: color,
+      borderWidth: 1,
+      textStyle: { color: '#e0ddd5', fontFamily: 'var(--font-mono)', fontSize: 12 },
+      formatter: (params: { name: string; value: number; dataIndex: number }) => {
+        const idx = data.layers.length - 1 - params.dataIndex
+        return `<strong>${params.name}</strong><br/>${data.layers[idx].desc}`
+      },
+    },
+  }
 
   return (
     <section ref={ref} className="py-8">
-      {/* Toggle buttons */}
+      {/* Tab buttons */}
       <div className="flex gap-2 justify-center mb-8 flex-wrap">
         {labels.map((label, i) => (
           <button
@@ -73,51 +146,22 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
         ))}
       </div>
 
-      {/* Cost layer rows */}
+      {/* Chart */}
       <div
-        className="max-w-[860px] mx-auto px-8 transition-opacity duration-500"
+        className="max-w-[860px] mx-auto px-4 transition-opacity duration-500"
         style={{ opacity: isInView ? 1 : 0 }}
       >
-        {layers.map((layer, i) => (
-          <div
-            key={`${active}-${i}`}
-            className="grid gap-4 py-4 items-center"
-            style={{
-              gridTemplateColumns: '140px 1fr 100px',
-              borderBottom: '0.5px solid var(--color-line, #1a2830)',
-            }}
-          >
-            <div
-              className="font-[family-name:var(--font-sans)] text-[0.9rem]"
-              style={{ color: 'var(--color-text)' }}
-            >
-              {layer.name}
-            </div>
-            <div
-              className="h-1.5 rounded-full"
-              style={{ background: 'var(--color-line, #1a2830)' }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  background: layer.color,
-                  width: isInView ? `${layer.pct}%` : '0%',
-                  transition: 'width 1s ease',
-                }}
-              />
-            </div>
-            <div
-              className="font-[family-name:var(--font-mono)] text-[0.85rem] text-right font-bold"
-              style={{ color: layer.color }}
-            >
-              {layer.desc}
-            </div>
-          </div>
-        ))}
+        <ReactECharts
+          key={active}
+          option={chartOption}
+          style={{ height: 320 }}
+          opts={{ renderer: 'svg' }}
+          notMerge={true}
+        />
       </div>
 
       {/* Total impact */}
-      <div className="text-center mt-6 mb-12">
+      <div className="text-center mt-4 mb-12">
         <div
           className="font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.1em]"
           style={{ color: 'var(--color-muted)' }}
@@ -128,7 +172,7 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
           className="font-[family-name:var(--font-serif)] text-[2.5rem] font-bold mt-1 transition-all duration-500"
           style={{ color }}
         >
-          {TOTAL_LABELS[active]}
+          {data.total}
         </div>
       </div>
     </section>

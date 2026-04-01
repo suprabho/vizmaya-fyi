@@ -3,5 +3,5 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
-  "/story/[id]/page": "app/story/[id]/page.js"
+  "/story/south-korea-gpu-hour/page": "app/story/south-korea-gpu-hour/page.js"
 }

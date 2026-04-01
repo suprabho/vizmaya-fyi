@@ -1,0 +1,8 @@
+{"timestamp":"00:00:00.917","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:31.994","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:04:41.823","source":"Server","level":"LOG","message":"✓ Compiled in 31ms"}
+{"timestamp":"00:06:00.886","source":"Server","level":"ERROR","message":"⨯ ReferenceError: assignChartIds is not defined"}
+{"timestamp":"00:06:01.121","source":"Browser","level":"ERROR","message":"uncaughtError: ReferenceError: assignChartIds is not defined"}
+{"timestamp":"00:06:11.611","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:06:35.185","source":"Server","level":"LOG","message":"✓ Compiled in 46ms"}
+{"timestamp":"00:07:06.753","source":"Server","level":"LOG","message":"✓ Compiled in 11ms"}

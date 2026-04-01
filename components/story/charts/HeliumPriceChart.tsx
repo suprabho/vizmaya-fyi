@@ -94,7 +94,7 @@ export default function HeliumPriceChart({ activeStep }: { activeStep: number })
               markArea: {
                 silent: true,
                 itemStyle: { color: 'rgba(216, 90, 48, 0.06)' },
-                data: [[{ xAxis: 'Apr 26*' }, { xAxis: 'Jun 26*' }]],
+                data: [[{ xAxis: 'Apr 26*' }, { xAxis: 'Jun 26*' }] as [{ xAxis: string }, { xAxis: string }]],
               },
               data: [] as number[],
             },

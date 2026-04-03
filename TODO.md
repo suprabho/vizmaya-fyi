@@ -1,6 +1,6 @@
 # To-Do List
 
-- [ ] Fix Color
+- [x] Fix Color
 - [ ] Add map
 - [ ] Add Flags
 - [ ] Add pretext

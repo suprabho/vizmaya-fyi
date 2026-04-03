@@ -7,6 +7,7 @@ export interface Theme {
     teal: string
     surface: string
     muted: string
+    positive?: string
     amber?: string
     red?: string
   }

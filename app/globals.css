@@ -8,10 +8,11 @@
   --color-teal: var(--color-teal, #1D9E75);
   --color-surface: var(--color-surface, #111820);
   --color-muted: var(--color-muted, #5a6a70);
+  --color-positive: var(--color-positive, #34D399);
   --color-line: #1a2830;
   --font-sans: var(--font-sans, 'Inter', -apple-system, 'Segoe UI', Helvetica, sans-serif);
   --font-serif: var(--font-serif, 'Georgia', 'Times New Roman', serif);
-  --font-mono: var(--font-mono, 'JetBrains Mono', 'Courier New', Consolas, monospace);
+  --font-mono: var(--font-mono, var(--font-jetbrains-mono), 'Courier New', Consolas, monospace);
 }
 
 ::selection {

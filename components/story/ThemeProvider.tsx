@@ -21,6 +21,7 @@ export default function ThemeProvider({
     '--font-mono': `${theme.fonts.mono}, 'Courier New', Consolas, monospace`,
   }
 
+  if (theme.colors.positive) vars['--color-positive'] = theme.colors.positive
   if (theme.colors.amber) vars['--color-amber'] = theme.colors.amber
   if (theme.colors.red) vars['--color-red'] = theme.colors.red
 

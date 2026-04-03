@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quiet Inflation — How a Strait Reprices a GPU Hour</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e14;--text:#e0ddd5;--accent:#D85A30;--accent2:#534AB7;
+  --teal:#1D9E75;--amber:#EF9F27;--red:#E24B4A;--muted:#5a6a70;
+  --line:#1a2830;--surface:#111820;--max-w:640px;--step-h:90vh;
+  --serif:Georgia,'Times New Roman',serif;
+  --sans:-apple-system,'Segoe UI',Helvetica,sans-serif;
+  --mono:'Courier New',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;overflow-x:hidden;}
+::selection{background:var(--accent);color:#fff;}
+
+/* ── Typography ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:3rem 2rem;max-width:900px;margin:0 auto;}
+.eyebrow{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5rem;}
+.headline{font-family:var(--serif);font-size:clamp(2.2rem,5.5vw,4rem);line-height:1.12;font-weight:700;color:#fff;margin-bottom:1.2rem;max-width:780px;}
+.dek{font-size:1.1rem;color:var(--muted);line-height:1.65;max-width:560px;margin-bottom:2rem;}
+.byline{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+
+.prose{max-width:var(--max-w);margin:0 auto;padding:3rem 2rem;}
+.prose p{font-family:var(--serif);font-size:1.1rem;line-height:1.85;color:var(--text);margin-bottom:1.4rem;}
+.n{font-family:var(--mono);color:var(--accent);font-weight:700;}
+.n2{font-family:var(--mono);color:var(--accent2);font-weight:700;}
+.nt{font-family:var(--mono);color:var(--teal);font-weight:700;}
+.na{font-family:var(--mono);color:var(--amber);font-weight:700;}
+
+.stat-block{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;padding:4rem 2rem;text-align:center;}
+.stat-big{font-family:var(--serif);font-size:clamp(3.5rem,12vw,8rem);font-weight:700;line-height:1;margin-bottom:.5rem;}
+.stat-label{font-family:var(--sans);font-size:1rem;color:var(--muted);max-width:480px;line-height:1.55;}
+
+.divider{width:60px;height:1px;background:var(--line);margin:0 auto;}
+
+.act{text-align:center;padding:5rem 2rem 2rem;}
+.act .act-n{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:.8rem;}
+.act h2{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;color:#fff;max-width:600px;margin:0 auto;line-height:1.25;}
+
+/* ── Scrolly ── */
+.scrolly{position:relative;}
+.sticky-c{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.sticky-g{width:100%;max-width:860px;padding:1.5rem 2rem;}
+.steps{position:relative;z-index:2;}
+.step{min-height:var(--step-h);display:flex;align-items:center;max-width:var(--max-w);margin:0 auto;padding:2rem;}
+.card{background:rgba(10,14,20,.92);border:.5px solid var(--line);border-radius:8px;padding:1.5rem 1.8rem;backdrop-filter:blur(8px);}
+.card p{font-family:var(--serif);font-size:1.05rem;line-height:1.8;color:var(--text);}
+.sn{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:.5rem;}
+.ct{font-family:var(--sans);font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:.4rem;}
+.cs{font-family:var(--mono);font-size:.58rem;color:#3a4a50;text-align:center;margin-top:.5rem;}
+
+/* ── Flag ── */
+.sk-flag{width:48px;height:32px;margin:0 auto 1.2rem;border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.1);}
+
+/* ── Scenario toggle ── */
+.sc-toggle{display:flex;gap:8px;justify-content:center;margin:2rem auto 1rem;flex-wrap:wrap;}
+.sc-b{padding:8px 20px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--muted);font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:all .3s;}
+.sc-b.on{border-color:var(--accent);color:var(--accent);background:rgba(216,90,48,.1);}
+.cl-section{max-width:860px;margin:0 auto;padding:1.5rem 2rem;}
+.cl-row{display:grid;grid-template-columns:150px 1fr 120px;align-items:center;gap:16px;padding:14px 0;border-bottom:.5px solid var(--line);}
+.cl-name{font-family:var(--sans);font-size:.9rem;color:var(--text);}
+.cl-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
+.cl-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.25,.46,.45,.94);}
+.cl-d{font-family:var(--mono);font-size:.82rem;text-align:right;font-weight:700;}
+
+/* ── Takeaway ── */
+.tk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;max-width:860px;margin:2rem auto;padding:0 2rem;}
+.tk-card{background:var(--surface);border-radius:8px;padding:1.5rem;border-top:3px solid var(--accent);}
+.tk-card h4{font-family:var(--sans);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.5rem;}
+.tk-card p{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--text);}
+
+/* ── Data table ── */
+.data-tbl{max-width:680px;margin:0 auto;padding:0 2rem 2rem;}
+.data-tbl table{width:100%;border-collapse:collapse;}
+.data-tbl th{font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+.data-tbl td{font-family:var(--sans);font-size:.88rem;color:var(--text);padding:8px 12px;border-bottom:.5px solid var(--line);}
+.data-tbl tr:last-child td{font-weight:700;color:#fff;}
+
+/* ── Meth / footer ── */
+.meth{max-width:var(--max-w);margin:0 auto;padding:4rem 2rem 6rem;border-top:.5px solid var(--line);}
+.meth h3{font-family:var(--sans);font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1rem;}
+.meth p{font-family:var(--sans);font-size:.83rem;color:var(--muted);line-height:1.7;margin-bottom:.8rem;}
+.footer-b{text-align:center;padding:2rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--muted);}
+.footer-b span{color:var(--accent);}
+
+@media(max-width:600px){
+  .cl-row{grid-template-columns:90px 1fr 80px;gap:8px;}
+  .card{padding:1rem 1.2rem;}
+  .hero{padding:2rem 1.5rem;}
+  .tk-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="eyebrow">The Asymmetry Letter · Cost Analysis · March 2026</div>
+  <h1 class="headline">South Korea Makes the Memory and Builds the Ships. It Just Lost All Three Energy&nbsp;Lines.</h1>
+  <p class="dek">The country that produces the majority of the world's AI memory chips and 84% of its LNG carriers is simultaneously losing its oil, its gas, and its helium from the same chokepoint. Here is how that reprices every GPU hour on earth.</p>
+  <div class="byline">by vizzmaya · The Asymmetry Letter · March 2026</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════ 18% STAT + CANDLESTICK ═══════════ -->
+<section class="stat-block">
+  <div class="stat-big" style="color:var(--red);">18%</div>
+  <div class="stat-label">South Korea's stock market plunged 18% in four trading days — the worst since 2008. Over $500 billion erased. Samsung and SK Hynix each fell more than 20% in a single week.</div>
+</section>
+
+<section class="scrolly" id="act-intro">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-stock">2026: KOSPI falls 18% in 4 trading days — worst since 2008</div>
+      <div id="chart-stock" style="width:100%;height:360px;"></div>
+      <div class="cs">KOSPI index rebased to 100 at pre-crisis peak. Sources: AInvest, Bitget News.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="s0">
+      <div class="card">
+        <div class="sn">2026 crash</div>
+        <p>South Korea's stock market plunged <span class="n">18%</span> in four trading days — the worst since 2008. Over <span class="n">$500 billion</span> erased. Samsung and SK Hynix each fell more than <span class="n">20%</span> in a single week.</p>
+      </div>
+    </div>
+    <div class="step" data-step="s1">
+      <div class="card">
+        <div class="sn">2008 comparison</div>
+        <p>Speed is the difference. The 2008 financial crisis took a <em>year</em> to erase 54%. The 2026 collapse hit in <span class="n">four trading days</span>. The market has priced in a supply chain fracture — not just a geopolitical shock.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="margin:3rem auto;"></div>
+
+<!-- ═══════════ ACT I ═══════════ -->
+<div class="act"><div class="act-n">Act I</div><h2>The most consequential industrial economy in this crisis</h2></div>
+
+<section class="prose">
+  <p>South Korea did not start this war. It has no leverage over the combatants. It does not control the strait. But it may be the single most important economy in this conflict — because it sits at the intersection of two industries the world cannot function without, and both are powered by the same energy grid.</p>
+  <p>The government imposed fuel rationing on March 25: a one-day-per-week vehicle ban for 1.5 million government vehicles, enforced by licence plate number. Oil at $119 a barrel. 1.7 million barrels of crude bound for Seoul delayed or stranded every day.</p>
+  <p>But the fuel rationing is the visible crisis. The invisible one is what's happening inside the fabs and the shipyards.</p>
+</section>
+
+<!-- Triple exposure polar chart -->
+<section class="scrolly" id="act1-polar">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-polar">South Korea's triple exposure: three supply lines, one chokepoint</div>
+      <div id="chart-polar" style="width:100%;height:360px;"></div>
+      <div class="cs">Sources: KITA (helium 64.7%), Carnegie Endowment (oil 70%), IEEFA (gas 26%).</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="p0">
+      <div class="card">
+        <div class="sn">Oil exposure</div>
+        <p><span class="n">Oil: 70%</span> of crude from the Middle East. Used for naphtha — a feedstock for semiconductor chemicals, not just fuel. Now on the government's "economic security" watchlist. Oil at $119 a barrel.</p>
+      </div>
+    </div>
+    <div class="step" data-step="p1">
+      <div class="card">
+        <div class="sn">Helium exposure</div>
+        <p><span class="n">Helium: 64.7%</span> from Qatar. The highest dependency of any major chip-producing nation. No substitute exists for plasma etch cooling. One-third of global supply removed in a single week.</p>
+      </div>
+    </div>
+    <div class="step" data-step="p2">
+      <div class="card">
+        <div class="sn">Gas (LNG) exposure</div>
+        <p><span class="n">Gas (LNG): 26%</span> of electricity generated from gas. Qatar declared force majeure on Korean contracts. SK Hynix was building an LNG plant to power its own fabs. That gas now carries a 3-5 year disruption notice.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HBM/DRAM treemap -->
+<section class="scrolly" id="act1-hbm">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-hbm">Global HBM market: South Korea holds 90% — every AI GPU depends on it</div>
+      <div id="chart-hbm" style="width:100%;height:360px;"></div>
+      <div class="cs">Sources: Counterpoint Research (HBM Q2 2025), TrendForce, IDC. DRAM shares are 2026 estimates.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="h0">
+      <div class="card">
+        <div class="sn">The memory dominance</div>
+        <p>SK Hynix holds <span class="n">62%</span> of global HBM — the memory NVIDIA cannot build an H100, B200, or Blackwell Ultra without. Samsung holds <span class="n">33%</span> of global DRAM. Combined: the majority of memory in every AI training cluster on earth. HBM is sold out through 2026. Zero slack.</p>
+      </div>
+    </div>
+    <div class="step" data-step="h1">
+      <div class="card">
+        <div class="sn">One grid, all exposed</div>
+        <p>Both industries run on the same energy grid. A grid where fossil fuels dominate. Where renewable energy is just <span class="n">9.6%</span> of the power mix — less than a third of the global average. Where the country was <em>building more LNG power plants</em> to feed the fabs, right up until the gas stopped flowing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LNG carrier treemap -->
+<section class="scrolly" id="act1-lng">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-lng">South Korea builds 84% of the world's LNG carriers</div>
+      <div id="chart-lng" style="width:100%;height:340px;"></div>
+      <div class="cs">Sources: BusinessKorea (248 vs 48 carrier deliveries, 2021-2025), VesselsValue ($71.3B orderbook).</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="l0">
+      <div class="card">
+        <div class="sn">The shipbuilding dominance</div>
+        <p>Here's the connection nobody else has made. South Korea also builds <span class="n">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy Industries, and Hanwha Ocean delivered <span class="n">248</span> carriers between 2021 and 2025 — versus 48 from China. Korean yards hold two-thirds of the global orderbook at <span class="n">$71.3 billion</span>.</p>
+      </div>
+    </div>
+    <div class="step" data-step="l1">
+      <div class="card">
+        <div class="sn">The orderbook</div>
+        <p>A single 174,000-cubic-metre LNG carrier costs <span class="n">$220-260 million</span> and takes <span class="n">30-36 months</span> from steel cutting to delivery. Gas carriers make up over 60% of Korean shipyard order composition. Korean vessel exports hit $31.8 billion in 2025. This is not a peripheral industry. It is a pillar of the economy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="margin:3rem auto;"></div>
+
+<!-- ═══════════ ACT II ═══════════ -->
+<div class="act"><div class="act-n">Act II</div><h2>The chokepoint: how Qatar's helium reaches a Korean fab</h2></div>
+
+<section class="prose">
+  <p>The chain that connects the Strait of Hormuz to a GPU shortage in Santa Clara runs through helium extraction plants, cryogenic separation, and a market structure that almost nobody covering this story has gotten right.</p>
+  <p>Qatar's three helium plants at Ras Laffan produce roughly one-third of global supply — 33.2%, according to the USGS 2026 Mineral Commodity Summaries. All three have been offline since March 2. When the gas stops flowing, the helium stops flowing.</p>
+</section>
+
+<!-- Qatar plant map -->
+<section class="scrolly" id="act2-map">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-qatar">Ras Laffan, Qatar — three helium plants, 33% of global supply</div>
+      <svg id="svg-qatar" viewBox="0 0 760 380" style="width:100%;" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="cs">Sources: USGS 2026 Mineral Commodity Summaries (33.2% of global supply). Plant data: Gasworld, Helium One.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="q0">
+      <div class="card">
+        <div class="sn">Three plants at Ras Laffan</div>
+        <p>Qatar's three helium plants produce <span class="n">33.2%</span> of global supply. <strong>Helium 1</strong> (660M scf/yr, online 2005), <strong>Helium 2</strong> (1.3B scf/yr — the world's largest, online 2013), and <strong>Helium 3</strong> (400M scf/yr, online 2021). Combined: <span class="n">2,360M scf/yr</span>.</p>
+      </div>
+    </div>
+    <div class="step" data-step="q1">
+      <div class="card">
+        <div class="sn">All offline since March 2</div>
+        <p>All three plants have been <span class="n">offline since March 2</span>. Helium is extracted from the natural gas stream during cryogenic liquefaction. When the gas stops flowing, the helium stops flowing. One-third of global supply, removed in a single week.</p>
+      </div>
+    </div>
+    <div class="step" data-step="q2">
+      <div class="card">
+        <div class="sn">No easy replacement</div>
+        <p>The United States produces 42% of global helium but cannot rapidly scale. Russia's Amur plant faces Western sanctions. Algeria is only <span class="n">5-10%</span> of supply. Tanzania is years from production. <strong>There is no easy replacement.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Helium price line chart -->
+<section class="scrolly" id="act2-helium">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-helium">March 2026: Spot at $153/MCF — but it's only 2% of the market. Contracts unmoved.</div>
+      <div id="chart-helium" style="width:100%;height:340px;"></div>
+      <div class="cs">Sources: IMARC (NE Asia Mar 2026: $152.70/MCF +21.5% MoM), ChemAnalyst, Phil Kornbluth (CNBC). *Projected.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="he0">
+      <div class="card">
+        <div class="sn">The misleading spike</div>
+        <p>Spot helium surged 50-100% in March. Northeast Asia hit <span class="n">$153/MCF</span>. Headlines screamed shortage. But spot is only <span class="n">2%</span> of the helium market. The other 98% trades on long-term contracts at $500-600/MCF. Those contracts haven't moved.</p>
+      </div>
+    </div>
+    <div class="step" data-step="he1">
+      <div class="card">
+        <div class="sn">The 6-month inflection</div>
+        <p>The real event comes at months 4-6. Contracts come up for renewal. Force majeure triggers renegotiation. If Qatar stays offline, contract prices climb toward <span class="n">$1,000-2,000/MCF</span> — a 2-4x increase on the 98% of the market that actually matters.</p>
+      </div>
+    </div>
+    <div class="step" data-step="he2">
+      <div class="card">
+        <div class="sn">The stockpile runway</div>
+        <p>Samsung holds ~<span class="n">6 months</span> of helium plus an <span class="n">18%</span> consumption reduction via its Helium Reuse System. TSMC maintains 2+ months from diversified suppliers with <span class="n">60-75%</span> recycling rates. The question isn't whether there's a buffer. The question is what happens at <span class="n">month 7</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="margin:3rem auto;"></div>
+
+<!-- ═══════════ ACT III ═══════════ -->
+<div class="act"><div class="act-n">Act III</div><h2>One chip price tells the whole story</h2></div>
+
+<section class="prose">
+  <p>Everyone is asking: will Silicon Valley get its chips? Wrong question. The right question is: at what price?</p>
+  <p>And the answer is visible in a single data point: the spot price of a DDR5 16Gb chip, tracked daily by DRAMeXchange.</p>
+</section>
+
+<section class="stat-block">
+  <div class="stat-big" style="color:var(--accent2);">3.4×</div>
+  <div class="stat-label">DDR5 16Gb spot price multiplied in 10 weeks — from $6.84 in September 2025 to $27.20 in December. Before the first missile hit Ras Laffan.</div>
+</section>
+
+<!-- DDR5 area chart -->
+<section class="scrolly" id="act3-ddr5">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-ddr5">The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025</div>
+      <div id="chart-ddr5" style="width:100%;height:380px;"></div>
+      <div class="cs">DDR5 16Gb (2Gx8) spot. Sources: DRAMeXchange via Tom's Hardware, TrendForce, Accio. Projections: directional estimates only.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="d0">
+      <div class="card">
+        <div class="sn">The pre-existing fire</div>
+        <p>DRAM prices rose <span class="n2">172%</span> through 2025. Server DRAM climbed <span class="n2">60% QoQ</span> in Q1 2026. HBM consumes <span class="n2">3× the wafer capacity</span> per gigabyte. Every wafer for an NVIDIA GPU is a wafer denied to everything else. The AI boom was eating its own supply chain.</p>
+      </div>
+    </div>
+    <div class="step" data-step="d1">
+      <div class="card">
+        <div class="sn">The supercycle origin</div>
+        <p>Google, Amazon, Microsoft, and Meta placed open-ended orders — accepting any supply at any cost. The DDR5 16Gb spot price absorbs every upstream shock into one number. <strong>The memory supercycle was the crisis. Hormuz is the accelerant.</strong></p>
+      </div>
+    </div>
+    <div class="step" data-step="d2">
+      <div class="card">
+        <div class="sn">60-day resolution: +2-4% GPU hour</div>
+        <p>If the conflict resolves within 60 days, stockpiles hold. Helium contracts don't reprice. Spot retreats to <span class="nt">~$18-20</span>. The Hormuz increment is invisible against the 172% pre-existing surge. GPU hour impact: <span class="nt">+2-4%</span> from baseline.</p>
+      </div>
+    </div>
+    <div class="step" data-step="d3">
+      <div class="card">
+        <div class="sn">6-month scenario: +12-20% GPU hour</div>
+        <p>Helium contracts reprice — the <span class="na">98%</span> starts moving toward $1,000-1,500/MCF. Korean fabs cut utilisation <span class="na">10-30%</span> on helium-critical steps. Energy costs up <span class="na">25-35%</span> sustained. DDR5 climbs to <span class="na">~$30-35</span>. GPU hour impact: <span class="na">+12-20%</span>.</p>
+      </div>
+    </div>
+    <div class="step" data-step="d4">
+      <div class="card">
+        <div class="sn">3-5 year force majeure: +30-50% GPU hour</div>
+        <p>The cost curve shifts permanently. Korean fabs lose their cost advantage. Micron (US-based, <span class="n">zero Hormuz exposure</span>) gains structural edge. CXMT accelerates. DDR5 stabilises at a <span class="n">$35-40 structural floor</span>. GPU hour impact: <span class="n">+30-50%</span> — and "compute always gets cheaper" breaks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Scenario cost layers -->
+<div class="sc-toggle">
+  <button class="sc-b on" onclick="swSc(0)">60 days</button>
+  <button class="sc-b" onclick="swSc(1)">6 months</button>
+  <button class="sc-b" onclick="swSc(2)">3-5 years</button>
+</div>
+<div class="cl-section" id="layers"></div>
+<div style="text-align:center;margin:1rem auto 3rem;">
+  <div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">End-to-end GPU hour impact</div>
+  <div id="ti" style="font-family:var(--serif);font-size:2.5rem;font-weight:700;margin-top:.3rem;">+2-4%</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Watch callout -->
+<section class="stat-block" style="min-height:50vh;">
+  <div style="font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:1rem;">The assumption nobody is stress-testing</div>
+  <div style="font-family:var(--serif);font-size:clamp(1.4rem,3.5vw,2.1rem);font-weight:700;color:#fff;max-width:620px;text-align:center;line-height:1.35;">Every AI business model assumes compute gets cheaper. The memory supercycle challenged that assumption. Hormuz — if it extends past South Korea's stockpiles — breaks it.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════ ACT IV ═══════════ -->
+<div class="act"><div class="act-n">Act IV</div><h2>The feedback loop nobody has connected</h2></div>
+
+<section class="prose">
+  <p>South Korea makes the chips. That's the story everyone has told. Here's the story nobody has told.</p>
+  <p>South Korea also builds the ships that carry the gas that the rest of the world needs to replace Qatar's output. This isn't a separate crisis. It's an additional bottleneck in the same supply chain.</p>
+  <p>The same economy. The same energy grid. The same chokepoint.</p>
+</section>
+
+<section class="scrolly" id="act4-loop">
+  <div class="sticky-c">
+    <div class="sticky-g">
+      <div class="ct" id="ct-loop">The doom loop: energy crisis → carrier shortage → deeper energy crisis</div>
+      <svg id="svg-loop" viewBox="0 0 800 400" style="width:100%;" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="cs">Feedback loop model. Circuit breakers shown in green. Positive feedback in red.</div>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step" data-step="lp0">
+      <div class="card">
+        <div class="sn">The loop</div>
+        <p>Korea's energy crisis puts pressure on the shipyards that build the LNG carriers the world needs. If carrier construction slips, the global LNG fleet grows more slowly. If there aren't enough ships, the gas shortage deepens. If the shortage deepens, Korean industry takes a harder hit. The loop tightens — and feeds directly back into every cost scenario in Act III.</p>
+      </div>
+    </div>
+    <div class="step" data-step="lp1">
+      <div class="card">
+        <div class="sn">The circuit breakers</div>
+        <p>The doom loop has brakes. Korea is restarting five nuclear reactors and easing coal restrictions. ~<span class="nt">60 idle LNG carriers</span> provide buffer. Any shipyard disruption only affects 2028-2029 deliveries. The loop grinds — it doesn't spiral immediately. But the longer the war lasts, the deeper it cuts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════ WHAT TO WATCH ═══════════ -->
+<section style="padding:3rem 0;">
+  <div style="text-align:center;margin-bottom:2rem;"><div class="eyebrow">What to watch</div></div>
+  <div class="tk-grid">
+    <div class="tk-card">
+      <h4>For procurement</h4>
+      <p>Accelerate helium recycling investment now. Monitor helium contract renewal dates — the repricing signal comes before the shortage. Naphtha and petrochemical input costs are already rising double digits.</p>
+    </div>
+    <div class="tk-card" style="border-top-color:var(--accent2);">
+      <h4>For investors</h4>
+      <p>60-day scenario is the base case. Start discounting at month 4-5 when helium contracts reprice. Watch Linde and Air Products as lead indicators. Watch Korean shipyard order cancellations for the structural signal.</p>
+    </div>
+    <div class="tk-card" style="border-top-color:var(--teal);">
+      <h4>For AI builders</h4>
+      <p>Model unit economics with compute costs flat or +20-30% for 18 months. If your model breaks at +30% GPU cost, it was already fragile. The memory supercycle was going to test you before Hormuz did.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ METHODOLOGY ═══════════ -->
+<section class="meth">
+  <h3>Methodology &amp; sources</h3>
+  <p><strong>DDR5 16Gb spot price data:</strong> DRAMeXchange via Tom's Hardware (Sep-Dec 2025: $6.84, $24.83, $27.20). March 2026 spot from Accio/TrendForce ($23.50). December contract price doubling from TeamGroup GM Gerry Chen via DigiTimes. Q1 2026 contract forecast from TrendForce (+55-60% QoQ conventional DRAM, +60% QoQ server DRAM).</p>
+  <p><strong>Helium pricing:</strong> IMARC Group (NE Asia March 2026: $152.70/MCF, +21.5% MoM). ChemAnalyst (Q4 2025 contract pricing). Phil Kornbluth via CNBC. DiscoveryAlert (contract $500-600/MCF).</p>
+  <p><strong>South Korea energy and economy:</strong> Carnegie Endowment for International Peace. IEEFA. Korea Economic Institute of America. AInvest, Bitget News (stock market data).</p>
+  <p><strong>Shipbuilding:</strong> BusinessKorea (248 vs. 48 carrier deliveries, 2021-2025). VesselsValue ($71.3B orderbook).</p>
+  <p><strong>Semiconductor supply chain:</strong> USGS 2026 Mineral Commodity Summaries (Qatar 33.2% global helium). KITA (South Korea 64.7% helium from Qatar). Counterpoint Research (SK Hynix 62% HBM, Q2 2025). TrendForce.</p>
+  <p><strong>Scenario estimates:</strong> Forward projections are directional estimates, not precise forecasts. This analysis is not investment advice.</p>
+</section>
+
+<div class="footer-b"><span>vizzmaya</span> · The Asymmetry Letter · March 2026</div>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const A='#D85A30',A2='#534AB7',TL='#1D9E75',AM='#EF9F27',R='#E24B4A',MU='#3a4a50',LN='#1a2830',SU='#111820';
+
+// ═══════════════════════════════════════════════
+// CHART 1: STOCK CANDLESTICK (2026 vs 2008)
+// ═══════════════════════════════════════════════
+const stockChart = echarts.init(document.getElementById('chart-stock'), null, {renderer:'svg'});
+const data2026=[[100,100.8,99.5,101.2],[101,100.2,99.8,101.5],[100.3,99.7,99.1,100.6],[99.5,95.1,94.2,99.5],[95,90.2,89.5,95.3],[90,86.4,85.8,90.4],[86.2,82,81.3,86.5]];
+const data2008=[[100,97.8,96.5,100.4],[97.8,94.1,93,98.5],[94.2,91.5,90,94.8],[91.5,89.2,87.8,92],[89,85.5,84,89.5],[85.5,80.2,79,86],[80,75.5,74,81],[75.5,68,67,76],[68,55,54,69],[55,46,45,56]];
+const lb26=['Feb 26','Feb 27','Feb 28','Mar 1','Mar 2','Mar 3','Mar 4'];
+const lb08=['Oct 07','Nov 07','Dec 07','Jan 08','Feb 08','Mar 08','Apr 08','Jun 08','Aug 08','Oct 08'];
+
+function stockOpt(show08){
+  return {
+    backgroundColor:'transparent',animation:true,animationDuration:700,
+    legend:{top:5,left:10,textStyle:{color:MU,fontSize:10,fontFamily:'var(--mono)'},
+      data:[{name:'2026 (Iran War)',itemStyle:{color:R}},...(show08?[{name:'2008 (GFC)',itemStyle:{color:A2}}]:[])]},
+    grid:[{left:55,right:show08?'52%':30,top:35,bottom:55},...(show08?[{left:'55%',right:30,top:35,bottom:55}]:[])],
+    xAxis:[{type:'category',data:lb26,gridIndex:0,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:9},splitLine:{show:false}},
+      ...(show08?[{type:'category',data:lb08,gridIndex:1,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:9},splitLine:{show:false}}]:[])],
+    yAxis:[{type:'value',min:78,max:103,gridIndex:0,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:9},splitLine:{lineStyle:{color:LN}},name:'Indexed (100=peak)',nameTextStyle:{color:MU,fontSize:8}},
+      ...(show08?[{type:'value',min:40,max:103,gridIndex:1,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:9},splitLine:{lineStyle:{color:LN}}}]:[])],
+    series:[{name:'2026 (Iran War)',type:'candlestick',xAxisIndex:0,yAxisIndex:0,data:data2026,
+        itemStyle:{color:R,color0:TL,borderColor:R,borderColor0:TL},
+        markLine:{silent:true,symbol:'none',data:[{yAxis:82,lineStyle:{color:R,width:1,type:'dashed',opacity:.5},label:{show:true,formatter:'-18%',color:R,fontFamily:'var(--mono)',fontSize:11,fontWeight:700,position:'end'}}]}},
+      ...(show08?[{name:'2008 (GFC)',type:'candlestick',xAxisIndex:1,yAxisIndex:1,data:data2008,
+          itemStyle:{color:A2,color0:TL,borderColor:A2,borderColor0:TL},
+          markLine:{silent:true,symbol:'none',data:[{yAxis:46,lineStyle:{color:A2,width:1,type:'dashed',opacity:.5},label:{show:true,formatter:'-54%',color:A2,fontFamily:'var(--mono)',fontSize:11,fontWeight:700,position:'end'}}]}}]:[])],
+    tooltip:{show:false}
+  };
+}
+window.sStock={
+  s0:()=>{stockChart.setOption(stockOpt(false),true);document.getElementById('ct-stock').textContent='2026: KOSPI falls 18% in 4 trading days — worst since 2008';},
+  s1:()=>{stockChart.setOption(stockOpt(true),true);document.getElementById('ct-stock').textContent='2008 vs 2026: speed is the difference — 2026 hit in 4 days, 2008 took a year';}
+};
+sStock.s0();
+
+// ═══════════════════════════════════════════════
+// CHART 2: POLAR EXPOSURE CHART
+// ═══════════════════════════════════════════════
+const polarChart = echarts.init(document.getElementById('chart-polar'), null, {renderer:'svg'});
+const exposures=[{name:'Oil',v:70,c:R},{name:'Helium',v:64.7,c:A},{name:'Gas (LNG)',v:26,c:AM}];
+function polarOpt(active){
+  return {
+    backgroundColor:'transparent',animation:true,animationDuration:700,
+    polar:{radius:['25%','75%'],center:['50%','50%']},
+    angleAxis:{type:'category',data:exposures.map(e=>e.name),startAngle:75,
+      axisLine:{lineStyle:{color:LN}},axisTick:{show:false},
+      axisLabel:{color:'#e0ddd5',fontFamily:'var(--sans)',fontSize:13,fontWeight:600},
+      splitLine:{lineStyle:{color:LN,opacity:.4}}},
+    radiusAxis:{type:'value',min:0,max:100,axisLabel:{show:false},axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:LN,opacity:.3}}},
+    series:[{type:'bar',coordinateSystem:'polar',roundCap:true,barMaxWidth:60,
+      data:exposures.map((e,i)=>({value:e.v,itemStyle:{color:e.c,opacity:active===null?0.8:(i===active?1:0.2)},
+        label:{show:true,position:'outside',formatter:`${e.v}%`,color:e.c,fontFamily:'var(--mono)',fontSize:16,fontWeight:700}}))
+    }],
+    tooltip:{show:false}
+  };
+}
+const polarTitles=['South Korea\'s triple exposure: three supply lines, one chokepoint','Oil 70% + Helium 64.7% + Gas 26% — all routed through the Strait of Hormuz','Every exposure hits the same industries: semiconductor fabs and shipyards'];
+window.sPolar={
+  p0:()=>{polarChart.setOption(polarOpt(0),true);document.getElementById('ct-polar').textContent=polarTitles[0];},
+  p1:()=>{polarChart.setOption(polarOpt(1),true);document.getElementById('ct-polar').textContent=polarTitles[1];},
+  p2:()=>{polarChart.setOption(polarOpt(2),true);document.getElementById('ct-polar').textContent=polarTitles[2];}
+};
+sPolar.p0();
+
+// ═══════════════════════════════════════════════
+// CHART 3: HBM/DRAM TREEMAP
+// ═══════════════════════════════════════════════
+const hbmChart = echarts.init(document.getElementById('chart-hbm'), null, {renderer:'svg'});
+const hbmData=[{name:'SK Hynix\n(Korea)',v:62,c:A},{name:'Samsung\n(Korea)',v:28,c:A},{name:'Micron\n(USA)',v:10,c:TL}];
+const dramData=[{name:'Samsung\n(Korea)',v:33,c:A},{name:'SK Hynix\n(Korea)',v:28,c:A},{name:'Micron\n(USA)',v:24,c:TL},{name:'CXMT\n(China)',v:8,c:AM},{name:'Others',v:7,c:MU}];
+function hbmOpt(isHBM){
+  const d=isHBM?hbmData:dramData;
+  return {
+    backgroundColor:'transparent',animation:true,animationDuration:700,
+    title:[{text:isHBM?'HBM (High Bandwidth Memory) — 2026':'DRAM Global Market Share — 2026',left:'center',top:4,textStyle:{color:MU,fontSize:10,fontWeight:'normal',fontFamily:'var(--mono)'}}],
+    series:[{type:'treemap',top:28,bottom:8,left:4,right:4,breadcrumb:{show:false},roam:false,nodeClick:false,
+      levels:[{itemStyle:{borderWidth:2,borderColor:'#0a0e14',gapWidth:3}}],
+      label:{position:'inside',align:'center',verticalAlign:'middle'},
+      data:d.map(x=>({name:x.name,value:x.v,
+        itemStyle:{color:x.c,opacity:x.c===MU?0.3:0.85},
+        label:{formatter:'{a|'+x.name+'}\n{b|'+x.v+'%}',rich:{a:{color:'#fff',fontFamily:'var(--sans)',fontSize:10,lineHeight:15},b:{color:'#fff',fontFamily:'var(--mono)',fontWeight:700,fontSize:14,lineHeight:20}}}}))}],
+    tooltip:{show:true,backgroundColor:SU,borderColor:LN,textStyle:{color:'#e0ddd5',fontFamily:'var(--mono)',fontSize:11},
+      formatter:p=>`${p.name.replace(/\n/g,' ')}: <strong>${p.value}%</strong>`}
+  };
+}
+const hbmTitles=['Global HBM market: South Korea holds 90% — every AI GPU depends on it','Global DRAM market: Korea dominates; Micron is the only non-Korean alternative'];
+window.sHBM={
+  h0:()=>{hbmChart.setOption(hbmOpt(true),true);document.getElementById('ct-hbm').textContent=hbmTitles[0];},
+  h1:()=>{hbmChart.setOption(hbmOpt(false),true);document.getElementById('ct-hbm').textContent=hbmTitles[1];}
+};
+sHBM.h0();
+
+// ═══════════════════════════════════════════════
+// CHART 4: LNG CARRIER TREEMAP
+// ═══════════════════════════════════════════════
+const lngChart = echarts.init(document.getElementById('chart-lng'), null, {renderer:'svg'});
+const lngData=[{name:'HD Hyundai\n(Korea)',v:34,c:AM},{name:'Samsung Heavy\n(Korea)',v:28,c:AM},{name:'Hanwha Ocean\n(Korea)',v:22,c:AM},{name:'COSCO\n(China)',v:6,c:A2},{name:'Hudong-Zhonghua\n(China)',v:5,c:A2},{name:"Chantiers\n(Europe)",v:3,c:TL},{name:'Others',v:2,c:MU}];
+lngChart.setOption({
+  backgroundColor:'transparent',
+  title:[{text:'Global LNG Carrier Deliveries 2021-2025',left:'center',top:4,textStyle:{color:MU,fontSize:10,fontWeight:'normal',fontFamily:'var(--mono)'}}],
+  series:[{type:'treemap',top:28,bottom:8,left:4,right:4,breadcrumb:{show:false},roam:false,nodeClick:false,
+    levels:[{itemStyle:{borderWidth:2,borderColor:'#0a0e14',gapWidth:3}}],
+    label:{position:'inside',align:'center',verticalAlign:'middle'},
+    data:lngData.map(x=>({name:x.name,value:x.v,
+      itemStyle:{color:x.c,opacity:x.c===MU?0.3:x.c===AM?0.88:0.6},
+      label:{formatter:'{a|'+x.name+'}\n{b|'+x.v+'%}',rich:{a:{color:'#fff',fontFamily:'var(--sans)',fontSize:10,lineHeight:15},b:{color:'#fff',fontFamily:'var(--mono)',fontWeight:700,fontSize:14,lineHeight:20}}}}))}],
+  tooltip:{show:true,backgroundColor:SU,borderColor:LN,textStyle:{color:'#e0ddd5',fontFamily:'var(--mono)',fontSize:11},
+    formatter:p=>`${p.name.replace(/\n/g,' ')}: <strong>${p.value}%</strong> of deliveries`}
+});
+const lngTitles=["South Korea builds 84% of the world's LNG carriers — HD Hyundai, Samsung, Hanwha","Korean yards hold $71.3B in LNG orderbook — 2/3 of the global backlog by value"];
+window.sLNG={
+  l0:()=>document.getElementById('ct-lng').textContent=lngTitles[0],
+  l1:()=>document.getElementById('ct-lng').textContent=lngTitles[1]
+};
+
+// ═══════════════════════════════════════════════
+// CHART 5: QATAR SVG PLANT MAP
+// ═══════════════════════════════════════════════
+const svgQ=document.getElementById('svg-qatar');
+const plants=[{id:1,label:'Helium 1',cap:'660M scf/yr',yr:'2005',x:300,y:175,r:26},{id:2,label:'Helium 2',cap:'1,300M scf/yr',yr:'2013',x:460,y:145,r:40,note:"World's largest"},{id:3,label:'Helium 3',cap:'400M scf/yr',yr:'2021',x:382,y:260,r:20}];
+function buildQatarSVG(offline,showImpact){
+  svgQ.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  function el(tag,attrs,text){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);if(text)e.textContent=text;return e;}
+  // Sea
+  svgQ.appendChild(el('ellipse',{cx:575,cy:195,rx:155,ry:105,fill:'#0d1a2a',opacity:.6}));
+  svgQ.appendChild(el('text',{x:575,y:200,fill:MU,'font-size':10,'font-family':'var(--mono)','text-anchor':'middle',opacity:.5},'Persian Gulf'));
+  // Qatar peninsula
+  svgQ.appendChild(el('path',{d:'M320 315Q340 305 360 285Q390 255 410 225Q430 205 440 185Q450 170 440 160Q420 145 400 145Q370 143 350 150Q330 155 315 170Q300 185 290 205Q280 230 285 255Q290 285 305 305Z',fill:SU,stroke:LN,'stroke-width':1}));
+  svgQ.appendChild(el('text',{x:345,y:320,fill:MU,'font-size':11,'font-family':'var(--sans)','text-anchor':'middle',opacity:.6},'Qatar'));
+  // Labels
+  svgQ.appendChild(el('text',{x:248,y:112,fill:MU,'font-size':9,'font-family':'var(--mono)',opacity:.7},'Ras Laffan'));
+  svgQ.appendChild(el('text',{x:248,y:125,fill:MU,'font-size':9,'font-family':'var(--mono)',opacity:.7},'Industrial City'));
+  svgQ.appendChild(el('line',{x1:293,y1:122,x2:306,y2:154,stroke:MU,'stroke-width':.5,'stroke-dasharray':'3 2',opacity:.5}));
+  // Flow lines
+  plants.forEach(p=>{const l=el('line',{x1:p.x,y1:p.y,x2:615,y2:195,stroke:offline?R:TL,'stroke-width':.8,'stroke-dasharray':'4 3',opacity:offline?.3:.5});svgQ.appendChild(l);});
+  // Export label
+  svgQ.appendChild(el('text',{x:640,y:172,fill:offline?R:TL,'font-size':9,'font-family':'var(--mono)','text-anchor':'middle'},offline?'EXPORTS':'to global'));
+  svgQ.appendChild(el('text',{x:640,y:185,fill:offline?R:TL,'font-size':9,'font-family':'var(--mono)','text-anchor':'middle'},offline?'HALTED':'market'));
+  svgQ.appendChild(el('path',{d:'M625 190L645 200L625 210',fill:'none',stroke:offline?R:TL,'stroke-width':1.5,opacity:offline?.5:.7}));
+  // Plants
+  plants.forEach(p=>{
+    if(offline){const glow=el('circle',{cx:p.x,cy:p.y,r:p.r+8,fill:'none',stroke:R,'stroke-width':1,opacity:.22});svgQ.appendChild(glow);}
+    svgQ.appendChild(el('circle',{cx:p.x,cy:p.y,r:p.r,fill:offline?R:TL,opacity:offline?.18:.22,stroke:offline?R:TL,'stroke-width':1}));
+    svgQ.appendChild(el('circle',{cx:p.x+p.r-7,cy:p.y-p.r+7,r:5,fill:offline?R:TL,opacity:.9}));
+    svgQ.appendChild(el('text',{x:p.x,y:p.y-3,'text-anchor':'middle',fill:'#fff','font-size':10,'font-family':'var(--sans)','font-weight':600},p.label));
+    svgQ.appendChild(el('text',{x:p.x,y:p.y+11,'text-anchor':'middle',fill:offline?R:TL,'font-size':9,'font-family':'var(--mono)','font-weight':700},offline?'OFFLINE':p.cap));
+    if(!offline)svgQ.appendChild(el('text',{x:p.x,y:p.y+23,'text-anchor':'middle',fill:MU,'font-size':8,'font-family':'var(--mono)'},'online '+p.yr));
+  });
+  // Impact badge
+  if(showImpact){
+    svgQ.appendChild(el('rect',{x:20,y:20,width:215,height:68,rx:6,fill:SU,stroke:R,'stroke-width':.5,opacity:.9}));
+    svgQ.appendChild(el('text',{x:127,y:40,'text-anchor':'middle',fill:R,'font-size':10,'font-family':'var(--mono)','font-weight':700},'COMBINED OUTPUT OFFLINE'));
+    svgQ.appendChild(el('text',{x:127,y:58,'text-anchor':'middle',fill:'#fff','font-size':21,'font-family':'var(--mono)','font-weight':700},'2,360M scf/yr'));
+    svgQ.appendChild(el('text',{x:127,y:77,'text-anchor':'middle',fill:MU,'font-size':9,'font-family':'var(--mono)'},'= 33.2% of global helium supply'));
+  }
+  // Legend
+  svgQ.appendChild(el('circle',{cx:558,cy:328,r:6,fill:TL,opacity:.7}));
+  svgQ.appendChild(el('text',{x:570,y:332,fill:MU,'font-size':9,'font-family':'var(--mono)'},'Operational'));
+  svgQ.appendChild(el('circle',{cx:558,cy:348,r:6,fill:R,opacity:.7}));
+  svgQ.appendChild(el('text',{x:570,y:352,fill:MU,'font-size':9,'font-family':'var(--mono)'},'Offline'));
+  svgQ.appendChild(el('text',{x:550,y:368,fill:MU,'font-size':8,'font-family':'var(--mono)'},'Size ∝ capacity'));
+}
+const qTitles=['Ras Laffan, Qatar — three helium plants, 33% of global supply','All three plants offline since March 2 — when gas stops, helium stops','33% of global helium supply removed in a single week'];
+window.sQatar={
+  q0:()=>{buildQatarSVG(false,false);document.getElementById('ct-qatar').textContent=qTitles[0];},
+  q1:()=>{buildQatarSVG(true,false);document.getElementById('ct-qatar').textContent=qTitles[1];},
+  q2:()=>{buildQatarSVG(true,true);document.getElementById('ct-qatar').textContent=qTitles[2];}
+};
+sQatar.q0();
+
+// ═══════════════════════════════════════════════
+// CHART 6: HELIUM PRICE LINE
+// ═══════════════════════════════════════════════
+const heliumChart = echarts.init(document.getElementById('chart-helium'), null, {renderer:'svg'});
+const heMonths=['Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26*','May 26*','Jun 26*'];
+const heCn=[560,555,548,540,535,525,520,520,680,1050];
+const heSp=[128,128,128,128,128,128,153,900,1200,1800];
+const heTitles=['March 2026: Spot at $153/MCF — but it\'s only 2% of the market. Contracts unmoved.','Month 4-6: Contract repricing begins. The 98% starts moving toward $1,000-2,000.','Stockpile buffer: Samsung ~6 months + 18% recycling. TSMC 2+ months, 60-75% rate.'];
+function heliumOpt(step){
+  const slice=step>=1?10:7;
+  const proj=step>=1;
+  return {
+    backgroundColor:'transparent',animation:true,animationDuration:800,
+    grid:{left:65,right:30,top:32,bottom:50},
+    xAxis:{type:'category',data:heMonths,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:10},splitLine:{show:false}},
+    yAxis:{type:'value',min:0,max:2000,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:10,formatter:v=>'$'+v},splitLine:{lineStyle:{color:LN}}},
+    series:[
+      {name:'Spot (2%)',type:'line',data:heSp.slice(0,slice),smooth:.3,lineStyle:{color:A,width:2.5,type:'dashed'},symbol:'none',
+        endLabel:{show:true,color:A,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,800+':'$153 — spike'}},
+      {name:'Contract (98%)',type:'line',data:heCn.slice(0,slice),smooth:.3,lineStyle:{color:TL,width:2.5},symbol:'none',
+        endLabel:{show:true,color:TL,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,050 — repricing':'$520 — unmoved'}},
+      ...(proj?[{type:'line',markArea:{silent:true,itemStyle:{color:'rgba(216,90,48,.06)'},data:[[{xAxis:'Apr 26*'},{xAxis:'Jun 26*'}]]},data:[]}]:[])
+    ],
+    legend:{top:5,left:10,textStyle:{color:MU,fontSize:10,fontFamily:'var(--mono)'},
+      data:[{name:'Spot (2%)',itemStyle:{color:A}},{name:'Contract (98%)',itemStyle:{color:TL}}]},
+    tooltip:{show:false}
+  };
+}
+window.sHelium={
+  he0:()=>{heliumChart.setOption(heliumOpt(0),true);document.getElementById('ct-helium').textContent=heTitles[0];},
+  he1:()=>{heliumChart.setOption(heliumOpt(1),true);document.getElementById('ct-helium').textContent=heTitles[1];},
+  he2:()=>{heliumChart.setOption(heliumOpt(2),true);document.getElementById('ct-helium').textContent=heTitles[2];}
+};
+sHelium.he0();
+
+// ═══════════════════════════════════════════════
+// CHART 7: DDR5 AREA CHART
+// ═══════════════════════════════════════════════
+const ddr5Chart = echarts.init(document.getElementById('chart-ddr5'), null, {renderer:'svg'});
+const ddrMonths=['Jan 25','Mar 25','Jun 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Mar 26','Jun 26','Sep 26'];
+const ddrHist=[7,6.5,6.8,6.84,12,24.83,27.2,25,23.5,null,null];
+const ddr60d=[null,null,null,null,null,null,null,null,23.5,19,18.5];
+const ddr6mo=[null,null,null,null,null,null,null,null,23.5,31,33.5];
+const ddr3yr=[null,null,null,null,null,null,null,null,23.5,37,39.5];
+const ddrTitles=['The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025','The AI boom ate its own supply chain — HBM crowded out standard DRAM','60-day resolution: stockpiles hold, spot retreats to $18-20. GPU hour +2-4%.','6-month scenario: helium contracts reprice, fabs cut utilisation. GPU hour +12-20%.','3-5 year force majeure: structural cost reset. GPU hour +30-50%.'];
+const ddrAnnotations=[{x:'Sep 25',y:6.84,txt:'$6.84\nbaseline',c:A2},{x:'Nov 25',y:24.83,txt:'$24.83',c:A},{x:'Dec 25',y:27.2,txt:'$27.20\npeak',c:A},{x:'Mar 26',y:23.5,txt:'$23.50\nnow',c:AM}];
+function ddr5Opt(step){
+  const show60=step>=2, show6m=step>=3, show3y=step>=4;
+  const mkPt=step>=1?ddrAnnotations.map(a=>({name:a.txt,coord:[a.x,a.y],label:{show:true,formatter:a.txt,color:a.c,fontFamily:'var(--mono)',fontSize:9,fontWeight:700,position:'top'}})):[];
+  return {
+    backgroundColor:'transparent',animation:true,animationDuration:800,
+    grid:{left:58,right:35,top:38,bottom:50},
+    legend:{top:5,left:10,textStyle:{color:MU,fontSize:10,fontFamily:'var(--mono)'},
+      data:[{name:'Historical',itemStyle:{color:A2}},
+        ...(show60?[{name:'60-day: +2-4%',itemStyle:{color:TL}}]:[]),
+        ...(show6m?[{name:'6-month: +12-20%',itemStyle:{color:AM}}]:[]),
+        ...(show3y?[{name:'3-5yr: +30-50%',itemStyle:{color:A}}]:[])
+      ]},
+    xAxis:{type:'category',data:ddrMonths,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:10,interval:0},splitLine:{show:false}},
+    yAxis:{type:'value',min:0,max:45,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:10,formatter:v=>'$'+v},splitLine:{lineStyle:{color:LN}},name:'DDR5 16Gb spot ($/chip)',nameTextStyle:{color:MU,fontSize:8}},
+    series:[
+      {name:'Historical',type:'line',data:ddrHist,smooth:.35,lineStyle:{color:A2,width:2.5},symbol:'circle',symbolSize:(v,p)=>ddrAnnotations.some(a=>a.x===ddrMonths[p.dataIndex])?7:0,itemStyle:{color:A2},
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:A2+'40'},{offset:1,color:A2+'05'}]}},
+        markPoint:{symbol:'circle',symbolSize:0,data:mkPt}},
+      {name:'60-day: +2-4%',type:'line',data:show60?ddr60d:ddrMonths.map(()=>null),smooth:.4,lineStyle:{color:TL,width:2,type:'dashed'},symbol:'none',connectNulls:false,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:TL+'30'},{offset:1,color:TL+'05'}]}},
+        endLabel:{show:show60,formatter:'~$18-20',color:TL,fontFamily:'var(--mono)',fontSize:11,fontWeight:700}},
+      {name:'6-month: +12-20%',type:'line',data:show6m?ddr6mo:ddrMonths.map(()=>null),smooth:.4,lineStyle:{color:AM,width:2,type:'dashed'},symbol:'none',connectNulls:false,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:AM+'30'},{offset:1,color:AM+'05'}]}},
+        endLabel:{show:show6m,formatter:'~$30-35',color:AM,fontFamily:'var(--mono)',fontSize:11,fontWeight:700}},
+      {name:'3-5yr: +30-50%',type:'line',data:show3y?ddr3yr:ddrMonths.map(()=>null),smooth:.4,lineStyle:{color:A,width:2,type:'dashed'},symbol:'none',connectNulls:false,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:A+'30'},{offset:1,color:A+'05'}]}},
+        endLabel:{show:show3y,formatter:'~$35-40',color:A,fontFamily:'var(--mono)',fontSize:11,fontWeight:700}}
+    ],
+    tooltip:{show:false}
+  };
+}
+window.sDDR5={
+  d0:()=>{ddr5Chart.setOption(ddr5Opt(0),true);document.getElementById('ct-ddr5').textContent=ddrTitles[0];},
+  d1:()=>{ddr5Chart.setOption(ddr5Opt(1),true);document.getElementById('ct-ddr5').textContent=ddrTitles[1];},
+  d2:()=>{ddr5Chart.setOption(ddr5Opt(2),true);document.getElementById('ct-ddr5').textContent=ddrTitles[2];},
+  d3:()=>{ddr5Chart.setOption(ddr5Opt(3),true);document.getElementById('ct-ddr5').textContent=ddrTitles[3];},
+  d4:()=>{ddr5Chart.setOption(ddr5Opt(4),true);document.getElementById('ct-ddr5').textContent=ddrTitles[4];}
+};
+sDDR5.d0();
+
+// ═══════════════════════════════════════════════
+// CHART 8: FEEDBACK LOOP SVG
+// ═══════════════════════════════════════════════
+const svgL=document.getElementById('svg-loop');
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  function el(tag,attrs,text){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);if(text)e.textContent=text;return e;}
+  const nodes=[{x:400,y:58,w:220,h:44,lbl:'Hormuz closure',c:R},{x:150,y:168,w:200,h:44,lbl:'Korean energy crisis',c:AM},{x:650,y:168,w:200,h:44,lbl:'Qatar helium offline',c:AM},{x:150,y:288,w:200,h:44,lbl:'Shipyard pressure',c:A},{x:650,y:288,w:200,h:44,lbl:'Fab utilisation cuts',c:A},{x:400,y:368,w:260,h:36,lbl:'Global LNG shortage deepens',c:R}];
+  const edges=[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5]];
+  // Defs
+  const defs=document.createElementNS(ns,'defs');
+  defs.innerHTML='<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="'+MU+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="ahr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="'+R+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>';
+  svgL.appendChild(defs);
+  edges.forEach(([fi,ti])=>{const f=nodes[fi],t=nodes[ti];svgL.appendChild(el('line',{x1:f.x,y1:f.y+f.h,x2:t.x,y2:t.y,stroke:MU,'stroke-width':1.5,'marker-end':'url(#ah)',opacity:.6}));});
+  svgL.appendChild(el('path',{d:'M 270 388 Q 30 388 30 228 Q 30 168 150 168',fill:'none',stroke:R,'stroke-width':1.5,'stroke-dasharray':'4 3','marker-end':'url(#ahr)',opacity:.5}));
+  svgL.appendChild(el('text',{x:22,y:228,fill:R,'font-size':'9px','font-family':'var(--mono)',transform:'rotate(-90,22,228)'},'feedback'));
+  nodes.forEach(n=>{svgL.appendChild(el('rect',{x:n.x-n.w/2,y:n.y,width:n.w,height:n.h,rx:6,fill:n.c,opacity:.15,stroke:n.c,'stroke-width':.5}));svgL.appendChild(el('text',{x:n.x,y:n.y+n.h/2,'text-anchor':'middle','dominant-baseline':'central',fill:'#fff','font-size':'12px','font-family':'var(--sans)'},n.lbl));});
+  const brkG=document.createElementNS(ns,'g');brkG.id='brk-g';brkG.style.opacity='0';
+  [{x:50,y:288,t:'+ Nuclear restart'},{x:50,y:320,t:'+ ~60 idle carriers'},{x:50,y:352,t:'+ Coal easing'}].forEach(b=>{brkG.appendChild(el('text',{x:b.x,y:b.y,fill:TL,'font-size':'10px','font-family':'var(--mono)'},b.t));});
+  svgL.appendChild(brkG);
+  const loopTitles=['The doom loop: energy crisis → carrier shortage → deeper energy crisis (and an added bottleneck on top of Act III)','Circuit breakers slow the loop — but cannot stop it if the war extends years'];
+  window.sLoop={
+    lp0:()=>{document.getElementById('brk-g').style.opacity='0';document.getElementById('ct-loop').textContent=loopTitles[0];},
+    lp1:()=>{document.getElementById('brk-g').style.opacity='1';document.getElementById('ct-loop').textContent=loopTitles[1];}
+  };
+})();
+
+// ═══════════════════════════════════════════════
+// SCROLL TRIGGERS (GSAP)
+// ═══════════════════════════════════════════════
+const allHandlers={...window.sStock,...window.sPolar,...window.sHBM,...window.sLNG,...window.sQatar,...window.sHelium,...window.sDDR5,...window.sLoop};
+document.querySelectorAll('.step').forEach(st=>{
+  const key=st.dataset.step;
+  ScrollTrigger.create({
+    trigger:st,start:'top center',end:'bottom center',
+    onEnter:()=>{if(allHandlers[key])allHandlers[key]();},
+    onEnterBack:()=>{if(allHandlers[key])allHandlers[key]();}
+  });
+});
+
+// Card & chart entrance animations
+gsap.utils.toArray('.card,.tk-card').forEach(c=>{
+  gsap.from(c,{opacity:0,y:24,duration:.5,ease:'power2.out',scrollTrigger:{trigger:c,start:'top 84%',toggleActions:'play none none none'}});
+});
+
+// Scenario cost layers
+const LD=[
+  [{n:'Helium',p:3,d:'+40-50% spot',c:TL},{n:'Korean energy',p:8,d:'+40-60% spot',c:TL},{n:'Petrochemicals',p:5,d:'+10-15%',c:TL},{n:'Korean fabs',p:2,d:'Stockpiles hold',c:TL},{n:'GPU module',p:1,d:'+0-2%',c:TL},{n:'Cloud GPU hour',p:3,d:'+2-4%',c:TL}],
+  [{n:'Helium',p:35,d:'+100-200%',c:AM},{n:'Korean energy',p:28,d:'+25-35%',c:AM},{n:'Petrochemicals',p:18,d:'+20-30%',c:AM},{n:'Korean fabs',p:55,d:'-10-30% util.',c:AM},{n:'GPU module',p:40,d:'+8-15%',c:AM},{n:'Cloud GPU hour',p:48,d:'+12-20%',c:AM}],
+  [{n:'Helium',p:80,d:'New floor',c:A},{n:'Korean energy',p:45,d:'+15-20%',c:A},{n:'Petrochemicals',p:30,d:'+10-15%',c:A},{n:'Korean fabs',p:70,d:'Cost edge lost',c:A},{n:'GPU module',p:58,d:'+15-25%',c:A},{n:'Cloud GPU hour',p:75,d:'+30-50%',c:A}]
+];
+const tots=['+2-4%','+12-20%','+30-50%'],tC=[TL,AM,A];
+function rL(s){
+  const el=document.getElementById('layers');el.innerHTML='';
+  LD[s].forEach(l=>{
+    const r=document.createElement('div');r.className='cl-row';
+    r.innerHTML=`<div class="cl-name">${l.n}</div><div class="cl-track"><div class="cl-fill" style="width:0%;background:${l.c}"></div></div><div class="cl-d" style="color:${l.c}">${l.d}</div>`;
+    el.appendChild(r);
+  });
+  // Animate bars
+  setTimeout(()=>{el.querySelectorAll('.cl-fill').forEach((f,i)=>{f.style.width=LD[s][i].p+'%';});},50);
+  const t=document.getElementById('ti');t.textContent=tots[s];t.style.color=tC[s];
+}
+function swSc(s){document.querySelectorAll('.sc-b').forEach((b,i)=>b.classList.toggle('on',i===s));rL(s);}
+rL(0);
+
+// Responsive resize
+window.addEventListener('resize',()=>{
+  [stockChart,polarChart,hbmChart,lngChart,heliumChart,ddr5Chart].forEach(c=>c.resize());
+});
+</script>
+</body>
+</html>

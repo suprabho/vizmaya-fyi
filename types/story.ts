@@ -103,10 +103,25 @@ export interface ScrollStep {
   content: string
 }
 
+export interface MapStep {
+  center: [number, number]
+  zoom: number
+  pitch?: number
+  bearing?: number
+  speed?: number
+  highlight?: {
+    coordinates: [number, number]
+    label?: string
+    color?: string
+    radius?: number
+  }
+}
+
 export interface ScrollySectionBlock {
   type: 'scrolly-section'
   steps: ScrollStep[]
   chartId?: string
+  mapSteps?: MapStep[]
 }
 
 export interface ScenarioToggleBlock {

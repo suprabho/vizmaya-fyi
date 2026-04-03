@@ -300,7 +300,65 @@ export default function SouthKoreaGPUHourPage() {
           <ProseSection block={{ type: 'prose', paragraphs: data.actII.paragraphs }} />
         )}
 
-        {/* Qatar plant map */}
+        {/* Interactive Mapbox globe: supply chain route Qatar → Korea */}
+        <ScrollySection
+          block={{
+            type: 'scrolly-section',
+            chartId: 'mapbox-globe',
+            mapSteps: [
+              {
+                center: [51.53, 25.29],
+                zoom: 9,
+                pitch: 45,
+                bearing: -20,
+                highlight: { coordinates: [51.53, 25.97], label: 'Ras Laffan Industrial City', color: '#1D9E75' },
+              },
+              {
+                center: [56.27, 26.57],
+                zoom: 7.5,
+                pitch: 30,
+                bearing: 0,
+                speed: 0.6,
+                highlight: { coordinates: [56.27, 26.57], label: 'Strait of Hormuz — chokepoint', color: '#E24B4A' },
+              },
+              {
+                center: [80, 15],
+                zoom: 3.5,
+                pitch: 20,
+                bearing: 30,
+                speed: 0.5,
+              },
+              {
+                center: [127.0, 37.0],
+                zoom: 8,
+                pitch: 50,
+                bearing: -15,
+                speed: 0.6,
+                highlight: { coordinates: [127.0, 37.56], label: 'Seoul — Samsung & SK Hynix HQ', color: '#D85A30' },
+              },
+            ],
+            steps: [
+              {
+                label: 'Ras Laffan, Qatar',
+                content: "Qatar's three helium plants at **Ras Laffan** produce **33.2%** of global supply. Helium 1 (660M scf/yr), Helium 2 (1.3B scf/yr — the world's largest), and Helium 3 (400M scf/yr). Combined: **2,360M scf/yr**.",
+              },
+              {
+                label: 'The Strait of Hormuz',
+                content: 'Every tanker carrying Qatar\'s LNG — and its helium byproduct — must pass through the **Strait of Hormuz**. At its narrowest: **34 km**. All three plants have been **offline since March 2**. When the gas stops, the helium stops.',
+              },
+              {
+                label: 'The sea route',
+                content: 'The supply chain stretches **7,000+ nautical miles** from Qatar to Korean ports. LNG carriers take **15-20 days** one way. Any disruption at the origin ripples forward for weeks before stockpiles feel it.',
+              },
+              {
+                label: 'Korea — end of the line',
+                content: 'Samsung and SK Hynix fabs in **Icheon, Pyeongtaek, and Cheongju** depend on this chain. The United States produces 42% of global helium but cannot rapidly scale. Russia\'s Amur plant faces Western sanctions. **There is no easy replacement.**',
+              },
+            ],
+          }}
+        />
+
+        {/* Qatar plant map (SVG detail view) */}
         <ScrollySection
           block={{
             type: 'scrolly-section',

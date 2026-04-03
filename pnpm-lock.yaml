@@ -11,6 +11,21 @@ importers:
       '@base-ui/react':
         specifier: ^1.3.0
         version: 1.3.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@chenglou/pretext':
+        specifier: ^0.0.4
+        version: 0.0.4
+      '@iconify-icons/circle-flags':
+        specifier: ^1.2.41
+        version: 1.2.41
+      '@iconify-icons/noto':
+        specifier: ^1.2.10
+        version: 1.2.10
+      '@iconify-icons/twemoji':
+        specifier: ^1.2.8
+        version: 1.2.8
+      '@iconify/react':
+        specifier: ^6.0.2
+        version: 6.0.2(react@19.2.4)
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -242,6 +257,9 @@ packages:
       '@types/react':
         optional: true
 
+  '@chenglou/pretext@0.0.4':
+    resolution: {integrity: sha512-FnPAFMid1/p1j2V2gRPUVBarGUIb2PhkkC9YNnTOfPtTDgHKh8siO8PP9pCxpFfYlcodWPJpE1UbSHGQqt8pQQ==}
+
   '@dotenvx/dotenvx@1.59.1':
     resolution: {integrity: sha512-Qg+meC+XFxliuVSDlEPkKnaUjdaJKK6FNx/Wwl2UxhQR8pyPIuLhMavsF7ePdB9qFZUWV1jEK3ckbJir/WmF4w==}
     hasBin: true
@@ -335,6 +353,23 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iconify-icons/circle-flags@1.2.41':
+    resolution: {integrity: sha512-3mYSW2UgM7mSoujzHkve2gXr2BIZBj4L+3mSGrXBadm2DTLZr+aHcBG8ZaGo+cqphpIQ1WJK+UnsAbDkrWwwuQ==}
+
+  '@iconify-icons/noto@1.2.10':
+    resolution: {integrity: sha512-HSI0aTYq3HNxAzNS/uKx6xg9zzVDdpodegwU2yMa+xCL1mIvUUnHgVk4j3RJrIutcFEPICg49gLCol5aH6Siog==}
+
+  '@iconify-icons/twemoji@1.2.8':
+    resolution: {integrity: sha512-B12wK7BCloSuiemntXXoPRIQ+E/oZDBQNY6G9wRY4vHPESWpSaCM5fcaRUc8sE4zqiHvjA++oJt25ZJanD5j5Q==}
+
+  '@iconify/react@6.0.2':
+    resolution: {integrity: sha512-SMmC2sactfpJD427WJEDN6PMyznTFMhByK9yLW0gOTtnjzzbsi/Ke/XqsumsavFPwNiXs8jSiYeZTmLCLwO+Fg==}
+    peerDependencies:
+      react: '>=16'
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3330,6 +3365,8 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
+  '@chenglou/pretext@0.0.4': {}
+
   '@dotenvx/dotenvx@1.59.1':
     dependencies:
       commander: 11.1.0
@@ -3439,6 +3476,25 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iconify-icons/circle-flags@1.2.41':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-icons/noto@1.2.10':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-icons/twemoji@1.2.8':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify/react@6.0.2(react@19.2.4)':
+    dependencies:
+      '@iconify/types': 2.0.0
+      react: 19.2.4
+
+  '@iconify/types@2.0.0': {}
 
   '@img/colour@1.1.0':
     optional: true

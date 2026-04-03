@@ -5,8 +5,8 @@ byline: "vizzmaya · The Asymmetry Letter · March 2026"
 date: "2026-03-01"
 theme:
   colors:
-    background: "#011f32"
-    text: "#052f4a"
+    background: "#052f4a"
+    text: "#e0ddd5"
     accent: "#f54900"
     accent2: "#155dfc"
     teal: "#00d5be"

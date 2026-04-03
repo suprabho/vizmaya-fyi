@@ -12,6 +12,9 @@ import HBMDRAMTreemap from './charts/HBMDRAMTreemap'
 import LNGCarrierTreemap from './charts/LNGCarrierTreemap'
 import QatarPlantMap from './charts/QatarPlantMap'
 import DDR5AreaChart from './charts/DDR5AreaChart'
+import dynamic from 'next/dynamic'
+
+const MapboxBackground = dynamic(() => import('./charts/MapboxBackground'), { ssr: false })
 
 function formatInlineMarkdown(text: string) {
   const parts: ReactNode[] = []
@@ -51,7 +54,7 @@ function formatInlineMarkdown(text: string) {
   return parts
 }
 
-function ChartPanel({ chartId, activeStep }: { chartId?: string; activeStep: number }) {
+function ChartPanel({ chartId, activeStep, mapSteps }: { chartId?: string; activeStep: number; mapSteps?: import('./charts/MapboxBackground').MapStep[] }) {
   switch (chartId) {
     case 'stock-candlestick':
       return <StockCandlestickChart activeStep={activeStep} />
@@ -73,6 +76,14 @@ function ChartPanel({ chartId, activeStep }: { chartId?: string; activeStep: num
       return <FeedbackLoopDiagram activeStep={activeStep} />
     case 'dram-price':
       return <DRAMPriceChart activeStep={activeStep} />
+    case 'mapbox-globe':
+      return (
+        <MapboxBackground
+          accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
+          steps={mapSteps ?? []}
+          activeStep={activeStep}
+        />
+      )
     default:
       return null
   }
@@ -144,7 +155,7 @@ export default function ScrollySection({ block }: { block: ScrollySectionBlock }
       {hasChart && (
         <div className="sticky top-0 h-screen flex items-center justify-center pointer-events-none z-0">
           <div className="w-full max-w-[860px] px-6">
-            <ChartPanel chartId={block.chartId} activeStep={activeStep} />
+            <ChartPanel chartId={block.chartId} activeStep={activeStep} mapSteps={block.mapSteps} />
           </div>
         </div>
       )}

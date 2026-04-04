@@ -16,7 +16,7 @@ theme:
     amber: "#EF9F27"
     red: "#E24B4A"
   fonts:
-    serif: "Georgia"
+    serif: "Instrument Serif"
     sans: "Inter"
     mono: "JetBrains Mono"
 ---

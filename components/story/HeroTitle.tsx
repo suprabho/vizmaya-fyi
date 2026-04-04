@@ -180,7 +180,8 @@ export default function HeroTitle({ segments, portraitSegments, lineHeight = 1.2
     const size = baseSize * scale
     setFontSize(size)
 
-    const font = `bold ${size}px Georgia, "Times New Roman", serif`
+    const serifFamily = getComputedStyle(el).getPropertyValue('--font-serif').trim() || 'Georgia, "Times New Roman", serif'
+    const font = `bold ${size}px ${serifFamily}`
     const maxW = Math.min(w, 780)
     setViewWidth(maxW)
 
@@ -411,7 +412,7 @@ export default function HeroTitle({ segments, portraitSegments, lineHeight = 1.2
                       x={tx}
                       y={baseY + fontSize}
                       fill="white"
-                      fontFamily='Georgia, "Times New Roman", serif'
+                      fontFamily="var(--font-serif)"
                       fontSize={fontSize}
                       fontWeight="bold"
                     >

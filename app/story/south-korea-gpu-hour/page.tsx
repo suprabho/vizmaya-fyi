@@ -460,18 +460,75 @@ export default function SouthKoreaGPUHourPage() {
 
         <Divider />
 
-        {/* ── ACT IV: The feedback loop (reframed as additional bottleneck) ── */}
+        {/* ── ACT IV: The slow bleed ── */}
         <ActHeader
           block={{
             type: 'act-header',
             actNumber: 'Act IV',
-            title: 'The feedback loop nobody has connected',
+            title: 'The slow bleed — decisions made now, deliveries missed in 2028',
           }}
         />
 
         {data.actIV.paragraphs.length > 0 && (
           <ProseSection block={{ type: 'prose', paragraphs: data.actIV.paragraphs }} />
         )}
+
+        {/* Korean yards → global LNG importers map */}
+        <ScrollySection
+          block={{
+            type: 'scrolly-section',
+            chartId: 'mapbox-globe',
+            mapSteps: [
+              {
+                center: [129.3, 35.5],
+                zoom: 7,
+                pitch: 45,
+                bearing: -10,
+                highlight: { coordinates: [129.3, 35.5], label: 'HD Hyundai — Ulsan', color: '#EF9F27', radius: 16 },
+              },
+              {
+                center: [128.6, 34.9],
+                zoom: 7,
+                pitch: 40,
+                bearing: 15,
+                highlight: { coordinates: [128.6, 34.9], label: 'Samsung Heavy + Hanwha — Geoje', color: '#EF9F27', radius: 14 },
+              },
+              {
+                center: [100, 20],
+                zoom: 2,
+                pitch: 10,
+                bearing: 0,
+                speed: 0.5,
+              },
+              {
+                center: [51.5, 25.3],
+                zoom: 6,
+                pitch: 30,
+                bearing: -20,
+                speed: 0.6,
+                highlight: { coordinates: [51.5, 25.3], label: 'Qatar — LNG customer, orders now at risk', color: '#E24B4A', radius: 14 },
+              },
+            ],
+            steps: [
+              {
+                label: 'Korean yards: the world\'s LNG shipbuilder',
+                content: 'South Korea builds **over 70%** of all LNG carriers globally. HD Hyundai (Ulsan) and Samsung Heavy Industries + Hanwha Ocean (Geoje) hold a **$71.3B backlog** in LNG carrier orders. These ships take **30–36 months** from order to delivery.',
+              },
+              {
+                label: 'Margin erosion begins now',
+                content: 'As Korean energy costs rise **40–60%** on spot LNG and petrochemical feedstock prices climb, shipyard operating margins compress. When margins fall below a threshold, new orders migrate — first to Chinese yards (CSSC, DSIC), then stall entirely.',
+              },
+              {
+                label: 'A global delivery gap in 2028',
+                content: 'Every order that migrates or cancels in **Q2–Q3 2026** is a vessel that will not be delivered in **2028–2029**. The LNG fleet cannot scale fast enough to replace Qatar supply — and the ships that would carry alternative supply simply won\'t exist.',
+              },
+              {
+                label: 'Watch Korean yard Q2–Q3 2026 order books',
+                content: 'The signal is measurable now: track quarterly order announcements from HD Hyundai and Samsung Heavy. If Chinese yards (CSSC, DSIC) gain LNG carrier share in 2026, the 2028 fleet gap is confirmed — before a single delivery is missed.',
+              },
+            ],
+          }}
+        />
 
         {/* Feedback loop diagram */}
         <ScrollySection

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Quiet Inflation — How a Strait Reprices a GPU Hour</title>
+<link href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css' rel='stylesheet' />
+<script src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js'></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -97,9 +99,63 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
   .hero{padding:2rem 1.5rem;}
   .tk-grid{grid-template-columns:1fr;}
 }
+
+/* ── Global map background ── */
+#global-map{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.maplibregl-ctrl-attrib,.maplibregl-ctrl-logo{display:none!important;}
+
+/* ── Story layers above map ── */
+.hero,.act,.divider,.stat-block,.sc-toggle,.cl-section,.meth,.footer-b,.data-tbl,.tk-grid{position:relative;z-index:5;}
+.prose{position:relative;z-index:5;}
+.scrolly{position:relative;z-index:5;}
+.steps{position:relative;z-index:15;}
+.sticky-c{z-index:10;}
+
+/* ── Chart panels: frosted glass over map ── */
+.sticky-g{
+  background:rgba(8,13,22,0.72)!important;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:0.5px solid rgba(255,255,255,0.07);
+  border-radius:14px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.5);
+}
+
+/* ── Prose readability overlay ── */
+.prose p,.act h2,.act .act-n,.hero .headline,.hero .dek,.hero .eyebrow,.hero .byline,
+.stat-block .stat-big,.stat-block .stat-label{text-shadow:0 1px 8px rgba(0,0,0,0.6);}
+
+/* ── Map location label ── */
+.map-loc-pill{
+  position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--muted);background:rgba(8,13,22,0.7);border:0.5px solid var(--line);
+  padding:5px 14px;border-radius:20px;z-index:20;pointer-events:none;
+  transition:opacity .4s;opacity:0;
+}
+.map-loc-pill.visible{opacity:1;}
+
+/* ── Act IV shipping route tooltip ── */
+#route-legend{
+  position:fixed;top:1.5rem;left:1.5rem;z-index:20;
+  font-family:var(--mono);font-size:.65rem;color:var(--muted);
+  background:rgba(8,13,22,0.8);border:0.5px solid var(--line);
+  padding:10px 14px;border-radius:8px;display:none;
+  max-width:200px;line-height:1.8;
+}
 </style>
 </head>
 <body>
+<div id="global-map"></div>
+<div class="map-loc-pill" id="map-loc"></div>
+<div id="route-legend">
+  <div style="color:#EF9F27;margin-bottom:4px;">▶ KOREAN YARDS</div>
+  <div>HD Hyundai — Ulsan</div>
+  <div>Samsung Heavy — Geoje</div>
+  <div>Hanwha Ocean — Geoje</div>
+  <div style="color:#5a6a70;margin-top:6px;font-size:.6rem;">Dotted lines = LNG carrier delivery routes</div>
+  <div style="color:#5a6a70;font-size:.6rem;">84% of global fleet built here</div>
+</div>
 
 <!-- ═══════════ HERO ═══════════ -->
 <section class="hero">
@@ -453,6 +509,158 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <div class="footer-b"><span>vizzmaya</span> · The Asymmetry Letter · March 2026</div>
 
 <script>
+// ═══════════════════════════════════════════════
+// MAPLIBRE GLOBAL MAP
+// ═══════════════════════════════════════════════
+const MAP_STYLE='https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+
+// Ship export routes: Korean yards → LNG-importing regions
+const SHIP_ROUTES={type:'FeatureCollection',features:[
+  {type:'Feature',properties:{dest:'Japan',col:'#EF9F27'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[133,34],[137,35],[138.5,36]]}},
+  {type:'Feature',properties:{dest:'China',col:'#EF9F27'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[126,33],[123,30],[121.5,31.2]]}},
+  {type:'Feature',properties:{dest:'Qatar (customers)',col:'#E24B4A'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[120,27],[110,18],[100,8],[90,5],[78,10],[66,20],[51.5,25.3]]}},
+  {type:'Feature',properties:{dest:'Europe',col:'#1D9E75'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[115,22],[105,8],[95,5],[78,12],[55,12],[43,12],[33,29],[20,38],[5,43],[2.3,48.9]]}},
+  {type:'Feature',properties:{dest:'USA',col:'#1D9E75'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[150,34],[170,30],[-170,22],[-140,18],[-105,22],[-95,27],[-89.8,29.7]]}},
+  {type:'Feature',properties:{dest:'India',col:'#EF9F27'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[115,22],[100,8],[85,15],[73,18.9]]}},
+  {type:'Feature',properties:{dest:'Malaysia',col:'#EF9F27'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[120,25],[112,18],[104,8],[101.7,3.1]]}},
+  {type:'Feature',properties:{dest:'Australia',col:'#EF9F27'},geometry:{type:'LineString',coordinates:[[129.3,35.5],[130,28],[130,15],[132,-12],[134,-26]]}},
+]};
+
+const DEST_MARKERS=[
+  {lng:138.5,lat:36,label:'Japan',col:'#EF9F27'},
+  {lng:121.5,lat:31.2,label:'China',col:'#EF9F27'},
+  {lng:51.5,lat:25.3,label:'Qatar',col:'#E24B4A'},
+  {lng:2.3,lat:48.9,label:'Europe',col:'#1D9E75'},
+  {lng:-89.8,lat:29.7,label:'USA — Sabine Pass',col:'#1D9E75'},
+  {lng:73,lat:18.9,label:'India',col:'#EF9F27'},
+  {lng:101.7,lat:3.1,label:'Malaysia',col:'#EF9F27'},
+  {lng:134,lat:-26,label:'Australia',col:'#EF9F27'},
+];
+
+// Per-step camera + markers config
+const MAP_STEPS={
+  s0:{center:[127.0,37.5],zoom:5.5,pitch:30,bearing:5,
+    markers:[{lng:126.9,lat:37.5,label:'Seoul — KOSPI −18%',col:'#E24B4A',r:14}],loc:'Seoul, South Korea'},
+  s1:{center:[90,32],zoom:3,pitch:0,bearing:0,
+    markers:[{lng:127,lat:37.5,label:'Seoul',col:'#E24B4A',r:10},{lng:56.45,lat:26.5,label:'Strait of Hormuz',col:'#EF9F27',r:10}],loc:'Korea → Strait of Hormuz'},
+  p0:{center:[56.45,26.5],zoom:6.5,pitch:45,bearing:-10,
+    markers:[{lng:56.45,lat:26.5,label:'Strait of Hormuz',col:'#E24B4A',r:18}],loc:'Strait of Hormuz'},
+  p1:{center:[51.55,25.9],zoom:9,pitch:40,bearing:5,
+    markers:[{lng:51.55,lat:25.9,label:'Ras Laffan Industrial City',col:'#D85A30',r:16}],loc:'Ras Laffan, Qatar'},
+  p2:{center:[127.5,36.5],zoom:5,pitch:20,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'South Korea',col:'#EF9F27',r:12}],loc:'South Korea — Gas Grid'},
+  h0:{center:[127.4,37.3],zoom:9,pitch:50,bearing:-5,
+    markers:[{lng:127.4,lat:37.3,label:'SK Hynix HQ — Icheon',col:'#D85A30',r:16},{lng:127.0,lat:37.5,label:'Samsung HQ — Seoul',col:'#D85A30',r:12}],loc:'Icheon, South Korea'},
+  h1:{center:[124,30],zoom:5,pitch:20,bearing:0,
+    markers:[{lng:127.4,lat:37.3,label:'SK Hynix',col:'#D85A30',r:12},{lng:121.0,lat:24.0,label:'TSMC — Hsinchu',col:'#1D9E75',r:12}],loc:'Korea + Taiwan'},
+  l0:{center:[129.0,35.2],zoom:8,pitch:45,bearing:10,
+    markers:[{lng:129.3,lat:35.5,label:'HD Hyundai — Ulsan',col:'#EF9F27',r:18},{lng:128.6,lat:34.9,label:'Samsung Heavy + Hanwha — Geoje',col:'#EF9F27',r:14}],loc:'Korean Shipyards'},
+  l1:{center:[129.0,35.2],zoom:7,pitch:30,bearing:0,
+    markers:[{lng:129.3,lat:35.5,label:'Ulsan (HD Hyundai)',col:'#EF9F27',r:16},{lng:128.6,lat:34.9,label:'Geoje (Samsung+Hanwha)',col:'#EF9F27',r:14}],loc:'Geoje & Ulsan Yards — $71.3B Backlog'},
+  q0:{center:[51.55,25.85],zoom:11,pitch:50,bearing:15,
+    markers:[{lng:51.55,lat:25.9,label:'Helium Plant 1 — 660M scf/yr',col:'#1D9E75',r:14},{lng:51.62,lat:25.92,label:'Helium Plant 2 — 1,300M scf/yr',col:'#1D9E75',r:20},{lng:51.48,lat:25.88,label:'Helium Plant 3 — 400M scf/yr',col:'#1D9E75',r:10}],loc:'Ras Laffan, Qatar — ONLINE'},
+  q1:{center:[51.55,25.85],zoom:11,pitch:50,bearing:15,
+    markers:[{lng:51.55,lat:25.9,label:'OFFLINE',col:'#E24B4A',r:14},{lng:51.62,lat:25.92,label:'OFFLINE',col:'#E24B4A',r:20},{lng:51.48,lat:25.88,label:'OFFLINE',col:'#E24B4A',r:10}],loc:'Ras Laffan — ALL PLANTS OFFLINE since Mar 2'},
+  q2:{center:[51.55,25.85],zoom:9,pitch:30,bearing:0,
+    markers:[{lng:51.55,lat:25.9,label:'2,360M scf/yr offline = 33.2% of global supply',col:'#E24B4A',r:20}],loc:'Qatar — 33.2% of Global Helium Gone'},
+  he0:{center:[127.5,36.5],zoom:5.5,pitch:20,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'South Korea — 64.7% from Qatar',col:'#D85A30',r:14}],loc:'South Korea — Helium Dependency'},
+  he1:{center:[60,20],zoom:2.5,pitch:0,bearing:0,
+    markers:[
+      {lng:-101.8,lat:35.2,label:'US (Amarillo) — privatised 2024',col:'#1D9E75',r:10},
+      {lng:134.7,lat:50.2,label:'Russia (Amur) — sanctioned',col:'#5a6a70',r:10},
+      {lng:3,lat:28,label:'Algeria — 5-10% supply',col:'#5a6a70',r:8},
+      {lng:34.9,lat:-6.4,label:'Tanzania — years away',col:'#5a6a70',r:6},
+    ],loc:'Global Helium Alternatives — All Limited'},
+  he2:{center:[124,30],zoom:5,pitch:15,bearing:0,
+    markers:[{lng:126.8,lat:37.2,label:'Samsung — Hwaseong Fab',col:'#EF9F27',r:12},{lng:121.0,lat:24.0,label:'TSMC — 60-75% recycling',col:'#1D9E75',r:12}],loc:'Fab Stockpile Buffers'},
+  d0:{center:[127.5,36.5],zoom:5.5,pitch:20,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'South Korea — DDR5 Origin',col:'#534AB7',r:14}],loc:'South Korea — DDR5 Source'},
+  d1:{center:[127.5,36.5],zoom:5,pitch:20,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'SK Hynix + Samsung',col:'#534AB7',r:14},{lng:-121.97,lat:37.35,label:'NVIDIA — Santa Clara',col:'#1D9E75',r:10}],loc:'Korea → Silicon Valley'},
+  d2:{center:[127.5,36.5],zoom:5,pitch:10,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'Stockpiles hold — 60 days',col:'#1D9E75',r:14}],loc:'60-Day Scenario'},
+  d3:{center:[85,28],zoom:3,pitch:10,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'Fabs cut utilisation',col:'#EF9F27',r:12},{lng:56.45,lat:26.5,label:'Hormuz still closed',col:'#E24B4A',r:12}],loc:'6-Month Scenario'},
+  d4:{center:[155,30],zoom:2,pitch:0,bearing:0,
+    markers:[{lng:127.5,lat:36.5,label:'Korea loses cost edge',col:'#E24B4A',r:14},{lng:-101,lat:42,label:'Micron gains',col:'#1D9E75',r:12}],loc:'3-5 Year Structural Shift'},
+  lp0:{center:[128,25],zoom:3.5,pitch:30,bearing:5,routes:true,
+    markers:[{lng:129.3,lat:35.5,label:'HD Hyundai — Ulsan',col:'#EF9F27',r:18},{lng:128.6,lat:34.9,label:'Samsung Heavy + Hanwha — Geoje',col:'#EF9F27',r:14}],loc:'Korean Yards → 8 LNG-Importing Regions'},
+  lp1:{center:[100,20],zoom:2,pitch:0,bearing:0,routes:true,
+    markers:[{lng:129,lat:35,label:'Orders migrate → fewer 2028 deliveries',col:'#E24B4A',r:16}],loc:'The Slow Bleed: 2026 decisions = 2028 fleet gaps'},
+};
+
+// MapLibre init
+const gmap=maplibregl.Map? new maplibregl.Map({
+  container:'global-map',
+  style:MAP_STYLE,
+  center:[80,25],zoom:2,pitch:0,bearing:0,
+  interactive:false,
+  attributionControl:false,
+}) : null;
+
+const mapMarkers=[];
+let routesVisible=false;
+
+function clearMapMarkers(){mapMarkers.forEach(m=>m.remove());mapMarkers.length=0;}
+
+function flyMapTo(cfg){
+  if(!gmap)return;
+  gmap.flyTo({center:cfg.center,zoom:cfg.zoom,pitch:cfg.pitch??0,bearing:cfg.bearing??0,speed:0.9,curve:1.4,essential:true});
+  clearMapMarkers();
+  (cfg.markers||[]).forEach(m=>{
+    const el=document.createElement('div');
+    el.style.cssText=`width:${(m.r||10)*2}px;height:${(m.r||10)*2}px;border-radius:50%;background:${m.col};opacity:.85;animation:mapbox-pulse 2s ease-out infinite;box-shadow:0 0 0 0 ${m.col};`;
+    const mk=new maplibregl.Marker({element:el}).setLngLat([m.lng,m.lat]);
+    if(m.label){
+      const pop=new maplibregl.Popup({offset:(m.r||10)+8,closeButton:false,closeOnClick:false,className:'mapbox-highlight-popup'})
+        .setHTML(`<div style="font-family:var(--mono);font-size:.65rem;color:#e0ddd5;background:rgba(8,13,22,.9);padding:4px 10px;border-radius:4px;border:.5px solid #1a2830;white-space:nowrap;">${m.label}</div>`);
+      mk.setPopup(pop).togglePopup();
+    }
+    mk.addTo(gmap);
+    mapMarkers.push(mk);
+  });
+  // Location pill
+  const pill=document.getElementById('map-loc');
+  if(pill&&cfg.loc){pill.textContent=cfg.loc;pill.classList.add('visible');clearTimeout(pill._t);pill._t=setTimeout(()=>pill.classList.remove('visible'),3500);}
+  // Shipping routes layer
+  const showRoutes=!!cfg.routes;
+  if(showRoutes!==routesVisible){
+    routesVisible=showRoutes;
+    document.getElementById('route-legend').style.display=showRoutes?'block':'none';
+    if(gmap.isStyleLoaded()){toggleRoutes(showRoutes);}
+  }
+  // Destination markers for routes
+  if(showRoutes){
+    DEST_MARKERS.forEach(d=>{
+      const el=document.createElement('div');
+      el.style.cssText=`width:10px;height:10px;border-radius:50%;background:${d.col};opacity:.7;animation:mapbox-pulse 2.5s ease-out infinite;`;
+      const mk=new maplibregl.Marker({element:el}).setLngLat([d.lng,d.lat]);
+      const pop=new maplibregl.Popup({offset:12,closeButton:false,closeOnClick:false,className:'mapbox-highlight-popup'})
+        .setHTML(`<div style="font-family:var(--mono);font-size:.6rem;color:#e0ddd5;background:rgba(8,13,22,.9);padding:3px 8px;border-radius:4px;border:.5px solid #1a2830;white-space:nowrap;">${d.label}</div>`);
+      mk.setPopup(pop).togglePopup();
+      mk.addTo(gmap);
+      mapMarkers.push(mk);
+    });
+  }
+}
+
+function toggleRoutes(show){
+  if(!gmap)return;
+  if(show){
+    if(!gmap.getSource('ship-routes')){
+      gmap.addSource('ship-routes',{type:'geojson',data:SHIP_ROUTES});
+      gmap.addLayer({id:'ship-routes-line',type:'line',source:'ship-routes',layout:{'line-join':'round','line-cap':'round'},
+        paint:{'line-color':['get','col'],'line-width':1.5,'line-opacity':0.55,'line-dasharray':[3,4]}});
+    }else{gmap.setLayoutProperty('ship-routes-line','visibility','visible');}
+  }else{
+    if(gmap.getLayer('ship-routes-line'))gmap.setLayoutProperty('ship-routes-line','visibility','none');
+  }
+}
+
+// Wire routes after style loads
+if(gmap){gmap.on('load',()=>{if(routesVisible)toggleRoutes(true);});}
+
 gsap.registerPlugin(ScrollTrigger);
 
 const A='#D85A30',A2='#534AB7',TL='#1D9E75',AM='#EF9F27',R='#E24B4A',MU='#3a4a50',LN='#1a2830',SU='#111820';
@@ -748,8 +956,8 @@ document.querySelectorAll('.step').forEach(st=>{
   const key=st.dataset.step;
   ScrollTrigger.create({
     trigger:st,start:'top center',end:'bottom center',
-    onEnter:()=>{if(allHandlers[key])allHandlers[key]();},
-    onEnterBack:()=>{if(allHandlers[key])allHandlers[key]();}
+    onEnter:()=>{if(allHandlers[key])allHandlers[key]();if(MAP_STEPS[key])flyMapTo(MAP_STEPS[key]);},
+    onEnterBack:()=>{if(allHandlers[key])allHandlers[key]();if(MAP_STEPS[key])flyMapTo(MAP_STEPS[key]);}
   });
 });
 

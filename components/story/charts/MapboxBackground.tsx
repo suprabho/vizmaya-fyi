@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 export interface MapStep {
   center: [number, number] // [lng, lat]
@@ -19,32 +19,28 @@ export interface MapStep {
 }
 
 interface MapboxBackgroundProps {
-  accessToken: string
   steps: MapStep[]
   activeStep: number
-  style?: string // mapbox style URL
+  style?: string // map style URL
   interactive?: boolean
 }
 
-const DEFAULT_STYLE = 'mapbox://styles/mapbox/dark-v11'
+const DEFAULT_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
 
 export default function MapboxBackground({
-  accessToken,
   steps,
   activeStep,
   style = DEFAULT_STYLE,
   interactive = false,
 }: MapboxBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<mapboxgl.Map | null>(null)
-  const markersRef = useRef<mapboxgl.Marker[]>([])
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const markersRef = useRef<maplibregl.Marker[]>([])
   const [loaded, setLoaded] = useState(false)
 
   // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
-
-    mapboxgl.accessToken = accessToken
 
     const initial = steps[0] ?? {
       center: [0, 20] as [number, number],
@@ -53,7 +49,7 @@ export default function MapboxBackground({
       bearing: 0,
     }
 
-    const map = new mapboxgl.Map({
+    const map = new maplibregl.Map({
       container: containerRef.current,
       style,
       center: initial.center,
@@ -78,7 +74,7 @@ export default function MapboxBackground({
       mapRef.current = null
       setLoaded(false)
     }
-  }, [accessToken, style, interactive]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [style, interactive]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Animate to active step
   useEffect(() => {
@@ -119,13 +115,13 @@ export default function MapboxBackground({
         animation: mapbox-pulse 2s ease-out infinite;
       `
 
-      const marker = new mapboxgl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el })
         .setLngLat(coordinates)
         .addTo(map)
 
       // Optional label popup
       if (label) {
-        const popup = new mapboxgl.Popup({
+        const popup = new maplibregl.Popup({
           offset: radius + 8,
           closeButton: false,
           closeOnClick: false,
@@ -163,12 +159,12 @@ export default function MapboxBackground({
             box-shadow: 0 0 0 0 rgba(216, 90, 48, 0);
           }
         }
-        .mapbox-highlight-popup .mapboxgl-popup-content {
+        .mapbox-highlight-popup .maplibregl-popup-content {
           background: transparent !important;
           padding: 0 !important;
           box-shadow: none !important;
         }
-        .mapbox-highlight-popup .mapboxgl-popup-tip {
+        .mapbox-highlight-popup .maplibregl-popup-tip {
           display: none !important;
         }
       `}</style>

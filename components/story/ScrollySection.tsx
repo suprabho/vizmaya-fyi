@@ -79,7 +79,6 @@ function ChartPanel({ chartId, activeStep, mapSteps }: { chartId?: string; activ
     case 'mapbox-globe':
       return (
         <MapboxBackground
-          accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
           steps={mapSteps ?? []}
           activeStep={activeStep}
         />

@@ -30,8 +30,10 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
  * same parent (allowing chart animations to resume rather than re-mount).
  *
  * Landscape layout:
- *   - With a chart: text card sits in the top-left 33vw × 36vh slot;
- *     the page-level chart panel owns the right 63vw column.
+ *   - With a chart: chart panel occupies the top half of the right 63vw
+ *     column (h-[50vh]); text card stacks directly beneath it in the
+ *     bottom half (top-[50vh], h-[50vh]). Left 37vw stays clear for the
+ *     map focal area.
  *   - Without a chart: text card claims the right 63vw × full-height slot
  *     (mirroring the chart position), so hero titles, stat numbers, and
  *     act intros use the same prime real estate the graph would have. The
@@ -49,14 +51,16 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
   // Two static class strings — Tailwind v4 JIT picks both up because they
   // appear literally in the source. Selected at render time.
   const landscapeSlotClasses = hasChart
-    ? // Top-left 33vw × 36vh — leaves the right 63vw for the chart panel.
+    ? // Bottom-right 63vw × 50vh — sits directly beneath the chart panel
+      // (which owns the top 50vh of the same right column).
       [
-        '[@media(min-aspect-ratio:1/1)]:left-[2vw]',
-        '[@media(min-aspect-ratio:1/1)]:top-[3vh]',
-        '[@media(min-aspect-ratio:1/1)]:right-auto',
+        '[@media(min-aspect-ratio:1/1)]:left-auto',
+        '[@media(min-aspect-ratio:1/1)]:right-0',
+        '[@media(min-aspect-ratio:1/1)]:top-[50vh]',
         '[@media(min-aspect-ratio:1/1)]:translate-x-0',
-        '[@media(min-aspect-ratio:1/1)]:w-[33vw]',
-        '[@media(min-aspect-ratio:1/1)]:h-[36vh]',
+        '[@media(min-aspect-ratio:1/1)]:w-[63vw]',
+        '[@media(min-aspect-ratio:1/1)]:h-[50vh]',
+        '[@media(min-aspect-ratio:1/1)]:p-10',
       ]
     : // Right 63vw × full-height — reuses the chart slot.
       [

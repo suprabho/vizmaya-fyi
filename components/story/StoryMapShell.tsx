@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import dynamic from 'next/dynamic'
+import { useEffect, useRef, useState, type ComponentType } from 'react'
 import MapStorySection from './MapStorySection'
 import ChartPanel from './ChartPanel'
 import type {
@@ -9,9 +8,36 @@ import type {
   StorySectionConfig,
   StoryDefaults,
 } from '@/lib/storyConfig.types'
+import type MapboxBackgroundType from './charts/MapboxBackground'
 import type { MapStep } from './charts/MapboxBackground'
 
-const MapboxBackground = dynamic(() => import('./charts/MapboxBackground'), { ssr: false })
+type MapboxBackgroundProps = React.ComponentProps<typeof MapboxBackgroundType>
+
+/**
+ * Client-only loader for MapboxBackground.
+ *
+ * We can't use `next/dynamic({ ssr: false })` here: in Next 16 + Turbopack
+ * that throws `BailoutToCSR` during the server render of any client component
+ * that references it, and the recovery path inside the affected Suspense
+ * boundary can drop sibling DOM at hydration time. Instead, we hold the
+ * component in state and import it from a `useEffect` so the module is only
+ * ever evaluated in the browser — `mapbox-gl` touches `window` at import
+ * time, which would crash a plain server-side import.
+ */
+function MapboxBackground(props: MapboxBackgroundProps) {
+  const [Comp, setComp] = useState<ComponentType<MapboxBackgroundProps> | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    import('./charts/MapboxBackground').then((m) => {
+      if (!cancelled) setComp(() => m.default)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  if (!Comp) return null
+  return <Comp {...props} />
+}
 
 interface Props {
   units: ResolvedUnit[]
@@ -124,7 +150,8 @@ export default function StoryMapShell({
           the same parent (echarts animations resume from the previous
           activeStep) and re-mounts cleanly when the parent's chart changes.
           Portrait: top-pinned, ~42vh tall, full width.
-          Landscape: pinned to the right 63% column, full viewport height. */}
+          Landscape: pinned to the top-right 63% column, top half of viewport
+          — text card stacks directly beneath in the bottom half. */}
       {currentChartId && (
         <div
           className="
@@ -132,9 +159,8 @@ export default function StoryMapShell({
             top-0 right-0 w-screen h-[42vh]
             [@media(min-aspect-ratio:1/1)]:top-0
             [@media(min-aspect-ratio:1/1)]:w-[63vw]
-            [@media(min-aspect-ratio:1/1)]:h-screen
-            flex items-center justify-center
-            p-4 [@media(min-aspect-ratio:1/1)]:p-6
+            [@media(min-aspect-ratio:1/1)]:h-[50vh]
+            flex items-center justify-center backdrop-blur-3xl
           "
         >
           <div

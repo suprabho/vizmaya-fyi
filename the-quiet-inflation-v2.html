@@ -442,33 +442,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <div class="divider"></div>
 
 <!-- ═══════════ ACT IV ═══════════ -->
-<div class="act"><div class="act-n">Act IV</div><h2>The feedback loop nobody has connected</h2></div>
+<div class="act"><div class="act-n">Act IV</div><h2>The slow bleed — decisions made now, deliveries missed in 2028</h2></div>
 
 <section class="prose">
   <p>South Korea makes the chips. That's the story everyone has told. Here's the story nobody has told.</p>
-  <p>South Korea also builds the ships that carry the gas that the rest of the world needs to replace Qatar's output. This isn't a separate crisis. It's an additional bottleneck in the same supply chain.</p>
-  <p>The same economy. The same energy grid. The same chokepoint.</p>
+  <p>South Korea also builds <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy, and Hanwha Ocean hold a <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">$71.3B backlog</span>. Every carrier takes <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">30–36 months</span> from order to delivery.</p>
+  <p>As Korean energy costs rise, shipyard margins compress. When margins fall, new orders migrate to Chinese yards. Orders that migrate in <strong>2026</strong> are vessels that will not be delivered in <strong>2028</strong>. One causal step. Thirty-six months of consequence.</p>
 </section>
 
 <section class="scrolly" id="act4-loop">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-loop">The doom loop: energy crisis → carrier shortage → deeper energy crisis</div>
+      <div class="ct" id="ct-loop">Korean yards → 8 LNG-importing regions: where the ships go</div>
       <svg id="svg-loop" viewBox="0 0 800 400" style="width:100%;" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="cs">Feedback loop model. Circuit breakers shown in green. Positive feedback in red.</div>
+      <div class="cs">Sources: BusinessKorea (248 vs 48 carrier deliveries 2021-2025). VesselsValue ($71.3B orderbook). Build time: 30-36 months.</div>
     </div>
   </div>
   <div class="steps">
     <div class="step" data-step="lp0">
       <div class="card">
-        <div class="sn">The loop</div>
-        <p>Korea's energy crisis puts pressure on the shipyards that build the LNG carriers the world needs. If carrier construction slips, the global LNG fleet grows more slowly. If there aren't enough ships, the gas shortage deepens. If the shortage deepens, Korean industry takes a harder hit. The loop tightens — and feeds directly back into every cost scenario in Act III.</p>
+        <div class="sn">Korean yards: the world's LNG shipbuilder</div>
+        <p>HD Hyundai (Ulsan), Samsung Heavy, and Hanwha Ocean (Geoje) export LNG carriers to <span class="na">Japan, China, Europe, Qatar, the USA, India, Malaysia, and Australia</span>. They build for the customers of the gas they can no longer afford. The <span class="na">$71.3B backlog</span> is the world's buffer — and it runs on Korean energy.</p>
       </div>
     </div>
     <div class="step" data-step="lp1">
       <div class="card">
-        <div class="sn">The circuit breakers</div>
-        <p>The doom loop has brakes. Korea is restarting five nuclear reactors and easing coal restrictions. ~<span class="nt">60 idle LNG carriers</span> provide buffer. Any shipyard disruption only affects 2028-2029 deliveries. The loop grinds — it doesn't spiral immediately. But the longer the war lasts, the deeper it cuts.</p>
+        <div class="sn">The signal to watch now</div>
+        <p>Track <span class="n">Q2–Q3 2026</span> order announcements from HD Hyundai and Samsung Heavy. If Chinese yards (CSSC, DSIC) gain LNG carrier share, the 2028 fleet gap is confirmed — before a single delivery is missed. Every order that migrates now is a ship the world won't have in <span class="n">2028–2029</span>, when alternative LNG supply needs to move.</p>
       </div>
     </div>
   </div>
@@ -941,7 +941,7 @@ const svgL=document.getElementById('svg-loop');
   const brkG=document.createElementNS(ns,'g');brkG.id='brk-g';brkG.style.opacity='0';
   [{x:50,y:288,t:'+ Nuclear restart'},{x:50,y:320,t:'+ ~60 idle carriers'},{x:50,y:352,t:'+ Coal easing'}].forEach(b=>{brkG.appendChild(el('text',{x:b.x,y:b.y,fill:TL,'font-size':'10px','font-family':'var(--mono)'},b.t));});
   svgL.appendChild(brkG);
-  const loopTitles=['The doom loop: energy crisis → carrier shortage → deeper energy crisis (and an added bottleneck on top of Act III)','Circuit breakers slow the loop — but cannot stop it if the war extends years'];
+  const loopTitles=['Korean yards export to 8 LNG-importing regions — $71.3B backlog, 84% of global fleet','Q2–Q3 2026 order migration → 2028 delivery gap: one causal step, measurable now'];
   window.sLoop={
     lp0:()=>{document.getElementById('brk-g').style.opacity='0';document.getElementById('ct-loop').textContent=loopTitles[0];},
     lp1:()=>{document.getElementById('brk-g').style.opacity='1';document.getElementById('ct-loop').textContent=loopTitles[1];}

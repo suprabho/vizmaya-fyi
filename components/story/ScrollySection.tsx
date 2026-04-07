@@ -1,93 +1,9 @@
 'use client'
 
-import { ReactNode, useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ScrollySectionBlock } from '@/types/story'
-import KoreaBarChart from './charts/KoreaBarChart'
-import HeliumPriceChart from './charts/HeliumPriceChart'
-import FeedbackLoopDiagram from './charts/FeedbackLoopDiagram'
-import DRAMPriceChart from './charts/DRAMPriceChart'
-import StockCandlestickChart from './charts/StockCandlestickChart'
-import PolarExposureChart from './charts/PolarExposureChart'
-import HBMDRAMTreemap from './charts/HBMDRAMTreemap'
-import LNGCarrierTreemap from './charts/LNGCarrierTreemap'
-import QatarPlantMap from './charts/QatarPlantMap'
-import DDR5AreaChart from './charts/DDR5AreaChart'
-import dynamic from 'next/dynamic'
-
-const MapboxBackground = dynamic(() => import('./charts/MapboxBackground'), { ssr: false })
-
-function formatInlineMarkdown(text: string) {
-  const parts: ReactNode[] = []
-  let remaining = text
-  let key = 0
-
-  while (remaining.length > 0) {
-    const boldMatch = remaining.match(/\*\*([^*]+)\*\*/)
-    const italicMatch = remaining.match(/(?<!\*)\*([^*]+)\*(?!\*)/)
-    const firstMatch = [boldMatch, italicMatch]
-      .filter(Boolean)
-      .sort((a, b) => (a!.index ?? 0) - (b!.index ?? 0))[0]
-
-    if (!firstMatch || firstMatch.index === undefined) {
-      parts.push(remaining)
-      break
-    }
-
-    if (firstMatch.index > 0) parts.push(remaining.slice(0, firstMatch.index))
-
-    if (firstMatch === boldMatch) {
-      parts.push(
-        <span
-          key={key++}
-          className="font-[family-name:var(--font-mono)] font-bold"
-          style={{ color: 'var(--color-accent)' }}
-        >
-          {firstMatch[1]}
-        </span>
-      )
-    } else {
-      parts.push(<em key={key++}>{firstMatch[1]}</em>)
-    }
-    remaining = remaining.slice(firstMatch.index + firstMatch[0].length)
-  }
-
-  return parts
-}
-
-function ChartPanel({ chartId, activeStep, mapSteps }: { chartId?: string; activeStep: number; mapSteps?: import('./charts/MapboxBackground').MapStep[] }) {
-  switch (chartId) {
-    case 'stock-candlestick':
-      return <StockCandlestickChart activeStep={activeStep} />
-    case 'polar-exposure':
-      return <PolarExposureChart activeStep={activeStep} />
-    case 'hbm-treemap':
-      return <HBMDRAMTreemap activeStep={activeStep} />
-    case 'lng-treemap':
-      return <LNGCarrierTreemap activeStep={activeStep} />
-    case 'qatar-map':
-      return <QatarPlantMap activeStep={activeStep} />
-    case 'ddr5-area':
-      return <DDR5AreaChart activeStep={activeStep} />
-    case 'korea-bar':
-      return <KoreaBarChart activeStep={activeStep} />
-    case 'helium-price':
-      return <HeliumPriceChart activeStep={activeStep} />
-    case 'feedback-loop':
-      return <FeedbackLoopDiagram activeStep={activeStep} />
-    case 'dram-price':
-      return <DRAMPriceChart activeStep={activeStep} />
-    case 'mapbox-globe':
-      return (
-        <MapboxBackground
-          accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
-          steps={mapSteps ?? []}
-          activeStep={activeStep}
-        />
-      )
-    default:
-      return null
-  }
-}
+import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
+import ChartPanel from './ChartPanel'
 
 export default function ScrollySection({ block }: { block: ScrollySectionBlock }) {
   const [activeStep, setActiveStep] = useState(0)
@@ -155,7 +71,7 @@ export default function ScrollySection({ block }: { block: ScrollySectionBlock }
       {hasChart && (
         <div className="sticky top-0 h-screen flex items-center justify-center pointer-events-none z-0">
           <div className="w-full max-w-[860px] px-6">
-            <ChartPanel chartId={block.chartId} activeStep={activeStep} mapSteps={block.mapSteps} />
+            <ChartPanel chartId={block.chartId} activeStep={activeStep} />
           </div>
         </div>
       )}

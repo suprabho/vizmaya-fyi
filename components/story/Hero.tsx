@@ -52,17 +52,32 @@ function buildTitleSegments(title: string): { segments: TitleSegment[]; portrait
   return { segments: [{ type: 'text', content: title }], portraitSegments: [{ type: 'text', content: title }] }
 }
 
-export default function Hero({ block }: { block: HeroBlock }) {
-  const { segments, portraitSegments } = buildTitleSegments(block.title)
+interface HeroPanelProps {
+  title: string
+  dek: string
+  byline: string
+  eyebrow?: string
+}
+
+/**
+ * The pretext-styled hero content (mono eyebrow, animated SVG title with
+ * pills/icons, dek, byline) with NO outer section/min-h wrapper. Embeddable
+ * inside other layouts — used by both the legacy Hero and MapStorySection's
+ * `kind: hero` mode.
+ */
+export function HeroPanel({ title, dek, byline, eyebrow }: HeroPanelProps) {
+  const { segments, portraitSegments } = buildTitleSegments(title)
 
   return (
-    <section className="min-h-screen flex flex-col justify-center px-8 py-12 max-w-[900px] mx-auto">
-      <div
-        className="font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.15em] mb-6"
-        style={{ color: 'var(--color-accent)' }}
-      >
-        The Asymmetry Letter · Cost Analysis · March 2026
-      </div>
+    <div className="flex flex-col">
+      {eyebrow && (
+        <div
+          className="font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.15em] mb-6"
+          style={{ color: 'var(--color-accent)' }}
+        >
+          {eyebrow}
+        </div>
+      )}
       <div className="mb-5">
         <HeroTitle segments={segments} portraitSegments={portraitSegments} />
       </div>
@@ -70,14 +85,27 @@ export default function Hero({ block }: { block: HeroBlock }) {
         className="text-[1.1rem] leading-[1.65] mb-8"
         style={{ color: 'var(--color-muted)' }}
       >
-        {block.dek}
+        {dek}
       </p>
       <div
         className="font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.1em]"
         style={{ color: 'var(--color-muted)' }}
       >
-        {block.byline}
+        {byline}
       </div>
+    </div>
+  )
+}
+
+export default function Hero({ block }: { block: HeroBlock }) {
+  return (
+    <section className="min-h-screen flex flex-col justify-center px-8 py-12 max-w-[900px] mx-auto">
+      <HeroPanel
+        title={block.title}
+        dek={block.dek}
+        byline={block.byline}
+        eyebrow="The Asymmetry Letter · Cost Analysis · March 2026"
+      />
     </section>
   )
 }

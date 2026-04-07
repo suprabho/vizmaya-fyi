@@ -1,0 +1,263 @@
+# Story config for the persistent-map architecture.
+#
+# Each `text` ref points at a heading in south-korea-gpu-hour.md (case-insensitive,
+# em-dash tolerant). Use ` > ` to walk into a subheading.
+#
+# A section may either:
+#   - have its own `text` (one viewport-tall snap target), OR
+#   - have a `subsections:` array — each becomes its own snap target while
+#     SHARING the parent's map state, chart, and chart instance. The subsection's
+#     index drives the chart's `activeStep`, so chart animations resume smoothly
+#     between scrolls instead of re-mounting.
+#
+# kind: stat → renders the heading as a giant number.
+# kind: hero → renders the pretext-styled animated title.
+#
+# Theme colors live in the markdown frontmatter — not here.
+
+defaults:
+  mapStyle: mapbox://styles/mapbox/dark-v11
+  mapOpacity: 0.55
+  pinColor: "#D85A30"
+  pinRadius: 12
+  flySpeed: 1.2
+  highlightCountry: "KR"
+  highlightColor: "#D85A30"
+
+sections:
+  # ─── Hero: pretext-styled animated title ───
+  - id: hero
+    kind: hero
+    text: "South Korea Makes the Memory and Builds the Ships"
+    eyebrow: "The Asymmetry Letter · Cost Analysis · March 2026"
+    map:
+      center: [130, 36.5]
+      zoom: 5.2
+      pitch: 25
+      bearing: 0
+      opacity: 0.45
+
+  # ─── 18% — big-number stat ───
+  - id: market-crash-stat
+    kind: stat
+    text: "18%"
+    map:
+      center: [127.0, 37.56]
+      zoom: 6
+      pitch: 30
+      bearing: 0
+      opacity: 0.45
+      pins:
+        - coordinates: [127.0, 37.56]
+          label: "Seoul — KOSPI"
+          color: "#E24B4A"
+
+  # ─── Stock candlestick: 2026 vs 2008 (2 chart steps) ───
+  - id: stock-history
+    chart: stock-candlestick
+    map:
+      center: [127.0, 37.56]
+      zoom: 6.2
+      pitch: 30
+      opacity: 0.45
+      pins:
+        - coordinates: [127.0, 37.56]
+          label: "Seoul"
+          color: "#E24B4A"
+    subsections:
+      - text: "18%"                                    # 2026 crash
+      - text: "Act I"                                  # 2008 comparison context
+
+  # ─── Act I opener ───
+  - id: act-i-intro
+    text: "Act I"
+    map:
+      center: [127.5, 36.5]
+      zoom: 5.5
+      pitch: 20
+      opacity: 0.5
+
+  # ─── Triple exposure → polar chart (3 chart steps) ───
+  - id: triple-exposure
+    chart: polar-exposure
+    map:
+      center: [85, 28]
+      zoom: 2.8
+      pitch: 0
+      opacity: 0.5
+      pins:
+        - coordinates: [51.53, 25.97]
+          label: "Qatar — gas + helium"
+          color: "#1D9E75"
+        - coordinates: [49.5, 27.0]
+          label: "Middle East crude"
+          color: "#EF9F27"
+        - coordinates: [127.0, 37.56]
+          label: "Korean fabs"
+          color: "#D85A30"
+    subsections:
+      - text: "Act I > The triple exposure"
+      - text: "Act I > The memory dominance"
+      - text: "Act I > One grid, all exposed"
+
+  # ─── Memory dominance → HBM/DRAM treemap (3 chart steps) ───
+  - id: memory-dominance
+    chart: hbm-treemap
+    map:
+      center: [127.2, 37.0]
+      zoom: 7.5
+      pitch: 45
+      bearing: -10
+      opacity: 0.6
+      pins:
+        - coordinates: [127.435, 37.272]
+          label: "Icheon (SK Hynix)"
+          color: "#D85A30"
+        - coordinates: [127.4847, 36.6424]
+          label: "Cheongju (SK Hynix)"
+          color: "#D85A30"
+        - coordinates: [127.0823, 37.0793]
+          label: "Pyeongtaek (Samsung)"
+          color: "#D85A30"
+    subsections:
+      - text: "Act I > The memory dominance"
+      - text: "Act I > The triple exposure"
+      - text: "Act I > One grid, all exposed"
+
+  # ─── Shipbuilding dominance → LNG carrier treemap (2 chart steps) ───
+  - id: shipbuilding-dominance
+    chart: lng-treemap
+    map:
+      center: [128.95, 35.2]
+      zoom: 7
+      pitch: 50
+      bearing: 15
+      opacity: 0.65
+      pins:
+        - coordinates: [129.31, 35.54]
+          label: "Ulsan (HD Hyundai)"
+          color: "#1D9E75"
+        - coordinates: [128.62, 34.88]
+          label: "Geoje (Samsung Heavy / Hanwha)"
+          color: "#1D9E75"
+    subsections:
+      - text: "Act I > The shipbuilding dominance"
+      - text: "Act I > One grid, all exposed"
+
+  # ─── Act II opener ───
+  - id: act-ii-intro
+    text: "Act II"
+    map:
+      center: [54, 26]
+      zoom: 5
+      pitch: 30
+      bearing: -20
+      opacity: 0.5
+
+  # ─── Helium price chart (3 chart steps, 3 subsections — perfect 1:1) ───
+  - id: helium-arc
+    chart: helium-price
+    map:
+      center: [51.53, 25.97]
+      zoom: 7
+      pitch: 35
+      bearing: -15
+      opacity: 0.65
+      pins:
+        - coordinates: [51.53, 25.97]
+          label: "Ras Laffan"
+          color: "#1D9E75"
+        - coordinates: [56.27, 26.57]
+          label: "Strait of Hormuz"
+          color: "#E24B4A"
+    subsections:
+      - text: "Act II > The misleading spike"
+      - text: "Act II > The 6-month inflection"
+      - text: "Act II > The stockpile runway"
+
+  # ─── Act III opener ───
+  - id: act-iii-intro
+    text: "Act III"
+    map:
+      center: [127.0, 37.56]
+      zoom: 5.5
+      pitch: 0
+      opacity: 0.5
+
+  # ─── DRAM trendline → 4 chart steps via 4 subsections ───
+  - id: dram-arc
+    chart: dram-price
+    map:
+      center: [127.5, 37.0]
+      zoom: 6.5
+      pitch: 25
+      opacity: 0.5
+      pins:
+        - coordinates: [127.0823, 37.0793]
+          label: "Samsung Pyeongtaek"
+          color: "#D85A30"
+    subsections:
+      - text: "Act III > The trendline"
+      - text: "Act III > The pre-existing fire"
+      - text: "Act III > What happens next"
+      - text: "Act III > The assumption nobody is stress-testing"
+
+  # ─── DDR5 area chart with 5 scenario bands ───
+  - id: ddr5-arc
+    chart: ddr5-area
+    map:
+      center: [120, 30]
+      zoom: 3.5
+      opacity: 0.4
+    subsections:
+      - text: "Act III > The pre-existing fire"
+      - text: "Act III > The trendline"
+      - text: "Act III > What happens next"
+      - text: "Act III > What happens next"
+      - text: "Act III > The assumption nobody is stress-testing"
+
+  # ─── Act IV opener ───
+  - id: act-iv-intro
+    text: "Act IV"
+    map:
+      center: [128.5, 35.3]
+      zoom: 6.5
+      pitch: 30
+      bearing: 10
+      opacity: 0.5
+
+  # ─── Feedback loop diagram (2 chart steps) ───
+  - id: feedback-arc
+    chart: feedback-loop
+    map:
+      center: [128.95, 35.2]
+      zoom: 7
+      pitch: 50
+      bearing: 20
+      opacity: 0.6
+      pins:
+        - coordinates: [129.31, 35.54]
+          label: "HD Hyundai"
+          color: "#1D9E75"
+        - coordinates: [128.62, 34.88]
+          label: "Samsung Heavy / Hanwha"
+          color: "#1D9E75"
+    subsections:
+      - text: "Act IV > The loop"
+      - text: "Act IV > The circuit breakers"
+
+  # ─── What to watch ───
+  - id: what-to-watch
+    text: "What to watch"
+    map:
+      center: [80, 25]
+      zoom: 2.2
+      opacity: 0.35
+
+  # ─── Methodology ───
+  - id: methodology
+    text: "Methodology"
+    map:
+      center: [60, 20]
+      zoom: 1.6
+      opacity: 0.3

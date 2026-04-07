@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Quiet Inflation — How a Strait Reprices a GPU Hour</title>
-<link href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css' rel='stylesheet' />
-<script src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js'></script>
+<title>The Quiet Inflation: How a Strait Reprices a GPU Hour</title>
+<link href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css' rel='stylesheet' onerror="this.remove()" />
+<script>window._maplibreLoadFailed=false;</script>
+<script src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js' onerror="window._maplibreLoadFailed=true;"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -161,7 +162,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <section class="hero">
   <div class="eyebrow">The Asymmetry Letter · Cost Analysis · March 2026</div>
   <h1 class="headline">South Korea Makes the Memory and Builds the Ships. It Just Lost All Three Energy&nbsp;Lines.</h1>
-  <p class="dek">The country that produces the majority of the world's AI memory chips and 84% of its LNG carriers is simultaneously losing its oil, its gas, and its helium from the same chokepoint. Here is how that reprices every GPU hour on earth.</p>
+  <p class="dek">The country that makes the majority of the world's AI memory chips and 84% of its LNG carriers is losing its oil, its gas, and its helium through the same chokepoint at the same time. This is what that does to the cost of running an AI model.</p>
   <div class="byline">by vizzmaya · The Asymmetry Letter · March 2026</div>
 </section>
 
@@ -170,13 +171,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <!-- ═══════════ 18% STAT + CANDLESTICK ═══════════ -->
 <section class="stat-block">
   <div class="stat-big" style="color:var(--red);">18%</div>
-  <div class="stat-label">South Korea's stock market plunged 18% in four trading days — the worst since 2008. Over $500 billion erased. Samsung and SK Hynix each fell more than 20% in a single week.</div>
+  <div class="stat-label">South Korea's stock market plunged 18% in four trading days, the worst since 2008. Over $500 billion erased. Samsung and SK Hynix each fell more than 20% in a single week.</div>
 </section>
 
 <section class="scrolly" id="act-intro">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-stock">2026: KOSPI falls 18% in 4 trading days — worst since 2008</div>
+      <div class="ct" id="ct-stock">2026: KOSPI falls 18% in 4 trading days, worst since 2008</div>
       <div id="chart-stock" style="width:100%;height:360px;"></div>
       <div class="cs">KOSPI index rebased to 100 at pre-crisis peak. Sources: AInvest, Bitget News.</div>
     </div>
@@ -185,13 +186,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="s0">
       <div class="card">
         <div class="sn">2026 crash</div>
-        <p>South Korea's stock market plunged <span class="n">18%</span> in four trading days — the worst since 2008. Over <span class="n">$500 billion</span> erased. Samsung and SK Hynix each fell more than <span class="n">20%</span> in a single week.</p>
+        <p>South Korea's stock market plunged <span class="n">18%</span> in four trading days, the worst since 2008. Over <span class="n">$500 billion</span> erased. Samsung and SK Hynix each fell more than <span class="n">20%</span> in a single week.</p>
       </div>
     </div>
     <div class="step" data-step="s1">
       <div class="card">
         <div class="sn">2008 comparison</div>
-        <p>Speed is the difference. The 2008 financial crisis took a <em>year</em> to erase 54%. The 2026 collapse hit in <span class="n">four trading days</span>. The market has priced in a supply chain fracture — not just a geopolitical shock.</p>
+        <p>Speed is the difference. The 2008 financial crisis took a <em>year</em> to erase 54%. The 2026 collapse hit in <span class="n">four trading days</span>. Markets priced in a supply chain fracture, not just a geopolitical shock.</p>
       </div>
     </div>
   </div>
@@ -203,9 +204,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <div class="act"><div class="act-n">Act I</div><h2>The most consequential industrial economy in this crisis</h2></div>
 
 <section class="prose">
-  <p>South Korea did not start this war. It has no leverage over the combatants. It does not control the strait. But it may be the single most important economy in this conflict — because it sits at the intersection of two industries the world cannot function without, and both are powered by the same energy grid.</p>
+  <p>South Korea did not start this war. It has no leverage over the combatants and no control over the strait. But it may be the most exposed economy in this conflict, because it sits at the intersection of two industries nobody has figured out how to replace, and both run on the same energy grid.</p>
   <p>The government imposed fuel rationing on March 25: a one-day-per-week vehicle ban for 1.5 million government vehicles, enforced by licence plate number. Oil at $119 a barrel. 1.7 million barrels of crude bound for Seoul delayed or stranded every day.</p>
-  <p>But the fuel rationing is the visible crisis. The invisible one is what's happening inside the fabs and the shipyards.</p>
+  <p>That is the visible crisis. What is happening inside the fabs and the shipyards is quieter, and considerably worse.</p>
 </section>
 
 <!-- Triple exposure polar chart -->
@@ -221,7 +222,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="p0">
       <div class="card">
         <div class="sn">Oil exposure</div>
-        <p><span class="n">Oil: 70%</span> of crude from the Middle East. Used for naphtha — a feedstock for semiconductor chemicals, not just fuel. Now on the government's "economic security" watchlist. Oil at $119 a barrel.</p>
+        <p><span class="n">Oil: 70%</span> of crude from the Middle East. Used for naphtha, a feedstock for semiconductor chemicals, not just fuel. Now on the government's "economic security" watchlist. Oil at $119 a barrel.</p>
       </div>
     </div>
     <div class="step" data-step="p1">
@@ -243,7 +244,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <section class="scrolly" id="act1-hbm">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-hbm">Global HBM market: South Korea holds 90% — every AI GPU depends on it</div>
+      <div class="ct" id="ct-hbm">Global HBM market: South Korea holds 90% of supply; every AI GPU depends on it</div>
       <div id="chart-hbm" style="width:100%;height:360px;"></div>
       <div class="cs">Sources: Counterpoint Research (HBM Q2 2025), TrendForce, IDC. DRAM shares are 2026 estimates.</div>
     </div>
@@ -252,13 +253,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="h0">
       <div class="card">
         <div class="sn">The memory dominance</div>
-        <p>SK Hynix holds <span class="n">62%</span> of global HBM — the memory NVIDIA cannot build an H100, B200, or Blackwell Ultra without. Samsung holds <span class="n">33%</span> of global DRAM. Combined: the majority of memory in every AI training cluster on earth. HBM is sold out through 2026. Zero slack.</p>
+        <p>SK Hynix holds <span class="n">62%</span> of global HBM, the memory type NVIDIA cannot build an H100, B200, or Blackwell Ultra without. Samsung holds <span class="n">33%</span> of global DRAM. Combined, they account for the majority of memory in every AI training cluster on earth. HBM is sold out through 2026. Zero slack.</p>
       </div>
     </div>
     <div class="step" data-step="h1">
       <div class="card">
         <div class="sn">One grid, all exposed</div>
-        <p>Both industries run on the same energy grid. A grid where fossil fuels dominate. Where renewable energy is just <span class="n">9.6%</span> of the power mix — less than a third of the global average. Where the country was <em>building more LNG power plants</em> to feed the fabs, right up until the gas stopped flowing.</p>
+        <p>Both industries run on the same energy grid, one where fossil fuels dominate. Renewable energy covers just <span class="n">9.6%</span> of the power mix, less than a third of the global average. The country was <em>building more LNG power plants</em> to feed the fabs, right up until the gas stopped flowing.</p>
       </div>
     </div>
   </div>
@@ -277,13 +278,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="l0">
       <div class="card">
         <div class="sn">The shipbuilding dominance</div>
-        <p>Here's the connection nobody else has made. South Korea also builds <span class="n">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy Industries, and Hanwha Ocean delivered <span class="n">248</span> carriers between 2021 and 2025 — versus 48 from China. Korean yards hold two-thirds of the global orderbook at <span class="n">$71.3 billion</span>.</p>
+        <p>South Korea also builds <span class="n">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy Industries, and Hanwha Ocean delivered <span class="n">248</span> carriers between 2021 and 2025, versus 48 from China. Korean yards hold two-thirds of the global orderbook at <span class="n">$71.3 billion</span> in the LNG segment alone.</p>
       </div>
     </div>
     <div class="step" data-step="l1">
       <div class="card">
         <div class="sn">The orderbook</div>
-        <p>A single 174,000-cubic-metre LNG carrier costs <span class="n">$220-260 million</span> and takes <span class="n">30-36 months</span> from steel cutting to delivery. Gas carriers make up over 60% of Korean shipyard order composition. Korean vessel exports hit $31.8 billion in 2025. This is not a peripheral industry. It is a pillar of the economy.</p>
+        <p>A single 174,000-cubic-metre LNG carrier costs <span class="n">$250-270 million</span> and takes <span class="n">30-36 months</span> from steel cutting to delivery. Gas carriers make up over 60% of Korean shipyard order composition. Korean vessel exports hit $31.8 billion in 2025. This is not a peripheral industry. It is a pillar of the economy.</p>
       </div>
     </div>
   </div>
@@ -295,15 +296,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <div class="act"><div class="act-n">Act II</div><h2>The chokepoint: how Qatar's helium reaches a Korean fab</h2></div>
 
 <section class="prose">
-  <p>The chain that connects the Strait of Hormuz to a GPU shortage in Santa Clara runs through helium extraction plants, cryogenic separation, and a market structure that almost nobody covering this story has gotten right.</p>
-  <p>Qatar's three helium plants at Ras Laffan produce roughly one-third of global supply — 33.2%, according to the USGS 2026 Mineral Commodity Summaries. All three have been offline since March 2. When the gas stops flowing, the helium stops flowing.</p>
+  <p>The connection between the Strait of Hormuz and a GPU shortage in Santa Clara runs through helium extraction plants, cryogenic separation, and a market structure that most coverage of this story has gotten completely wrong.</p>
+  <p>Qatar's three helium plants at Ras Laffan produce roughly one-third of global supply: 33.2%, according to the USGS 2026 Mineral Commodity Summaries. All three have been offline since March 2. When the gas stops flowing, the helium stops flowing. One-third of global supply, gone in a single week.</p>
 </section>
 
 <!-- Qatar plant map -->
 <section class="scrolly" id="act2-map">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-qatar">Ras Laffan, Qatar — three helium plants, 33% of global supply</div>
+      <div class="ct" id="ct-qatar">Ras Laffan, Qatar: three helium plants, 33% of global supply</div>
       <svg id="svg-qatar" viewBox="0 0 760 380" style="width:100%;" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="cs">Sources: USGS 2026 Mineral Commodity Summaries (33.2% of global supply). Plant data: Gasworld, Helium One.</div>
     </div>
@@ -312,7 +313,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="q0">
       <div class="card">
         <div class="sn">Three plants at Ras Laffan</div>
-        <p>Qatar's three helium plants produce <span class="n">33.2%</span> of global supply. <strong>Helium 1</strong> (660M scf/yr, online 2005), <strong>Helium 2</strong> (1.3B scf/yr — the world's largest, online 2013), and <strong>Helium 3</strong> (400M scf/yr, online 2021). Combined: <span class="n">2,360M scf/yr</span>.</p>
+        <p>Qatar's three helium plants produce <span class="n">33.2%</span> of global supply. <strong>Helium 1</strong> (660M scf/yr, online 2005), <strong>Helium 2</strong> (1.3B scf/yr, the world's largest, online 2013), and <strong>Helium 3</strong> (400M scf/yr, online 2021). Combined: <span class="n">2,360M scf/yr</span>.</p>
       </div>
     </div>
     <div class="step" data-step="q1">
@@ -334,7 +335,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <section class="scrolly" id="act2-helium">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-helium">March 2026: Spot at $153/MCF — but it's only 2% of the market. Contracts unmoved.</div>
+      <div class="ct" id="ct-helium">March 2026: Spot at $153/MCF, but only 2% of the market. Contracts unmoved.</div>
       <div id="chart-helium" style="width:100%;height:340px;"></div>
       <div class="cs">Sources: IMARC (NE Asia Mar 2026: $152.70/MCF +21.5% MoM), ChemAnalyst, Phil Kornbluth (CNBC). *Projected.</div>
     </div>
@@ -343,19 +344,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="he0">
       <div class="card">
         <div class="sn">The misleading spike</div>
-        <p>Spot helium surged 50-100% in March. Northeast Asia hit <span class="n">$153/MCF</span>. Headlines screamed shortage. But spot is only <span class="n">2%</span> of the helium market. The other 98% trades on long-term contracts at $500-600/MCF. Those contracts haven't moved.</p>
+        <p>Spot helium surged 50-100% in March. Northeast Asia hit <span class="n">$153/MCF</span>. Headlines screamed shortage. But spot is only <span class="n">2%</span> of the helium market. The other 98% trades on long-term contracts at $500-600/MCF delivered. Those contracts have not moved. Not yet.</p>
       </div>
     </div>
     <div class="step" data-step="he1">
       <div class="card">
         <div class="sn">The 6-month inflection</div>
-        <p>The real event comes at months 4-6. Contracts come up for renewal. Force majeure triggers renegotiation. If Qatar stays offline, contract prices climb toward <span class="n">$1,000-2,000/MCF</span> — a 2-4x increase on the 98% of the market that actually matters.</p>
+        <p>The real event comes at months 4-6. Contracts come up for renewal. Force majeure triggers renegotiation. If Qatar stays offline, contract prices climb toward <span class="n">$1,000-2,000/MCF</span>, a 2-4x increase on the 98% of the market that actually matters.</p>
       </div>
     </div>
     <div class="step" data-step="he2">
       <div class="card">
         <div class="sn">The stockpile runway</div>
-        <p>Samsung holds ~<span class="n">6 months</span> of helium plus an <span class="n">18%</span> consumption reduction via its Helium Reuse System. TSMC maintains 2+ months from diversified suppliers with <span class="n">60-75%</span> recycling rates. The question isn't whether there's a buffer. The question is what happens at <span class="n">month 7</span>.</p>
+        <p>Samsung's supply chain holds roughly <span class="n">6 months</span> of helium at the logistics level, plus an <span class="n">18%</span> consumption reduction from its Helium Reuse System. Working fab inventory is closer to six weeks. TSMC draws from diversified suppliers with <span class="n">80-90%</span> recycling rates and 2+ months of cover. The buffer is real. The question is what happens when it runs out at <span class="n">month 7</span>.</p>
       </div>
     </div>
   </div>
@@ -367,20 +368,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <div class="act"><div class="act-n">Act III</div><h2>One chip price tells the whole story</h2></div>
 
 <section class="prose">
-  <p>Everyone is asking: will Silicon Valley get its chips? Wrong question. The right question is: at what price?</p>
-  <p>And the answer is visible in a single data point: the spot price of a DDR5 16Gb chip, tracked daily by DRAMeXchange.</p>
+  <p>Everyone is asking whether Silicon Valley will get its chips. That is the wrong question. The right question is: at what price?</p>
+  <p>The answer is visible in a single data point tracked daily by DRAMeXchange: the spot price of a DDR5 16Gb chip.</p>
 </section>
 
 <section class="stat-block">
   <div class="stat-big" style="color:var(--accent2);">3.4×</div>
-  <div class="stat-label">DDR5 16Gb spot price multiplied in 10 weeks — from $6.84 in September 2025 to $27.20 in December. Before the first missile hit Ras Laffan.</div>
+  <div class="stat-label">DDR5 16Gb spot price rose 3.4 times in 10 weeks, from $6.84 in September 2025 to $27.20 in December. Before the first missile hit Ras Laffan.</div>
 </section>
 
 <!-- DDR5 area chart -->
 <section class="scrolly" id="act3-ddr5">
   <div class="sticky-c">
     <div class="sticky-g">
-      <div class="ct" id="ct-ddr5">The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025</div>
+      <div class="ct" id="ct-ddr5">The fire already burning: DDR5 16Gb rose 3.4× before Hormuz, Sep to Dec 2025</div>
       <div id="chart-ddr5" style="width:100%;height:380px;"></div>
       <div class="cs">DDR5 16Gb (2Gx8) spot. Sources: DRAMeXchange via Tom's Hardware, TrendForce, Accio. Projections: directional estimates only.</div>
     </div>
@@ -389,13 +390,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="d0">
       <div class="card">
         <div class="sn">The pre-existing fire</div>
-        <p>DRAM prices rose <span class="n2">172%</span> through 2025. Server DRAM climbed <span class="n2">60% QoQ</span> in Q1 2026. HBM consumes <span class="n2">3× the wafer capacity</span> per gigabyte. Every wafer for an NVIDIA GPU is a wafer denied to everything else. The AI boom was eating its own supply chain.</p>
+        <p>DRAM prices rose <span class="n2">172%</span> through 2025. Server DRAM climbed <span class="n2">~90% QoQ</span> in Q1 2026, the largest quarterly increase on record. HBM consumes <span class="n2">3× the wafer capacity</span> per gigabyte. Every wafer for an NVIDIA GPU is a wafer denied to everything else. The AI boom was eating its own supply chain.</p>
       </div>
     </div>
     <div class="step" data-step="d1">
       <div class="card">
         <div class="sn">The supercycle origin</div>
-        <p>Google, Amazon, Microsoft, and Meta placed open-ended orders — accepting any supply at any cost. The DDR5 16Gb spot price absorbs every upstream shock into one number. <strong>The memory supercycle was the crisis. Hormuz is the accelerant.</strong></p>
+        <p>Google, Amazon, Microsoft, and Meta placed open-ended orders, accepting any supply at any cost. The DDR5 16Gb spot price absorbs every upstream shock into one number. The memory supercycle was already the crisis. Hormuz is the accelerant.</p>
       </div>
     </div>
     <div class="step" data-step="d2">
@@ -407,13 +408,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="d3">
       <div class="card">
         <div class="sn">6-month scenario: +12-20% GPU hour</div>
-        <p>Helium contracts reprice — the <span class="na">98%</span> starts moving toward $1,000-1,500/MCF. Korean fabs cut utilisation <span class="na">10-30%</span> on helium-critical steps. Energy costs up <span class="na">25-35%</span> sustained. DDR5 climbs to <span class="na">~$30-35</span>. GPU hour impact: <span class="na">+12-20%</span>.</p>
+        <p>Helium contracts reprice. The <span class="na">98%</span> starts moving toward $1,000-1,500/MCF. Korean fabs cut utilisation <span class="na">10-30%</span> on helium-critical steps. Energy costs up <span class="na">25-35%</span> sustained. DDR5 climbs to <span class="na">~$30-35</span>. GPU hour impact: <span class="na">+12-20%</span>.</p>
       </div>
     </div>
     <div class="step" data-step="d4">
       <div class="card">
         <div class="sn">3-5 year force majeure: +30-50% GPU hour</div>
-        <p>The cost curve shifts permanently. Korean fabs lose their cost advantage. Micron (US-based, <span class="n">zero Hormuz exposure</span>) gains structural edge. CXMT accelerates. DDR5 stabilises at a <span class="n">$35-40 structural floor</span>. GPU hour impact: <span class="n">+30-50%</span> — and "compute always gets cheaper" breaks.</p>
+        <p>The cost curve shifts permanently. Korean fabs lose their cost advantage. Micron, US-based with <span class="n">zero Hormuz exposure</span>, gains structural edge. CXMT accelerates its climb. DDR5 stabilises at a <span class="n">$35-40 structural floor</span>. GPU hour impact: <span class="n">+30-50%</span>. The assumption that compute always gets cheaper stops being an assumption and starts being a question.</p>
       </div>
     </div>
   </div>
@@ -436,18 +437,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <!-- Watch callout -->
 <section class="stat-block" style="min-height:50vh;">
   <div style="font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:1rem;">The assumption nobody is stress-testing</div>
-  <div style="font-family:var(--serif);font-size:clamp(1.4rem,3.5vw,2.1rem);font-weight:700;color:#fff;max-width:620px;text-align:center;line-height:1.35;">Every AI business model assumes compute gets cheaper. The memory supercycle challenged that assumption. Hormuz — if it extends past South Korea's stockpiles — breaks it.</div>
+  <div style="font-family:var(--serif);font-size:clamp(1.4rem,3.5vw,2.1rem);font-weight:700;color:#fff;max-width:620px;text-align:center;line-height:1.35;">Every AI business model assumes compute gets cheaper. The memory supercycle challenged that assumption. Hormuz, if it extends past South Korea's stockpile runway, breaks it.</div>
 </section>
 
 <div class="divider"></div>
 
 <!-- ═══════════ ACT IV ═══════════ -->
-<div class="act"><div class="act-n">Act IV</div><h2>The slow bleed — decisions made now, deliveries missed in 2028</h2></div>
+<div class="act"><div class="act-n">Act IV</div><h2>The slow bleed: decisions made now, deliveries missed in 2028</h2></div>
 
 <section class="prose">
-  <p>South Korea makes the chips. That's the story everyone has told. Here's the story nobody has told.</p>
-  <p>South Korea also builds <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy, and Hanwha Ocean hold a <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">$71.3B backlog</span>. Every carrier takes <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">30–36 months</span> from order to delivery.</p>
-  <p>As Korean energy costs rise, shipyard margins compress. When margins fall, new orders migrate to Chinese yards. Orders that migrate in <strong>2026</strong> are vessels that will not be delivered in <strong>2028</strong>. One causal step. Thirty-six months of consequence.</p>
+  <p>South Korea makes the chips. That part of the story has been told. Here is the part that has not been told.</p>
+  <p>South Korea also builds <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">84%</span> of the world's LNG carriers. HD Hyundai, Samsung Heavy, and Hanwha Ocean hold a <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">$71.3B</span> LNG-specific backlog. Every carrier takes <span style="font-family:var(--mono);color:var(--amber);font-weight:700;">30-36 months</span> from order to delivery.</p>
+  <p>The obvious objection here is that shipyard order books are sticky. Customers do not cancel $260M vessels lightly. That is true. But orders at the margin do migrate when Korean yards become uncompetitive on cost. If rising energy costs compress Korean margins in 2026, some percentage of new orders go to Chinese yards instead. Those are ships that will not exist in 2028. One causal step. Thirty-six months of consequence.</p>
 </section>
 
 <section class="scrolly" id="act4-loop">
@@ -455,13 +456,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="step" data-step="lp0">
       <div class="card">
         <div class="sn">Korean yards: the world's LNG shipbuilder</div>
-        <p>HD Hyundai (Ulsan), Samsung Heavy, and Hanwha Ocean (Geoje) export LNG carriers to <span class="na">Japan, China, Europe, Qatar, the USA, India, Malaysia, and Australia</span>. They build for the customers of the gas they can no longer afford. The <span class="na">$71.3B backlog</span> is the world's buffer — and it runs on Korean energy.</p>
+        <p>HD Hyundai (Ulsan), Samsung Heavy, and Hanwha Ocean (Geoje) export LNG carriers to <span class="na">Japan, China, Europe, Qatar, the USA, India, Malaysia, and Australia</span>. They build for the customers of the gas they can no longer afford. The <span class="na">$71.3B LNG backlog</span> is the world's liquefied gas logistics buffer, and it runs on Korean energy.</p>
       </div>
     </div>
     <div class="step" data-step="lp1">
       <div class="card">
         <div class="sn">The signal to watch now</div>
-        <p>Track <span class="n">Q2–Q3 2026</span> order announcements from HD Hyundai and Samsung Heavy. If Chinese yards (CSSC, DSIC) gain LNG carrier share, the 2028 fleet gap is confirmed — before a single delivery is missed. Every order that migrates now is a ship the world won't have in <span class="n">2028–2029</span>, when alternative LNG supply needs to move.</p>
+        <p>Track <span class="n">Q2-Q3 2026</span> order announcements from HD Hyundai and Samsung Heavy. If Chinese yards (CSSC, DSIC) gain LNG carrier share, the 2028 fleet gap is confirmed before a single delivery is missed. Every order that migrates now is a ship the world will not have in <span class="n">2028-2029</span>, when alternative LNG supply needs to move.</p>
       </div>
     </div>
   </div>
@@ -475,15 +476,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
   <div class="tk-grid">
     <div class="tk-card">
       <h4>For procurement</h4>
-      <p>Accelerate helium recycling investment now. Monitor helium contract renewal dates — the repricing signal comes before the shortage. Naphtha and petrochemical input costs are already rising double digits.</p>
+      <p>Accelerate helium recycling investment now, before contracts reprice. The repricing signal comes before the shortage, not after. Naphtha and petrochemical input costs are already up double digits. That is not a projection.</p>
     </div>
     <div class="tk-card" style="border-top-color:var(--accent2);">
       <h4>For investors</h4>
-      <p>60-day scenario is the base case. Start discounting at month 4-5 when helium contracts reprice. Watch Linde and Air Products as lead indicators. Watch Korean shipyard order cancellations for the structural signal.</p>
+      <p>The 60-day scenario is the base case. Start building in downside at month 4-5, when helium contracts come up for renewal. Watch Linde and Air Products as lead indicators. Korean shipyard order cancellations are the signal for the structural scenario, not the market.</p>
     </div>
     <div class="tk-card" style="border-top-color:var(--teal);">
       <h4>For AI builders</h4>
-      <p>Model unit economics with compute costs flat or +20-30% for 18 months. If your model breaks at +30% GPU cost, it was already fragile. The memory supercycle was going to test you before Hormuz did.</p>
+      <p>Model your unit economics with compute costs flat or up 20-30% for 18 months. If your model breaks at +30% GPU cost, it was already fragile. The memory supercycle was going to test you before Hormuz did. This just moves the timeline forward.</p>
     </div>
   </div>
 </section>
@@ -491,11 +492,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 <!-- ═══════════ METHODOLOGY ═══════════ -->
 <section class="meth">
   <h3>Methodology &amp; sources</h3>
-  <p><strong>DDR5 16Gb spot price data:</strong> DRAMeXchange via Tom's Hardware (Sep-Dec 2025: $6.84, $24.83, $27.20). March 2026 spot from Accio/TrendForce ($23.50). December contract price doubling from TeamGroup GM Gerry Chen via DigiTimes. Q1 2026 contract forecast from TrendForce (+55-60% QoQ conventional DRAM, +60% QoQ server DRAM).</p>
-  <p><strong>Helium pricing:</strong> IMARC Group (NE Asia March 2026: $152.70/MCF, +21.5% MoM). ChemAnalyst (Q4 2025 contract pricing). Phil Kornbluth via CNBC. DiscoveryAlert (contract $500-600/MCF).</p>
-  <p><strong>South Korea energy and economy:</strong> Carnegie Endowment for International Peace. IEEFA. Korea Economic Institute of America. AInvest, Bitget News (stock market data).</p>
-  <p><strong>Shipbuilding:</strong> BusinessKorea (248 vs. 48 carrier deliveries, 2021-2025). VesselsValue ($71.3B orderbook).</p>
-  <p><strong>Semiconductor supply chain:</strong> USGS 2026 Mineral Commodity Summaries (Qatar 33.2% global helium). KITA (South Korea 64.7% helium from Qatar). Counterpoint Research (SK Hynix 62% HBM, Q2 2025). TrendForce.</p>
+  <p><strong>DDR5 16Gb spot price data:</strong> DRAMeXchange via Tom's Hardware (Sep-Dec 2025: $6.84, $24.83, $27.20). March 2026 spot from Accio/TrendForce ($23.50). December contract price doubling from TeamGroup GM Gerry Chen via DigiTimes. Q1 2026 server DRAM contract increase from TrendForce (~90% QoQ, revised sharply upward from a January preliminary forecast of 60%; actual Q1 outcomes confirmed 90-95%).</p>
+  <p><strong>Helium pricing:</strong> IMARC Group (NE Asia March 2026: $152.70/MCF, +21.5% MoM). ChemAnalyst (Q4 2025 contract pricing). Phil Kornbluth via CNBC. $500-600/MCF figure reflects delivered end-user contract pricing including transportation and distribution; USGS base grade-A price was ~$330/MCF in 2025.</p>
+  <p><strong>South Korea energy and economy:</strong> Carnegie Endowment for International Peace. IEEFA. Korea Economic Institute of America. AInvest, Bitget News (stock market data). The 9.6% renewable share uses South Korea's official classification; under standard IEA definitions excluding fuel cells and IGCC, the figure is approximately 6.5%.</p>
+  <p><strong>Shipbuilding:</strong> BusinessKorea (248 vs. 48 carrier deliveries, 2021-2025). VesselsValue ($71.3B covers the LNG carrier segment of the Korean orderbook; combined Big Three total backlog was approximately $137B as of Q1 2026). LNG carrier newbuild price updated to $250-270M reflecting 2024-2025 contract pricing; the lower bound of $220M reflected 2022 levels.</p>
+  <p><strong>Semiconductor supply chain:</strong> USGS 2026 Mineral Commodity Summaries (Qatar 33.2% global helium). KITA (South Korea 64.7% helium from Qatar). Counterpoint Research (SK Hynix 62% HBM, Q2 2025). TrendForce. Samsung helium stockpile of ~6 months reflects supply chain logistics level; working fab inventory is considerably shorter, approximately 6 weeks. TSMC helium recycling rate updated to 80-90% per Fitch Ratings and industry analysts.</p>
   <p><strong>Scenario estimates:</strong> Forward projections are directional estimates, not precise forecasts. This analysis is not investment advice.</p>
 </section>
 
@@ -503,7 +504,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 
 <script>
 // ═══════════════════════════════════════════════
-// MAPLIBRE GLOBAL MAP
+// MAPLIBRE GLOBAL MAP  (isolated — crash here won't affect charts)
 // ═══════════════════════════════════════════════
 const MAP_STYLE='https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
@@ -566,7 +567,7 @@ const MAP_STEPS={
       {lng:34.9,lat:-6.4,label:'Tanzania — years away',col:'#5a6a70',r:6},
     ],loc:'Global Helium Alternatives — All Limited'},
   he2:{center:[124,30],zoom:5,pitch:15,bearing:0,
-    markers:[{lng:126.8,lat:37.2,label:'Samsung — Hwaseong Fab',col:'#EF9F27',r:12},{lng:121.0,lat:24.0,label:'TSMC — 60-75% recycling',col:'#1D9E75',r:12}],loc:'Fab Stockpile Buffers'},
+    markers:[{lng:126.8,lat:37.2,label:'Samsung — Hwaseong Fab',col:'#EF9F27',r:12},{lng:121.0,lat:24.0,label:'TSMC — 80-90% recycling',col:'#1D9E75',r:12}],loc:'Fab Stockpile Buffers'},
   d0:{center:[127.5,36.5],zoom:5.5,pitch:20,bearing:0,
     markers:[{lng:127.5,lat:36.5,label:'South Korea — DDR5 Origin',col:'#534AB7',r:14}],loc:'South Korea — DDR5 Source'},
   d1:{center:[127.5,36.5],zoom:5,pitch:20,bearing:0,
@@ -583,14 +584,22 @@ const MAP_STEPS={
     markers:[{lng:129,lat:35,label:'Orders migrate → fewer 2028 deliveries',col:'#E24B4A',r:16}],loc:'The Slow Bleed: 2026 decisions = 2028 fleet gaps'},
 };
 
-// MapLibre init
-const gmap=maplibregl.Map? new maplibregl.Map({
-  container:'global-map',
-  style:MAP_STYLE,
-  center:[80,25],zoom:2,pitch:0,bearing:0,
-  interactive:false,
-  attributionControl:false,
-}) : null;
+// MapLibre init — defensive: if CDN failed, gmap=null and charts still run
+let gmap = null;
+try {
+  if (typeof maplibregl !== 'undefined' && maplibregl.Map) {
+    gmap = new maplibregl.Map({
+      container:'global-map',
+      style:MAP_STYLE,
+      center:[80,25],zoom:2,pitch:0,bearing:0,
+      interactive:false,
+      attributionControl:false,
+    });
+  }
+} catch(e) {
+  console.warn('MapLibre failed to init:', e.message);
+  gmap = null;
+}
 
 const mapMarkers=[];
 let routesVisible=false;
@@ -598,7 +607,7 @@ let routesVisible=false;
 function clearMapMarkers(){mapMarkers.forEach(m=>m.remove());mapMarkers.length=0;}
 
 function flyMapTo(cfg){
-  if(!gmap)return;
+  if(!gmap||typeof maplibregl==='undefined')return;
   gmap.flyTo({center:cfg.center,zoom:cfg.zoom,pitch:cfg.pitch??0,bearing:cfg.bearing??0,speed:0.9,curve:1.4,essential:true});
   clearMapMarkers();
   (cfg.markers||[]).forEach(m=>{
@@ -653,8 +662,17 @@ function toggleRoutes(show){
 
 // Wire routes after style loads
 if(gmap){gmap.on('load',()=>{if(routesVisible)toggleRoutes(true);});}
+</script>
 
+<script>
+// ═══════════════════════════════════════════════
+// CHARTS + SCROLL (always runs even if map fails)
+// ═══════════════════════════════════════════════
 gsap.registerPlugin(ScrollTrigger);
+
+// Safe fallbacks if map script block crashed
+if(typeof flyMapTo==='undefined'){window.flyMapTo=()=>{};}
+if(typeof MAP_STEPS==='undefined'){window.MAP_STEPS={};}
 
 const A='#D85A30',A2='#534AB7',TL='#1D9E75',AM='#EF9F27',R='#E24B4A',MU='#3a4a50',LN='#1a2830',SU='#111820';
 
@@ -687,8 +705,8 @@ function stockOpt(show08){
   };
 }
 window.sStock={
-  s0:()=>{stockChart.setOption(stockOpt(false),true);document.getElementById('ct-stock').textContent='2026: KOSPI falls 18% in 4 trading days — worst since 2008';},
-  s1:()=>{stockChart.setOption(stockOpt(true),true);document.getElementById('ct-stock').textContent='2008 vs 2026: speed is the difference — 2026 hit in 4 days, 2008 took a year';}
+  s0:()=>{stockChart.setOption(stockOpt(false),true);document.getElementById('ct-stock').textContent='2026: KOSPI falls 18% in 4 trading days, worst since 2008';},
+  s1:()=>{stockChart.setOption(stockOpt(true),true);document.getElementById('ct-stock').textContent='2008 vs 2026: 2026 hit in 4 days, 2008 took a year';}
 };
 sStock.s0();
 
@@ -713,7 +731,7 @@ function polarOpt(active){
     tooltip:{show:false}
   };
 }
-const polarTitles=['South Korea\'s triple exposure: three supply lines, one chokepoint','Oil 70% + Helium 64.7% + Gas 26% — all routed through the Strait of Hormuz','Every exposure hits the same industries: semiconductor fabs and shipyards'];
+const polarTitles=['South Korea\'s triple exposure: three supply lines, one chokepoint','Oil 70% + Helium 64.7% + Gas 26%, all routed through the Strait of Hormuz','Every exposure hits the same industries: semiconductor fabs and shipyards'];
 window.sPolar={
   p0:()=>{polarChart.setOption(polarOpt(0),true);document.getElementById('ct-polar').textContent=polarTitles[0];},
   p1:()=>{polarChart.setOption(polarOpt(1),true);document.getElementById('ct-polar').textContent=polarTitles[1];},
@@ -731,7 +749,7 @@ function hbmOpt(isHBM){
   const d=isHBM?hbmData:dramData;
   return {
     backgroundColor:'transparent',animation:true,animationDuration:700,
-    title:[{text:isHBM?'HBM (High Bandwidth Memory) — 2026':'DRAM Global Market Share — 2026',left:'center',top:4,textStyle:{color:MU,fontSize:10,fontWeight:'normal',fontFamily:'var(--mono)'}}],
+    title:[{text:isHBM?'HBM (High Bandwidth Memory) 2026':'DRAM Global Market Share, 2026',left:'center',top:4,textStyle:{color:MU,fontSize:10,fontWeight:'normal',fontFamily:'var(--mono)'}}],
     series:[{type:'treemap',top:28,bottom:8,left:4,right:4,breadcrumb:{show:false},roam:false,nodeClick:false,
       levels:[{itemStyle:{borderWidth:2,borderColor:'#0a0e14',gapWidth:3}}],
       label:{position:'inside',align:'center',verticalAlign:'middle'},
@@ -742,7 +760,7 @@ function hbmOpt(isHBM){
       formatter:p=>`${p.name.replace(/\n/g,' ')}: <strong>${p.value}%</strong>`}
   };
 }
-const hbmTitles=['Global HBM market: South Korea holds 90% — every AI GPU depends on it','Global DRAM market: Korea dominates; Micron is the only non-Korean alternative'];
+const hbmTitles=['Global HBM market: South Korea holds 90% of supply; every AI GPU depends on it','Global DRAM market: Korea dominates; Micron is the only non-Korean alternative'];
 window.sHBM={
   h0:()=>{hbmChart.setOption(hbmOpt(true),true);document.getElementById('ct-hbm').textContent=hbmTitles[0];},
   h1:()=>{hbmChart.setOption(hbmOpt(false),true);document.getElementById('ct-hbm').textContent=hbmTitles[1];}
@@ -766,7 +784,7 @@ lngChart.setOption({
   tooltip:{show:true,backgroundColor:SU,borderColor:LN,textStyle:{color:'#e0ddd5',fontFamily:'var(--mono)',fontSize:11},
     formatter:p=>`${p.name.replace(/\n/g,' ')}: <strong>${p.value}%</strong> of deliveries`}
 });
-const lngTitles=["South Korea builds 84% of the world's LNG carriers — HD Hyundai, Samsung, Hanwha","Korean yards hold $71.3B in LNG orderbook — 2/3 of the global backlog by value"];
+const lngTitles=["South Korea builds 84% of the world's LNG carriers: HD Hyundai, Samsung, Hanwha","Korean yards hold $71.3B in LNG orderbook, 2/3 of the global backlog by value"];
 window.sLNG={
   l0:()=>document.getElementById('ct-lng').textContent=lngTitles[0],
   l1:()=>document.getElementById('ct-lng').textContent=lngTitles[1]
@@ -820,7 +838,7 @@ function buildQatarSVG(offline,showImpact){
   svgQ.appendChild(el('text',{x:570,y:352,fill:MU,'font-size':9,'font-family':'var(--mono)'},'Offline'));
   svgQ.appendChild(el('text',{x:550,y:368,fill:MU,'font-size':8,'font-family':'var(--mono)'},'Size ∝ capacity'));
 }
-const qTitles=['Ras Laffan, Qatar — three helium plants, 33% of global supply','All three plants offline since March 2 — when gas stops, helium stops','33% of global helium supply removed in a single week'];
+const qTitles=['Ras Laffan, Qatar: three helium plants, 33% of global supply','All three plants offline since March 2. When gas stops, helium stops.','33% of global helium supply removed in a single week'];
 window.sQatar={
   q0:()=>{buildQatarSVG(false,false);document.getElementById('ct-qatar').textContent=qTitles[0];},
   q1:()=>{buildQatarSVG(true,false);document.getElementById('ct-qatar').textContent=qTitles[1];},
@@ -835,7 +853,7 @@ const heliumChart = echarts.init(document.getElementById('chart-helium'), null, 
 const heMonths=['Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26*','May 26*','Jun 26*'];
 const heCn=[560,555,548,540,535,525,520,520,680,1050];
 const heSp=[128,128,128,128,128,128,153,900,1200,1800];
-const heTitles=['March 2026: Spot at $153/MCF — but it\'s only 2% of the market. Contracts unmoved.','Month 4-6: Contract repricing begins. The 98% starts moving toward $1,000-2,000.','Stockpile buffer: Samsung ~6 months + 18% recycling. TSMC 2+ months, 60-75% rate.'];
+const heTitles=['March 2026: Spot at $153/MCF, only 2% of the market. Contracts unmoved.','Month 4-6: Contract repricing begins. The 98% starts moving toward $1,000-2,000.','Stockpile buffer: Samsung ~6 months supply-chain cover + 18% recycling. TSMC 2+ months, 80-90% rate.'];
 function heliumOpt(step){
   const slice=step>=1?10:7;
   const proj=step>=1;
@@ -846,9 +864,9 @@ function heliumOpt(step){
     yAxis:{type:'value',min:0,max:2000,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:MU,fontSize:10,formatter:v=>'$'+v},splitLine:{lineStyle:{color:LN}}},
     series:[
       {name:'Spot (2%)',type:'line',data:heSp.slice(0,slice),smooth:.3,lineStyle:{color:A,width:2.5,type:'dashed'},symbol:'none',
-        endLabel:{show:true,color:A,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,800+':'$153 — spike'}},
+        endLabel:{show:true,color:A,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,800+':'$153: spike'}},
       {name:'Contract (98%)',type:'line',data:heCn.slice(0,slice),smooth:.3,lineStyle:{color:TL,width:2.5},symbol:'none',
-        endLabel:{show:true,color:TL,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,050 — repricing':'$520 — unmoved'}},
+        endLabel:{show:true,color:TL,fontFamily:'var(--mono)',fontSize:12,fontWeight:700,formatter:()=>proj?'$1,050: repricing':'$520: unmoved'}},
       ...(proj?[{type:'line',markArea:{silent:true,itemStyle:{color:'rgba(216,90,48,.06)'},data:[[{xAxis:'Apr 26*'},{xAxis:'Jun 26*'}]]},data:[]}]:[])
     ],
     legend:{top:5,left:10,textStyle:{color:MU,fontSize:10,fontFamily:'var(--mono)'},
@@ -872,7 +890,7 @@ const ddrHist=[7,6.5,6.8,6.84,12,24.83,27.2,25,23.5,null,null];
 const ddr60d=[null,null,null,null,null,null,null,null,23.5,19,18.5];
 const ddr6mo=[null,null,null,null,null,null,null,null,23.5,31,33.5];
 const ddr3yr=[null,null,null,null,null,null,null,null,23.5,37,39.5];
-const ddrTitles=['The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025','The AI boom ate its own supply chain — HBM crowded out standard DRAM','60-day resolution: stockpiles hold, spot retreats to $18-20. GPU hour +2-4%.','6-month scenario: helium contracts reprice, fabs cut utilisation. GPU hour +12-20%.','3-5 year force majeure: structural cost reset. GPU hour +30-50%.'];
+const ddrTitles=['The fire already burning: DDR5 16Gb rose 3.4× before Hormuz, Sep to Dec 2025','The AI boom ate its own supply chain: HBM crowded out standard DRAM','60-day resolution: stockpiles hold, spot retreats to $18-20. GPU hour +2-4%.','6-month scenario: helium contracts reprice, fabs cut utilisation. GPU hour +12-20%.','3-5 year force majeure: structural cost reset. GPU hour +30-50%.'];
 const ddrAnnotations=[{x:'Sep 25',y:6.84,txt:'$6.84\nbaseline',c:A2},{x:'Nov 25',y:24.83,txt:'$24.83',c:A},{x:'Dec 25',y:27.2,txt:'$27.20\npeak',c:A},{x:'Mar 26',y:23.5,txt:'$23.50\nnow',c:AM}];
 function ddr5Opt(step){
   const show60=step>=2, show6m=step>=3, show3y=step>=4;

@@ -10,6 +10,12 @@
 #     index drives the chart's `activeStep`, so chart animations resume smoothly
 #     between scrolls instead of re-mounting.
 #
+# Paragraph slicing: `paragraphs: N` (or `[start, end]`) on a section or
+# subsection pulls only that paragraph index from the resolved anchor. We use
+# this so each chart step reveals its OWN bullet from a multi-bullet anchor —
+# instead of re-rendering the whole text block per step (which created the
+# repeated-paragraphs duplication callouts in the previous review).
+#
 # kind: stat → renders the heading as a giant number.
 # kind: hero → renders the pretext-styled animated title.
 #
@@ -37,10 +43,13 @@ sections:
       bearing: 0
       opacity: 0.45
 
-  # ─── 18% — big-number stat ───
+  # ─── 18% — big-number stat. Empty paragraph slice keeps the panel
+  # caption-free — the giant 18% IS the message, and the "18%" section's
+  # paragraphs are reserved for the next viewport's stock chart steps. ───
   - id: market-crash-stat
     kind: stat
     text: "18%"
+    paragraphs: [0, 0]
     map:
       center: [128, 34.5]
       zoom: 6.2
@@ -52,7 +61,9 @@ sections:
           label: "Seoul — KOSPI"
           color: "#E24B4A"
 
-  # ─── Stock candlestick: 2026 vs 2008 (2 chart steps) ───
+  # ─── Stock candlestick: 2026 vs 2008 (2 chart steps).
+  # Step 0 = first paragraph of "18%" (the headline crash).
+  # Step 1 = second paragraph (the "invisible crisis" hand-off into Act I). ───
   - id: stock-history
     chart: stock-candlestick
     map:
@@ -65,10 +76,13 @@ sections:
           label: "Seoul"
           color: "#E24B4A"
     subsections:
-      - text: "18%"                                    # 2026 crash
-      - text: "Act I"                                  # 2008 comparison context
+      - text: "18%"
+        paragraphs: 0
+      - text: "18%"
+        paragraphs: 1
 
-  # ─── Act I opener ───
+  # ─── Act I opener — the 3 intro paragraphs of "## Act I". No chart;
+  # this is the prose hand-off into the triple-exposure visual. ───
   - id: act-i-intro
     text: "Act I"
     map:
@@ -77,7 +91,10 @@ sections:
       pitch: 20
       opacity: 0.5
 
-  # ─── Triple exposure → polar chart (3 chart steps) ───
+  # ─── Triple exposure → polar chart (3 chart steps, 3 commodity bullets).
+  # Each subsection slices ONE paragraph (one commodity bullet) from the
+  # "triple exposure" section so the bullets reveal one-by-one as the polar
+  # chart advances Oil → Gas → Helium. ───
   - id: triple-exposure
     chart: polar-exposure
     map:
@@ -86,21 +103,25 @@ sections:
       pitch: 0
       opacity: 0.5
       pins:
-        - coordinates: [51.53, 25.97]
-          label: "Qatar — gas + helium"
-          color: "#1D9E75"
         - coordinates: [49.5, 27.0]
           label: "Middle East crude"
           color: "#EF9F27"
+        - coordinates: [51.53, 25.97]
+          label: "Qatar — gas + helium"
+          color: "#1D9E75"
         - coordinates: [127.0, 37.56]
           label: "Korean fabs"
           color: "#D85A30"
     subsections:
       - text: "Act I > The triple exposure"
-      - text: "Act I > The memory dominance"
-      - text: "Act I > One grid, all exposed"
+        paragraphs: 0   # Oil
+      - text: "Act I > The triple exposure"
+        paragraphs: 1   # Gas (LNG)
+      - text: "Act I > The triple exposure"
+        paragraphs: 2   # Helium
 
-  # ─── Memory dominance → HBM/DRAM treemap (3 chart steps) ───
+  # ─── Memory dominance → HBM/DRAM treemap (3 chart steps).
+  # The "memory dominance" markdown has 3 paragraphs — perfect for 3 steps. ───
   - id: memory-dominance
     chart: hbm-treemap
     map:
@@ -121,10 +142,16 @@ sections:
           color: "#D85A30"
     subsections:
       - text: "Act I > The memory dominance"
-      - text: "Act I > The triple exposure"
-      - text: "Act I > One grid, all exposed"
+        paragraphs: 0
+      - text: "Act I > The memory dominance"
+        paragraphs: 1
+      - text: "Act I > The memory dominance"
+        paragraphs: 2
 
-  # ─── Shipbuilding dominance → LNG carrier treemap (2 chart steps) ───
+  # ─── Shipbuilding dominance → LNG carrier treemap (2 chart steps).
+  # The "shipbuilding dominance" markdown has 3 paragraphs. We use the first
+  # two as the chart-step bullets. The "one grid, all exposed" anchor lives
+  # on its own next, as the closing paragraph that ties Act I together. ───
   - id: shipbuilding-dominance
     chart: lng-treemap
     map:
@@ -142,7 +169,20 @@ sections:
           color: "#1D9E75"
     subsections:
       - text: "Act I > The shipbuilding dominance"
-      - text: "Act I > One grid, all exposed"
+        paragraphs: 0
+      - text: "Act I > The shipbuilding dominance"
+        paragraphs: 1
+
+  # ─── Act I closer: "One grid, all exposed" — text-only bridge to Act II.
+  # Renders without a chart so the persistent map (Korea wide-shot) carries
+  # the visual while the prose drives the hand-off. ───
+  - id: one-grid
+    text: "Act I > One grid, all exposed"
+    map:
+      center: [128, 36]
+      zoom: 5.5
+      pitch: 15
+      opacity: 0.5
 
   # ─── Act II opener ───
   - id: act-ii-intro
@@ -154,7 +194,10 @@ sections:
       bearing: -20
       opacity: 0.5
 
-  # ─── Helium price chart (3 chart steps, 3 subsections — perfect 1:1) ───
+  # ─── Helium price chart (3 chart steps, 3 subsections — one per beat).
+  # Each helium sub-anchor has multiple paragraphs in the markdown; we slice
+  # to ONE paragraph per chart step so the text doesn't bloat the panel and
+  # the bullets advance in lockstep with the chart's title. ───
   - id: helium-arc
     chart: helium-price
     map:
@@ -184,7 +227,10 @@ sections:
       pitch: 0
       opacity: 0.5
 
-  # ─── DRAM trendline → 4 chart steps via 4 subsections ───
+  # ─── DRAM bar chart → backward-looking case. 4 chart steps, mapped to
+  # the historical buildup beats: trendline opener → 3.4× spike → driver
+  # was AI not war → pre-existing fire (DRAM +172% before Hormuz). Each
+  # step pulls one paragraph so the case builds visibly with the bars. ───
   - id: dram-arc
     chart: dram-price
     map:
@@ -198,11 +244,17 @@ sections:
           color: "#D85A30"
     subsections:
       - text: "Act III > The trendline"
+        paragraphs: 0
+      - text: "Act III > The trendline"
+        paragraphs: 1
+      - text: "Act III > The trendline"
+        paragraphs: 3
       - text: "Act III > The pre-existing fire"
-      - text: "Act III > What happens next"
-      - text: "Act III > The assumption nobody is stress-testing"
+        paragraphs: 0
 
-  # ─── DDR5 area chart with 5 scenario bands ───
+  # ─── DDR5 area chart → forward-looking scenarios. 5 chart steps mapped
+  # to "what happens next" (intro + 3 scenarios) + the stress-test closer.
+  # No overlap with the DRAM chart above — this one is the FUTURE story. ───
   - id: ddr5-arc
     chart: ddr5-area
     map:
@@ -210,10 +262,14 @@ sections:
       zoom: 3.5
       opacity: 0.4
     subsections:
-      - text: "Act III > The pre-existing fire"
-      - text: "Act III > The trendline"
       - text: "Act III > What happens next"
+        paragraphs: 0
       - text: "Act III > What happens next"
+        paragraphs: 1
+      - text: "Act III > What happens next"
+        paragraphs: 2
+      - text: "Act III > What happens next"
+        paragraphs: 3
       - text: "Act III > The assumption nobody is stress-testing"
 
   # ─── Act IV opener ───
@@ -226,11 +282,12 @@ sections:
       bearing: 10
       opacity: 0.5
 
-  # ─── Slow bleed: Korean yards carry the Act IV visual via the persistent map.
-  # Main's editorial rewrite dropped the feedback-loop SVG ("map carries the
-  # visual") so this section has no chart panel — the three subsections share
-  # a single map state focused on the Korean shipbuilding cluster (Ulsan +
-  # Geoje), with Qatar pinned as the LNG customer at risk.
+  # ─── Slow bleed: Korean yards carry the Act IV visual via the persistent
+  # map. Main's editorial rewrite dropped the feedback-loop SVG so this
+  # section has no chart panel. Three subsections share a single map state
+  # focused on the Korean shipbuilding cluster (Ulsan + Geoje), with Qatar
+  # pinned as the LNG customer at risk. Each pulls its own anchor — no
+  # paragraph slicing because each anchor is already a single tight beat. ───
   - id: slow-bleed
     map:
       center: [128.95, 35.2]
@@ -253,9 +310,30 @@ sections:
       - text: "Act IV > Where Korean ships go"
       - text: "Act IV > The signal to watch now"
 
-  # ─── What to watch ───
-  - id: what-to-watch
+  # ─── What to watch — one paragraph (audience bullet) per snap target.
+  # Three subsections, each pulling one paragraph of the same anchor. ───
+  - id: what-to-watch-procurement
     text: "What to watch"
+    paragraphs: 0
+    heading: "What to watch · Procurement"
+    map:
+      center: [80, 25]
+      zoom: 2.2
+      opacity: 0.35
+
+  - id: what-to-watch-investors
+    text: "What to watch"
+    paragraphs: 1
+    heading: "What to watch · Investors"
+    map:
+      center: [80, 25]
+      zoom: 2.2
+      opacity: 0.35
+
+  - id: what-to-watch-builders
+    text: "What to watch"
+    paragraphs: 2
+    heading: "What to watch · AI builders"
     map:
       center: [80, 25]
       zoom: 2.2

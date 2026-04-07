@@ -81,13 +81,21 @@ export function getSubsections(sections: ContentSection[], parentHeading: string
 
 /**
  * Extract clean paragraphs from a section body (strips empty lines).
+ *
+ * Strips leading `####` markers — the editorial markdown sometimes uses
+ * `####**Label**` to style a bullet without making it a real heading. We
+ * preserve the inline `**bold**` but drop the heading prefix so the renderer
+ * treats them as regular bullet paragraphs. Horizontal rules (`---`) are
+ * dropped so YAML `paragraphs: N` indices stay aligned with the visible
+ * paragraphs of a section instead of slipping by 1 whenever a section ends
+ * with a `---` separator.
  */
 export function getParagraphs(section: ContentSection): string[] {
   return section.body
     .join('\n')
     .split(/\n\n+/)
-    .map((p) => p.trim())
-    .filter(Boolean)
+    .map((p) => p.trim().replace(/^#{4,6}\s*/, ''))
+    .filter((p) => p && !/^-{3,}$/.test(p))
 }
 
 /**

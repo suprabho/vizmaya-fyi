@@ -226,25 +226,32 @@ sections:
       bearing: 10
       opacity: 0.5
 
-  # ─── Feedback loop diagram (2 chart steps) ───
-  - id: feedback-arc
-    chart: feedback-loop
+  # ─── Slow bleed: Korean yards carry the Act IV visual via the persistent map.
+  # Main's editorial rewrite dropped the feedback-loop SVG ("map carries the
+  # visual") so this section has no chart panel — the three subsections share
+  # a single map state focused on the Korean shipbuilding cluster (Ulsan +
+  # Geoje), with Qatar pinned as the LNG customer at risk.
+  - id: slow-bleed
     map:
       center: [128.95, 35.2]
-      zoom: 7
-      pitch: 50
-      bearing: 20
+      zoom: 6.5
+      pitch: 45
+      bearing: 15
       opacity: 0.6
       pins:
         - coordinates: [129.31, 35.54]
-          label: "HD Hyundai"
+          label: "HD Hyundai — Ulsan"
           color: "#1D9E75"
         - coordinates: [128.62, 34.88]
-          label: "Samsung Heavy / Hanwha"
+          label: "Samsung Heavy + Hanwha — Geoje"
           color: "#1D9E75"
+        - coordinates: [51.5, 25.3]
+          label: "Qatar — LNG customer at risk"
+          color: "#E24B4A"
     subsections:
-      - text: "Act IV > The loop"
-      - text: "Act IV > The circuit breakers"
+      - text: "Act IV > One causal step"
+      - text: "Act IV > Where Korean ships go"
+      - text: "Act IV > The signal to watch now"
 
   # ─── What to watch ───
   - id: what-to-watch

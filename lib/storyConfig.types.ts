@@ -27,6 +27,18 @@ export interface StorySubsectionConfig {
   id?: string
   /** Markdown anchor reference (e.g. "Act II > The misleading spike") */
   text: string
+  /**
+   * Optional 0-based slice into the resolved paragraphs of `text`.
+   * When set, only that paragraph(s) is shown — used to reveal bullets one
+   * at a time as the chart's `activeStep` advances. Examples:
+   *   paragraphs: 0       → show only the first paragraph
+   *   paragraphs: [0, 2]  → show paragraphs at indices 0..2 (inclusive end? no — 0..1)
+   *   omit                → show all paragraphs (legacy behaviour)
+   * Use [start, end] semantics matching Array.slice (end is exclusive).
+   */
+  paragraphs?: number | [number, number]
+  /** Optional override heading shown above the paragraphs (replaces the anchor's own heading). */
+  heading?: string
 }
 
 export interface StorySectionConfig {
@@ -46,6 +58,10 @@ export interface StorySectionConfig {
    * (so chart animations resume from where the previous subsection left off).
    */
   subsections?: StorySubsectionConfig[]
+  /** Same paragraph-slice semantics as StorySubsectionConfig.paragraphs. */
+  paragraphs?: number | [number, number]
+  /** Optional override heading for the section's text panel. */
+  heading?: string
   /** Optional foreground chart id; resolved by ChartPanel registry. */
   chart?: string
   /** Optional eyebrow line shown above the hero title (kind: hero only). */

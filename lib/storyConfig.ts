@@ -48,6 +48,23 @@ export function loadStoryConfig(slug: string): StoryConfig {
     throw new Error(`Story config ${slug}.config.yaml has no sections`)
   }
 
+  // `paragraphs` may be `N` (number — single index) or `[start, end]` (slice).
+  // Caught here so a typo in YAML produces a clear error rather than a silent
+  // empty render later.
+  const validateParagraphs = (label: string, p: unknown): void => {
+    if (p === undefined) return
+    if (typeof p === 'number') {
+      if (!Number.isInteger(p) || p < 0) {
+        throw new Error(`${label}: 'paragraphs' must be a non-negative integer or [start, end]`)
+      }
+      return
+    }
+    if (Array.isArray(p) && p.length === 2 && p.every((n) => Number.isInteger(n) && n >= 0)) {
+      return
+    }
+    throw new Error(`${label}: 'paragraphs' must be a non-negative integer or [start, end]`)
+  }
+
   raw.sections.forEach((s, i) => {
     if (!s || typeof s !== 'object') {
       throw new Error(`Section ${i} in ${slug}.config.yaml is not an object`)
@@ -59,6 +76,7 @@ export function loadStoryConfig(slug: string): StoryConfig {
         `Section ${i} in ${slug}.config.yaml needs either 'text' or a non-empty 'subsections' array`
       )
     }
+    validateParagraphs(`Section ${i} in ${slug}.config.yaml`, s.paragraphs)
     if (hasSubs) {
       s.subsections!.forEach((sub, j) => {
         if (!sub || typeof sub !== 'object' || typeof sub.text !== 'string' || sub.text.trim().length === 0) {
@@ -66,6 +84,10 @@ export function loadStoryConfig(slug: string): StoryConfig {
             `Section ${i} subsection ${j} in ${slug}.config.yaml is missing 'text'`
           )
         }
+        validateParagraphs(
+          `Section ${i} subsection ${j} in ${slug}.config.yaml`,
+          sub.paragraphs
+        )
       })
     }
     if (!s.map || !Array.isArray(s.map.center) || s.map.center.length !== 2) {

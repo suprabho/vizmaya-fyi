@@ -51,6 +51,21 @@ export default async function StoryPage({ params }: RouteParams) {
   // viewport-tall snap target. Sections with N subsections expand into N units
   // that share the parent's map state and chart but have their own text anchor.
   // Misses are warned but not fatal — the section renders an empty placeholder.
+  //
+  // Paragraph slicing: a subsection (or top-level section) may set `paragraphs:
+  // 0` or `paragraphs: [0, 2]` to pull just one or a slice of paragraphs from
+  // the resolved anchor. This is how we reveal bullets one-by-one as a chart's
+  // activeStep advances — without re-pulling the same anchor and re-rendering
+  // the whole text block per chart step.
+  const sliceParagraphs = (
+    all: string[],
+    spec: number | [number, number] | undefined
+  ): string[] => {
+    if (spec === undefined) return all
+    if (typeof spec === 'number') return all.slice(spec, spec + 1)
+    return all.slice(spec[0], spec[1])
+  }
+
   const units: ResolvedUnit[] = []
   config.sections.forEach((section, parentIndex) => {
     const subs = section.subsections
@@ -58,23 +73,25 @@ export default async function StoryPage({ params }: RouteParams) {
       subs.forEach((sub, subIndex) => {
         const md = resolveAnchor(story!.sections, sub.text)
         if (!md) console.warn(`[story:${slug}] anchor not found: "${sub.text}"`)
+        const allParagraphs = md ? getParagraphs(md) : []
         units.push({
           parentIndex,
           subIndex,
           parentConfig: section,
-          heading: md?.heading,
-          paragraphs: md ? getParagraphs(md) : [],
+          heading: sub.heading ?? md?.heading,
+          paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
         })
       })
     } else if (section.text) {
       const md = resolveAnchor(story!.sections, section.text)
       if (!md) console.warn(`[story:${slug}] anchor not found: "${section.text}"`)
+      const allParagraphs = md ? getParagraphs(md) : []
       units.push({
         parentIndex,
         subIndex: 0,
         parentConfig: section,
-        heading: md?.heading,
-        paragraphs: md ? getParagraphs(md) : [],
+        heading: section.heading ?? md?.heading,
+        paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
       })
     }
   })

@@ -161,29 +161,42 @@ Watch the helium contract price. That's the leading indicator. When it moves, th
 
 ---
 
-## Act IV: The feedback loop nobody has connected
+## Act IV: The slow bleed — decisions made now, deliveries missed in 2028
 
 South Korea makes the chips. That's the story everyone has told.
 
 Here's the story nobody has told.
 
-South Korea also builds the ships that carry the gas that the rest of the world needs to replace Qatar's output. This isn't a separate crisis. It's an additional bottleneck in the same supply chain.
+South Korea also builds the ships that carry the gas the world needs to replace Qatar's output. And the decisions being made in Korean shipyards *this quarter* will determine global LNG carrier capacity in 2028. That's the hidden time bomb nobody is pricing — not because it's speculative, but because the lag is longer than most analysts' forecast horizon.
 
-The same economy. The same energy grid. The same chokepoint.
+### One causal step. Thirty-six months of consequence.
 
-### The loop
+Korean yards currently hold **$71.3 billion** in LNG carrier backlog. A 174,000-cubic-metre carrier takes 30-36 months from steel cutting to delivery. The energy crisis hitting Korean yards now — higher electricity costs, naphtha shortages, potential labour disruption — doesn't stop the weld today. It erodes margin. It makes new contract pricing uncompetitive. It makes buyers look at alternatives.
 
-Korea's energy crisis puts pressure on the shipyards that build the LNG carriers the world needs to transport replacement gas. If carrier construction slips, the global LNG fleet grows more slowly at exactly the moment the world needs more ships. If there aren't enough ships, the gas shortage deepens. If the shortage deepens, Korean industry takes a harder hit.
+If a buyer redirects an order to a Chinese yard in Q2 2026, that ship is not delivered by a Korean yard in Q4 2028. The world's LNG fleet grows more slowly at exactly the moment it needs maximum capacity to compensate for the Qatari shortfall.
 
-The loop tightens. And it feeds directly back into every cost scenario in Act III.
+### Where Korean ships go
 
-### The circuit breakers
+Korean yards deliver to the entire world. Their customers are the operators of global LNG infrastructure:
 
-The doom loop has brakes. Korea is restarting five nuclear reactors and easing coal restrictions. Shipbuilding is moderately energy-intensive, far less than steelmaking or semiconductor fabrication. There are approximately 60 idle LNG carriers providing buffer. Any disruption to shipyard output today only affects deliveries in 2028-2029, given 30-36 month build timelines.
+- **Japan** — the world's largest LNG importer by volume
+- **China** — the fastest-growing LNG buyer
+- **Europe** — rerouting from Russian pipeline gas to LNG since 2022
+- **Qatar itself** — QatarEnergies uses Korean-built carriers for its own exports
+- **USA** — Cheniere Energy's fleet at Sabine Pass, Louisiana
+- **India, Malaysia, Australia** — the rest of the global LNG trade network
 
-The loop grinds. It doesn't spiral immediately. But the longer the war lasts, the deeper it cuts.
+Every country on that list is simultaneously trying to source *more* LNG to replace Qatari supply. And the one country that builds the ships to carry that gas is under energy pressure from the same crisis.
 
-If the crisis extends for years, Korean shipbuilding competitiveness erodes. Orders migrate to Chinese yards that are already capturing a growing share of the market. The 84% Korean dominance of LNG carrier deliveries begins to fracture. And that fracture arrives at exactly the moment when the global energy system needs maximum carrier capacity to compensate for the Qatari shortfall.
+### The signal to watch now
+
+This is not a theoretical loop. It is a measurable, trackable signal with a specific lead time.
+
+**Watch Korean yard new-order announcements in Q2-Q3 2026.** A slowdown in new LNG carrier orders from Korean yards — relative to Chinese yards — is the early indicator. Chinese yards have been gaining share since 2023 (from ~15% to ~22% of global deliveries). If Korean energy costs make their bids uncompetitive at the margin, that trend accelerates.
+
+The result arrives in 2028: fewer LNG carriers available, at the moment global LNG trade needs maximum fleet capacity. Not a crisis. A chronic supply squeeze. The kind that reprices shipping rates quietly, over years, exactly as this story's title suggests.
+
+The slow bleed.
 
 ---
 

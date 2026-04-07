@@ -47,11 +47,11 @@ But the fuel rationing is the visible crisis. The invisible one is what's happen
 
 ### The triple exposure
 
-**Oil: 70%** of crude from the Middle East. Used for naphtha — a feedstock for semiconductor chemicals, not just fuel. Now on the government's "economic security" watchlist.
+####**Oil: 70%** of crude from the Middle East. Used for naphtha — a feedstock for semiconductor chemicals, not just fuel. Now on the government's "economic security" watchlist.
 
-**Gas (LNG): 26%** of electricity generated from gas. Qatar declared force majeure on Korean contracts. SK Hynix was building an LNG plant to power its own fabs. That gas now carries a 3-5 year disruption notice.
+####**Gas (LNG): 26%** of electricity generated from gas. Qatar declared force majeure on Korean contracts. SK Hynix was building an LNG plant to power its own fabs. That gas now carries a 3-5 year disruption notice.
 
-**Helium: 64.7%** of helium from Qatar. The highest dependency of any major chip-producing nation. No substitute exists for plasma etch cooling.
+####**Helium: 64.7%** of helium from Qatar. The highest dependency of any major chip-producing nation. No substitute exists for plasma etch cooling.
 
 ### The memory dominance
 

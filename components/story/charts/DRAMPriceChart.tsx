@@ -6,7 +6,7 @@ import type { EChartsOption } from 'echarts'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const ACCENT = '#D85A30'
-const ACCENT2 = '#534AB7'
+const ACCENT2 = '#155dfc'
 const MUTED = '#3a4a50'
 const LINE = '#1a2830'
 

@@ -13,7 +13,7 @@ const FALLBACK = {
   ACCENT2: '#155dfc',
   MUTED: '#3a4a50',
   LINE: '#1a2830',
-  TEAL: '#1D9E75',
+  GREEN: '#009966 ',
   AMBER: '#EF9F27',
 }
 
@@ -27,7 +27,7 @@ function readTheme(el: Element | null) {
     ACCENT2: get('--color-accent2', FALLBACK.ACCENT2),
     MUTED: '#3a4a50', // axis chrome — intentionally dimmer than --color-muted
     LINE: get('--color-line', FALLBACK.LINE),
-    TEAL: get('--color-teal', FALLBACK.TEAL),
+    GREEN: get('--color-green', FALLBACK.GREEN),
     AMBER: get('--color-amber', FALLBACK.AMBER)
   }
 }
@@ -94,7 +94,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [theme, setTheme] = useState(FALLBACK)
   useEffect(() => setTheme(readTheme(containerRef.current)), [])
-  const { RED, ACCENT2, MUTED, LINE, TEAL, AMBER } = theme
+  const { RED, ACCENT2, MUTED, LINE, GREEN, AMBER } = theme
 
   // Step 1: overlap both series on a single value-axis "trading days from peak".
   // 2026 collapses into the leftmost ~6 days while 2008 stretches across ~250.
@@ -177,9 +177,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
           data: data2008Overlay,
           barWidth: 24, // candle body width in pixels
           itemStyle: {
-            color: TEAL,        // up-day fill
+            color: GREEN,        // up-day fill
             color0: RED,    // down-day fill (blue for GFC)
-            borderColor: TEAL,  // up-day border
+            borderColor: GREEN,  // up-day border
             borderColor0: RED, // down-day border
           },
           // Dashed horizontal line marking the −54% trough
@@ -210,9 +210,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
           data: data2026Overlay,
           barWidth: 4, // thinner candles since these are daily samples
           itemStyle: {
-            color: TEAL,       // up-day fill
+            color: GREEN,       // up-day fill
             color0: RED,       // down-day fill (red for the crash)
-            borderColor: TEAL,
+            borderColor: GREEN,
             borderColor0: RED,
           },
           // Amber tinted band highlighting the 4-day collapse window
@@ -387,9 +387,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
         yAxisIndex: 0,
         data: data2026,
         itemStyle: {
-          color: TEAL,        // up-day fill
+          color: GREEN,        // up-day fill
           color0: RED,        // down-day fill
-          borderColor: TEAL,  // up-day border
+          borderColor: GREEN,  // up-day border
           borderColor0: RED,  // down-day border
         },
         // Dashed line + label marking the −18% level
@@ -422,9 +422,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
               yAxisIndex: 1,
               data: data2008,
               itemStyle: {
-                color: TEAL,
+                color: GREEN,
                 color0: RED,
-                borderColor: TEAL,
+                borderColor: GREEN,
                 borderColor0: RED,
               },
               markLine: {

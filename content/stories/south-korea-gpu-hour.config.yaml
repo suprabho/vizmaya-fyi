@@ -43,28 +43,13 @@ sections:
       bearing: 0
       opacity: 0.45
 
-  # ─── 18% — big-number stat. Empty paragraph slice keeps the panel
-  # caption-free — the giant 18% IS the message, and the "18%" section's
-  # paragraphs are reserved for the next viewport's stock chart steps. ───
-  - id: market-crash-stat
-    kind: stat
-    text: "18%"
-    paragraphs: [0, 0]
-    map:
-      center: [128, 34.5]
-      zoom: 6.2
-      pitch: 30
-      bearing: 0
-      opacity: 0.45
-      pins:
-        - coordinates: [127.0, 37.56]
-          label: "Seoul — KOSPI"
-          color: "#E24B4A"
-
   # ─── Stock candlestick: 2026 vs 2008 (2 chart steps).
   # Step 0 = first paragraph of "18%" (the headline crash).
-  # Step 1 = second paragraph (the "invisible crisis" hand-off into Act I). ───
+  # Step 1 = second paragraph (the "invisible crisis" hand-off into Act I).
+  # kind: stat → text card renders the "18%" anchor as a giant number with
+  # the sliced paragraph as caption beneath, sitting under the chart panel. ───
   - id: stock-history
+    kind: stat
     chart: stock-candlestick
     map:
       center: [128, 34.5]

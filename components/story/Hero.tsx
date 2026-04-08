@@ -19,7 +19,7 @@ const LANDSCAPE_SEGMENTS: TitleSegment[] = [
   { type: 'text', content: ' ' },
   { type: 'icon-pill', icon: oilDrumIcon, text: 'LNG', color: '#155dfc' },
   { type: 'text', content: ' ' },
-  { type: 'icon-pill', icon: oilDrumIcon, text: 'Oil', color: '#1a1a1a' },
+  { type: 'icon-pill', icon: oilDrumIcon, text: 'Oil', color: '#f54900' },
   { type: 'text', content: ' ' },
   { type: 'icon-pill', icon: oilDrumIcon, text: 'He', color: '#2d7a4f' },
 ]
@@ -40,7 +40,7 @@ const PORTRAIT_SEGMENTS: TitleSegment[] = [
   { type: 'break' },
   { type: 'icon-pill', icon: oilDrumIcon, text: 'LNG', color: '#155dfc' },
   { type: 'text', content: ' ' },
-  { type: 'icon-pill', icon: oilDrumIcon, text: 'Oil', color: '#1a1a1a' },
+  { type: 'icon-pill', icon: oilDrumIcon, text: 'Oil', color: '#f54900' },
   { type: 'text', content: ' ' },
   { type: 'icon-pill', icon: oilDrumIcon, text: 'He', color: '#2d7a4f' },
 ]

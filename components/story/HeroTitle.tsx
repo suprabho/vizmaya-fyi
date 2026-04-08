@@ -14,7 +14,7 @@ import boltIcon from '@iconify-icons/noto/high-voltage'
 export type TitleSegment =
   | { type: 'text'; content: string }
   | { type: 'pill'; icon: IconifyIcon; text: string; color?: string }
-  | { type: 'icon-pill'; icon: IconifyIcon; text: string; color: string }
+  | { type: 'icon-pill'; icon: IconifyIcon; text: string; color: string; noFilter?: boolean }
   | { type: 'break' }
 
 // ── Internal tokens ────────────────────────────────────────────
@@ -34,6 +34,7 @@ type IconPillToken = {
   text: string
   color: string
   width: number
+  noFilter?: boolean
 }
 type BreakToken = { kind: 'break' }
 type Token = WordToken | SpaceToken | PillToken | IconPillToken | BreakToken
@@ -107,6 +108,7 @@ function tokenize(segments: TitleSegment[], font: string, fontSize: number): Tok
         text: seg.text,
         color: seg.color,
         width: iconPillSize + iconPillPad * 2,
+        noFilter: seg.noFilter,
       })
     } else if (seg.type === 'break') {
       tokens.push({ kind: 'break' })
@@ -368,7 +370,9 @@ export default function HeroTitle({ segments, portraitSegments, lineHeight = 1.2
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              filter: isNearBlack(token.color)
+                              filter: token.noFilter
+                                ? undefined
+                                : isNearBlack(token.color)
                                 ? 'grayscale(1) brightness(0.2)'
                                 : `grayscale(1) brightness(0.6) sepia(1) hue-rotate(${hexToHueRotate(token.color)}deg) saturate(3) brightness(1.2)`,
                             }}

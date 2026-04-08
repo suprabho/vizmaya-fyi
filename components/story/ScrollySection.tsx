@@ -77,7 +77,7 @@ export default function ScrollySection({ block }: { block: ScrollySectionBlock }
       )}
 
       {/* Step cards — scroll over the sticky chart */}
-      <div className="relative z-10">
+      <div className="relative z-0">
         {block.steps.map((step, i) => (
           <div
             key={i}

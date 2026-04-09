@@ -2,30 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const AMBER = '#EF9F27'
-const TEAL = '#00d5be'
-const ACCENT2 = '#155dfc'
-const ACCENT = '#D85A30'
-const RED = '#E24B4A'
-const MUTED = '#3a4a50'
-
-// LNG carrier deliveries 2021-2025 (BusinessKorea: 248 Korea vs 48 China, total ~296+)
-// Global market share by shipyard/country
-const carriers = [
-  // Korean yards (84% of deliveries)
-  { name: 'HD Hyundai\n(Korea)', value: 34, color: ACCENT2, country: 'Korea' },
-  { name: 'Samsung Heavy\n(Korea)', value: 28, color: ACCENT2, country: 'Korea' },
-  { name: 'Hanwha Ocean\n(Korea)', value: 22, color: ACCENT2, country: 'Korea' },
-  // Chinese yards (~11%)
-  { name: 'COSCO\n(China)', value: 6, color: ACCENT, country: 'China' },
-  { name: 'Hudong-Zhonghua\n(China)', value: 5, color: ACCENT, country: 'China' },
-  // Others (~5%)
-  { name: 'Chantiers de\nl\'Atlantique (EU)', value: 3, color: TEAL, country: 'Europe' },
-  { name: 'Others', value: 2, color: MUTED, country: 'Other' },
-]
 
 const TITLES: Record<number, string> = {
   0: 'South Korea builds 84% of the world\'s LNG carriers — HD Hyundai, Samsung, Hanwha',
@@ -33,6 +12,18 @@ const TITLES: Record<number, string> = {
 }
 
 export default function LNGCarrierTreemap({ activeStep }: { activeStep: number }) {
+  const { teal: TEAL, accent2: ACCENT2, accent: ACCENT, muted: MUTED } = useChartColors()
+
+  const carriers = [
+    { name: 'HD Hyundai\n(Korea)', value: 34, color: ACCENT2, country: 'Korea' },
+    { name: 'Samsung Heavy\n(Korea)', value: 28, color: ACCENT2, country: 'Korea' },
+    { name: 'Hanwha Ocean\n(Korea)', value: 22, color: ACCENT2, country: 'Korea' },
+    { name: 'COSCO\n(China)', value: 6, color: ACCENT, country: 'China' },
+    { name: 'Hudong-Zhonghua\n(China)', value: 5, color: ACCENT, country: 'China' },
+    { name: 'Chantiers de\nl\'Atlantique (EU)', value: 3, color: TEAL, country: 'Europe' },
+    { name: 'Others', value: 2, color: MUTED, country: 'Other' },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[0]
 
   const treemapData = carriers.map(d => ({

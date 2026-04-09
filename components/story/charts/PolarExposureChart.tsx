@@ -2,21 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#f54900'
-const ACCENT2 = '#155dfc'
-const HELIUM = '#009966'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
-const SURFACE = '#111820'
-
-const exposures = [
-  { name: 'Oil', value: 70, color: ACCENT, desc: 'from the Middle East', detail: 'Naphtha feedstock for semiconductor chemicals' },
-  { name: 'Helium', value: 64.7, color: HELIUM, desc: 'from Qatar', detail: 'Highest dependency of any major chip-producing nation' },
-  { name: 'Gas (LNG)', value: 26, color: ACCENT2, desc: 'of electricity from gas', detail: 'Qatar declared force majeure on Korean contracts' },
-]
 
 const TITLES: Record<number, string> = {
   0: "South Korea's triple exposure: three supply lines, one chokepoint",
@@ -25,6 +13,14 @@ const TITLES: Record<number, string> = {
 }
 
 export default function PolarExposureChart({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, accent2: ACCENT2, green: HELIUM, muted: MUTED, line: LINE, surface: SURFACE } = useChartColors()
+
+  const exposures = [
+    { name: 'Oil', value: 70, color: ACCENT, desc: 'from the Middle East', detail: 'Naphtha feedstock for semiconductor chemicals' },
+    { name: 'Helium', value: 64.7, color: HELIUM, desc: 'from Qatar', detail: 'Highest dependency of any major chip-producing nation' },
+    { name: 'Gas (LNG)', value: 26, color: ACCENT2, desc: 'of electricity from gas', detail: 'Qatar declared force majeure on Korean contracts' },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[0]
 
   // Highlight logic

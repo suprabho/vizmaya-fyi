@@ -1,5 +1,8 @@
+'use client'
+
 import { Theme } from '@/types/story'
-import { ReactNode } from 'react'
+import { ReactNode, useMemo } from 'react'
+import { ChartColorsProvider, themeToChartColors } from '@/lib/chartTheme'
 
 export default function ThemeProvider({
   theme,
@@ -8,6 +11,8 @@ export default function ThemeProvider({
   theme: Theme
   children: ReactNode
 }) {
+  const chartColors = useMemo(() => themeToChartColors(theme), [theme])
+
   const vars: Record<string, string> = {
     '--color-bg': theme.colors.background,
     '--color-text': theme.colors.text,
@@ -26,15 +31,17 @@ export default function ThemeProvider({
   if (theme.colors.red) vars['--color-red'] = theme.colors.red
 
   return (
-    <div
-      style={{
-        ...vars,
-        background: theme.colors.background,
-        color: theme.colors.text,
-        minHeight: '100vh',
-      } as React.CSSProperties}
-    >
-      {children}
-    </div>
+    <ChartColorsProvider value={chartColors}>
+      <div
+        style={{
+          ...vars,
+          background: theme.colors.background,
+          color: theme.colors.text,
+          minHeight: '100vh',
+        } as React.CSSProperties}
+      >
+        {children}
+      </div>
+    </ChartColorsProvider>
   )
 }

@@ -10,6 +10,7 @@ export interface Theme {
     positive?: string
     amber?: string
     red?: string
+    line?: string
   }
   fonts: {
     serif: string

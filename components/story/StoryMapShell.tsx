@@ -5,7 +5,6 @@ import MapStorySection from './MapStorySection'
 import ChartPanel from './ChartPanel'
 import type {
   ResolvedUnit,
-  StorySectionConfig,
   StoryDefaults,
 } from '@/lib/storyConfig.types'
 import type MapboxBackgroundType from './charts/MapboxBackground'
@@ -41,7 +40,6 @@ function MapboxBackground(props: MapboxBackgroundProps) {
 
 interface Props {
   units: ResolvedUnit[]
-  sectionConfigs: StorySectionConfig[]
   accessToken: string
   defaults: StoryDefaults
 }
@@ -68,33 +66,37 @@ interface Props {
  */
 export default function StoryMapShell({
   units,
-  sectionConfigs,
   accessToken,
   defaults,
 }: Props) {
   const [activeUnit, setActiveUnit] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // One MapStep per top-level section. Multiple units may point to the same
-  // entry — flyTo is keyed by parentIndex, not by unit.
-  const mapSteps: MapStep[] = sectionConfigs.map((s) => ({
-    center: s.map.center,
-    zoom: s.map.zoom,
-    pitch: s.map.pitch,
-    bearing: s.map.bearing,
-    flySpeed: s.map.flySpeed ?? defaults.flySpeed,
-    opacity: s.map.opacity ?? defaults.mapOpacity,
-    pins: s.map.pins?.map((p) => ({
-      coordinates: p.coordinates,
-      label: p.label,
-      color: p.color ?? defaults.pinColor,
-      radius: p.radius ?? defaults.pinRadius,
-      pulse: p.pulse,
-    })),
-  }))
+  // One MapStep per unit. Subsections with a `map` override merge their
+  // fields on top of the parent section's map state, so each unit can have
+  // its own camera position and pins while still sharing the parent's chart.
+  const mapSteps: MapStep[] = units.map((unit) => {
+    const parentMap = unit.parentConfig.map
+    const sub = unit.parentConfig.subsections?.[unit.subIndex]
+    const over = sub?.map
+    return {
+      center: over?.center ?? parentMap.center,
+      zoom: over?.zoom ?? parentMap.zoom,
+      pitch: over?.pitch ?? parentMap.pitch,
+      bearing: over?.bearing ?? parentMap.bearing,
+      flySpeed: over?.flySpeed ?? parentMap.flySpeed ?? defaults.flySpeed,
+      opacity: over?.opacity ?? parentMap.opacity ?? defaults.mapOpacity,
+      pins: (over?.pins ?? parentMap.pins)?.map((p) => ({
+        coordinates: p.coordinates,
+        label: p.label,
+        color: p.color ?? defaults.pinColor,
+        radius: p.radius ?? defaults.pinRadius,
+        pulse: p.pulse,
+      })),
+    }
+  })
 
   const current = units[activeUnit] ?? units[0]
-  const activeParent = current?.parentIndex ?? 0
   const activeSub = current?.subIndex ?? 0
   const currentChartId = current?.parentConfig.chart
 
@@ -134,7 +136,7 @@ export default function StoryMapShell({
         <MapboxBackground
           accessToken={accessToken}
           steps={mapSteps}
-          activeStep={activeParent}
+          activeStep={activeUnit}
           style={defaults.mapStyle}
           defaultPinColor={defaults.pinColor}
           defaultPinRadius={defaults.pinRadius}

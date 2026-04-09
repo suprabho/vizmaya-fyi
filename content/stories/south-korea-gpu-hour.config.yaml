@@ -128,8 +128,8 @@ sections:
   # Map builds from Gulf → Qatar → Hormuz, one energy per beat.
   # ═══════════════════════════════════════════════
 
-  - id: exposure-oil
-    text: "Oil: 70%"
+  - id: exposure
+    chart: polar-exposure
     map:
       center: [53.000, 24.500]
       zoom: 5.5
@@ -140,41 +140,39 @@ sections:
         - coordinates: [54.366, 24.466]
           label: "UAE / Abu Dhabi — crude origin"
           color: "#EF9F27"
-
-  - id: exposure-gas
-    text: "Gas: 26%"
-    map:
-      center: [51.548, 25.897]
-      zoom: 7.0
-      pitch: 25
-      bearing: -10
-      opacity: 0.60
-      pins:
-        - coordinates: [54.366, 24.466]
-          label: "UAE crude"
-          color: "#EF9F27"
-        - coordinates: [51.548, 25.897]
-          label: "Qatar — LNG, North Field"
-          color: "#1D9E75"
-
-  - id: exposure-helium
-    text: "Helium: 64.7%"
-    map:
-      center: [52.500, 26.000]
-      zoom: 6.5
-      pitch: 30
-      bearing: -15
-      opacity: 0.60
-      pins:
-        - coordinates: [54.366, 24.466]
-          label: "UAE crude"
-          color: "#EF9F27"
-        - coordinates: [51.548, 25.897]
-          label: "Qatar — LNG + helium"
-          color: "#1D9E75"
-        - coordinates: [56.270, 26.570]
-          label: "Strait of Hormuz — the chokepoint"
-          color: "#E24B4A"
+    subsections:
+      - text: "Oil: 70%"
+      - text: "Helium: 64.7%"
+        map:
+          center: [51.548, 25.897]
+          zoom: 7.0
+          pitch: 25
+          bearing: -10
+          opacity: 0.60
+          pins:
+            - coordinates: [54.366, 24.466]
+              label: "UAE crude"
+              color: "#EF9F27"
+            - coordinates: [51.548, 25.897]
+              label: "Qatar — LNG, North Field"
+              color: "#1D9E75"
+      - text: "Gas: 26%"
+        map:
+          center: [52.500, 26.000]
+          zoom: 6.5
+          pitch: 30
+          bearing: -15
+          opacity: 0.60
+          pins:
+            - coordinates: [54.366, 24.466]
+              label: "UAE crude"
+              color: "#EF9F27"
+            - coordinates: [51.548, 25.897]
+              label: "Qatar — LNG + helium"
+              color: "#1D9E75"
+            - coordinates: [56.270, 26.570]
+              label: "Strait of Hormuz — the chokepoint"
+              color: "#E24B4A"
 
   # ═══════════════════════════════════════════════
   # ACT I — MEMORY DOMINANCE

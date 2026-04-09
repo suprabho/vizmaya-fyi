@@ -23,6 +23,16 @@ export interface MapPinConfig {
 
 export type SectionKind = 'text' | 'hero' | 'stat'
 
+export interface SubsectionMapOverride {
+  center?: [number, number]
+  zoom?: number
+  pitch?: number
+  bearing?: number
+  opacity?: number
+  flySpeed?: number
+  pins?: MapPinConfig[]
+}
+
 export interface StorySubsectionConfig {
   id?: string
   /** Markdown anchor reference (e.g. "Act II > The misleading spike") */
@@ -39,6 +49,13 @@ export interface StorySubsectionConfig {
   paragraphs?: number | [number, number]
   /** Optional override heading shown above the paragraphs (replaces the anchor's own heading). */
   heading?: string
+  /**
+   * Optional partial map override. Fields provided here replace the
+   * corresponding field from the parent section's `map`. `pins` replaces
+   * the entire pin array (does not merge) so you can progressively reveal
+   * markers per step.
+   */
+  map?: SubsectionMapOverride
 }
 
 export interface StorySectionConfig {

@@ -2,30 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#D85A30'
-const ACCENT2 = '#155dfc'
-const TEAL = '#00d5be'
-const AMBER = '#EF9F27'
-const MUTED = '#3a4a50'
-
-// HBM global market share (Q2 2025, Counterpoint Research)
-const hbmData = [
-  { name: 'SK Hynix\n(Korea)', value: 62, color: ACCENT2 },
-  { name: 'Samsung\n(Korea)', value: 28, color: ACCENT2 },
-  { name: 'Micron\n(USA)', value: 10, color: TEAL },
-]
-
-// DRAM global market share (2026 est.)
-const dramData = [
-  { name: 'Samsung\n(Korea)', value: 33, color: ACCENT2 },
-  { name: 'SK Hynix\n(Korea)', value: 28, color: ACCENT2 },
-  { name: 'Micron\n(USA)', value: 24, color: TEAL },
-  { name: 'CXMT\n(China)', value: 8, color: ACCENT },
-  { name: 'Others', value: 7, color: MUTED },
-]
 
 const TITLES: Record<number, string> = {
   0: 'Global HBM market: South Korea holds 90% — every AI GPU depends on it',
@@ -34,6 +13,21 @@ const TITLES: Record<number, string> = {
 }
 
 export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, muted: MUTED } = useChartColors()
+
+  const hbmData = [
+    { name: 'SK Hynix\n(Korea)', value: 62, color: ACCENT2 },
+    { name: 'Samsung\n(Korea)', value: 28, color: ACCENT2 },
+    { name: 'Micron\n(USA)', value: 10, color: TEAL },
+  ]
+  const dramData = [
+    { name: 'Samsung\n(Korea)', value: 33, color: ACCENT2 },
+    { name: 'SK Hynix\n(Korea)', value: 28, color: ACCENT2 },
+    { name: 'Micron\n(USA)', value: 24, color: TEAL },
+    { name: 'CXMT\n(China)', value: 8, color: ACCENT },
+    { name: 'Others', value: 7, color: MUTED },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[0]
   const isHBM = activeStep <= 0
   const data = isHBM ? hbmData : dramData

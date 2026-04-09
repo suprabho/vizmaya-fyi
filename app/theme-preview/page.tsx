@@ -21,6 +21,7 @@ const DEFAULT_THEME: Theme = {
     positive: '#009966',
     amber: '#EF9F27',
     red: '#E24B4A',
+    line: '#1a2830',
   },
   fonts: {
     serif: 'Georgia',
@@ -40,6 +41,7 @@ const COLOR_LABELS: Record<string, string> = {
   positive: 'Positive',
   amber: 'Amber',
   red: 'Red',
+  line: 'Line',
 }
 
 function contrastColor(hex: string) {

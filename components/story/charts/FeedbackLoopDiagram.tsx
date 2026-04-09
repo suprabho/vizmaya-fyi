@@ -1,19 +1,6 @@
 'use client'
 
-const RED = '#E24B4A'
-const AMBER = '#EF9F27'
-const ACCENT = '#D85A30'
-const TEAL = '#1D9E75'
-const MUTED = '#3a4a50'
-
-const nodes = [
-  { x: 400, y: 60, w: 220, h: 44, label: 'Hormuz closure', c: RED },
-  { x: 150, y: 170, w: 200, h: 44, label: 'Korean energy crisis', c: AMBER },
-  { x: 650, y: 170, w: 200, h: 44, label: 'Qatar helium offline', c: AMBER },
-  { x: 150, y: 290, w: 200, h: 44, label: 'Shipyard pressure', c: ACCENT },
-  { x: 650, y: 290, w: 200, h: 44, label: 'Fab utilisation cuts', c: ACCENT },
-  { x: 400, y: 370, w: 260, h: 36, label: 'Global LNG shortage deepens', c: RED },
-]
+import { useChartColors } from '@/lib/chartTheme'
 
 const edges = [
   { from: 0, to: 1 },
@@ -36,6 +23,17 @@ const TITLES: Record<number, string> = {
 }
 
 export default function FeedbackLoopDiagram({ activeStep }: { activeStep: number }) {
+  const { red: RED, amber: AMBER, accent: ACCENT, green: TEAL, muted: MUTED } = useChartColors()
+
+  const nodes = [
+    { x: 400, y: 60, w: 220, h: 44, label: 'Hormuz closure', c: RED },
+    { x: 150, y: 170, w: 200, h: 44, label: 'Korean energy crisis', c: AMBER },
+    { x: 650, y: 170, w: 200, h: 44, label: 'Qatar helium offline', c: AMBER },
+    { x: 150, y: 290, w: 200, h: 44, label: 'Shipyard pressure', c: ACCENT },
+    { x: 650, y: 290, w: 200, h: 44, label: 'Fab utilisation cuts', c: ACCENT },
+    { x: 400, y: 370, w: 260, h: 36, label: 'Global LNG shortage deepens', c: RED },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[0]
   const showBreakers = activeStep >= 1
 

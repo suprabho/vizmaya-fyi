@@ -2,13 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#D85A30'
-const ACCENT2 = '#155dfc'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
 
 const labels = ["Q1 '25", "Q2 '25", "Q3 '25", "Q4 '25", "Q1 '26", 'Q2 \'26\n(60d)', 'Q2 \'26\n(6mo)', 'Q2 \'26\n(3-5yr)']
 const preExisting = [20, 45, 80, 120, 172, 172, 172, 172]
@@ -22,6 +18,7 @@ const TITLES: Record<number, string> = {
 }
 
 export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, accent2: ACCENT2, muted: MUTED, line: LINE } = useChartColors()
   const title = TITLES[activeStep] ?? TITLES[0]
   const showHormuzLegend = activeStep >= 1
 

@@ -2,13 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#D85A30'
-const TEAL = '#1D9E75'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
 
 // Spot: NE Asia (IMARC Group). Contract: ChemAnalyst, DiscoveryAlert
 // Mar 2026 spot NE Asia: $152.70/MCF (+21.5% MoM per IMARC)
@@ -23,6 +19,7 @@ const TITLES: Record<number, string> = {
 }
 
 export default function HeliumPriceChart({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, green: TEAL, muted: MUTED, line: LINE } = useChartColors()
   const title = TITLES[activeStep] ?? TITLES[0]
   const showProjected = activeStep >= 1
   const sliceEnd = showProjected ? 10 : 7

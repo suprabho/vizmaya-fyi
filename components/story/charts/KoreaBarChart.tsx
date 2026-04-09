@@ -2,23 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#D85A30'
-const AMBER = '#EF9F27'
-const RED = '#E24B4A'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
-
-const items = [
-  { label: 'SK Hynix\nHBM', value: 62, color: ACCENT, group: 0 },
-  { label: 'Samsung\nDRAM', value: 33, color: ACCENT, group: 0 },
-  { label: 'LNG carrier\ndeliveries', value: 84, color: AMBER, group: 1 },
-  { label: 'LNG orderbook\nby value', value: 67, color: AMBER, group: 1 },
-  { label: 'Helium from\nQatar', value: 64.7, color: RED, group: 2 },
-  { label: 'Oil from\nMideast', value: 70, color: RED, group: 2 },
-]
 
 const TITLES: Record<number, string> = {
   0: 'Memory dominance: SK Hynix + Samsung',
@@ -27,6 +13,17 @@ const TITLES: Record<number, string> = {
 }
 
 export default function KoreaBarChart({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, amber: AMBER, red: RED, muted: MUTED, line: LINE } = useChartColors()
+
+  const items = [
+    { label: 'SK Hynix\nHBM', value: 62, color: ACCENT, group: 0 },
+    { label: 'Samsung\nDRAM', value: 33, color: ACCENT, group: 0 },
+    { label: 'LNG carrier\ndeliveries', value: 84, color: AMBER, group: 1 },
+    { label: 'LNG orderbook\nby value', value: 67, color: AMBER, group: 1 },
+    { label: 'Helium from\nQatar', value: 64.7, color: RED, group: 2 },
+    { label: 'Oil from\nMideast', value: 70, color: RED, group: 2 },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[2]
 
   const opacities = items.map((item) => {

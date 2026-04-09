@@ -100,7 +100,6 @@ export default async function StoryPage({ params }: RouteParams) {
     <ThemeProvider theme={story.frontmatter.theme}>
       <StoryMapShell
         units={units}
-        sectionConfigs={config.sections}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
         defaults={config.defaults}
       />

@@ -1,36 +1,10 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useRef, useState } from 'react'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-// Theme palette — read from CSS vars set by ThemeProvider (sourced from the
-// story's frontmatter `theme.colors`). Fallbacks match the dark default.
-const FALLBACK = {
-  RED: '#E24B4A',
-  ACCENT2: '#155dfc',
-  MUTED: '#3a4a50',
-  LINE: '#1a2830',
-  GREEN: '#009966 ',
-  AMBER: '#EF9F27',
-}
-
-function readTheme(el: Element | null) {
-  if (typeof window === 'undefined' || !el) return FALLBACK
-  const css = getComputedStyle(el)
-  const get = (name: string, fallback: string) =>
-    css.getPropertyValue(name).trim() || fallback
-  return {
-    RED: get('--color-red', FALLBACK.RED),
-    ACCENT2: get('--color-accent2', FALLBACK.ACCENT2),
-    MUTED: '#3a4a50', // axis chrome — intentionally dimmer than --color-muted
-    LINE: get('--color-line', FALLBACK.LINE),
-    GREEN: get('--color-green', FALLBACK.GREEN),
-    AMBER: get('--color-amber', FALLBACK.AMBER)
-  }
-}
 
 // KOSPI 2026 — weekly OHLC around the March 2026 Iran war crash
 // Indexed to 100 at start. 18% drop in 4 trading days.
@@ -88,13 +62,9 @@ const data2008Overlay = [0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 2
 )
 
 export default function StockCandlestickChart({ activeStep }: { activeStep: number }) {
+  const { red: RED, accent2: ACCENT2, muted: MUTED, line: LINE, green: GREEN, amber: AMBER } = useChartColors()
   const title = TITLES[activeStep] ?? TITLES[0]
   const show2008 = activeStep >= 1
-
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const [theme, setTheme] = useState(FALLBACK)
-  useEffect(() => setTheme(readTheme(containerRef.current)), [])
-  const { RED, ACCENT2, MUTED, LINE, GREEN, AMBER } = theme
 
   // Step 1: overlap both series on a single value-axis "trading days from peak".
   // 2026 collapses into the leftmost ~6 days while 2008 stretches across ~250.
@@ -261,7 +231,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
     }
 
     return (
-      <div className="w-full" ref={containerRef}>
+      <div className="w-full">
         <ReactECharts
           option={overlayOption}
           style={{ height: 380, width: '100%' }}
@@ -454,7 +424,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
   }
 
   return (
-    <div className="w-full" ref={containerRef}>
+    <div className="w-full">
       <ReactECharts
         option={option}
         style={{ height: 380, width: '100%' }}

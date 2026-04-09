@@ -2,15 +2,9 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
+import { useChartColors } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
-
-const ACCENT = '#D85A30'
-const ACCENT2 = '#155dfc'
-const TEAL = '#00d5be'
-const AMBER = '#EF9F27'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
 
 // Historical DDR5 16Gb spot price data (DRAMeXchange via Tom's Hardware / Accio)
 const months = [
@@ -29,14 +23,6 @@ const scenario60d  = [null, null, null, null, null, null, null, null, 23.5, 19.0
 const scenario6mo  = [null, null, null, null, null, null, null, null, 23.5, 31.0, 33.5]  // rises
 const scenario3yr  = [null, null, null, null, null, null, null, null, 23.5, 37.0, 39.5]  // structural
 
-// Key annotation points
-const annotations = [
-  { x: 'Sep 25', y: 6.84, label: '$6.84\nbaseline', color: ACCENT2 },
-  { x: 'Nov 25', y: 24.83, label: '$24.83', color: ACCENT },
-  { x: 'Dec 25', y: 27.20, label: '$27.20\npeak', color: ACCENT },
-  { x: 'Mar 26', y: 23.5, label: '$23.50\nnow', color: AMBER },
-]
-
 const TITLES: Record<number, string> = {
   0: 'The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025',
   1: 'The AI boom ate its own supply chain — HBM crowded out standard DRAM',
@@ -46,6 +32,15 @@ const TITLES: Record<number, string> = {
 }
 
 export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
+  const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, amber: AMBER, muted: MUTED, line: LINE } = useChartColors()
+
+  const annotations: { x: string; y: number; label: string; color: string }[] = [
+    { x: 'Sep 25', y: 6.84, label: '$6.84\nbaseline', color: ACCENT2 },
+    { x: 'Nov 25', y: 24.83, label: '$24.83', color: ACCENT },
+    { x: 'Dec 25', y: 27.20, label: '$27.20\npeak', color: ACCENT },
+    { x: 'Mar 26', y: 23.5, label: '$23.50\nnow', color: AMBER },
+  ]
+
   const title = TITLES[activeStep] ?? TITLES[0]
   const showHist = activeStep >= 0
   const show60d = activeStep >= 2

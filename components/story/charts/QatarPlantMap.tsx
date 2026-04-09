@@ -1,11 +1,6 @@
 'use client'
 
-const RED = '#E24B4A'
-const TEAL = '#1D9E75'
-const AMBER = '#EF9F27'
-const MUTED = '#3a4a50'
-const LINE = '#1a2830'
-const SURFACE = '#111820'
+import { useChartColors } from '@/lib/chartTheme'
 
 const plants = [
   {
@@ -48,6 +43,7 @@ const TITLES: Record<number, string> = {
 }
 
 export default function QatarPlantMap({ activeStep }: { activeStep: number }) {
+  const { red: RED, green: TEAL, muted: MUTED, line: LINE, surface: SURFACE } = useChartColors()
   const title = TITLES[activeStep] ?? TITLES[0]
   const isOffline = activeStep >= 1
   const showImpact = activeStep >= 2

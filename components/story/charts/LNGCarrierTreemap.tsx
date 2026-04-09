@@ -6,8 +6,9 @@ import type { EChartsOption } from 'echarts'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const AMBER = '#EF9F27'
-const TEAL = '#1D9E75'
-const ACCENT2 = '#534AB7'
+const TEAL = '#00d5be'
+const ACCENT2 = '#155dfc'
+const ACCENT = '#D85A30'
 const RED = '#E24B4A'
 const MUTED = '#3a4a50'
 
@@ -15,12 +16,12 @@ const MUTED = '#3a4a50'
 // Global market share by shipyard/country
 const carriers = [
   // Korean yards (84% of deliveries)
-  { name: 'HD Hyundai\n(Korea)', value: 34, color: AMBER, country: 'Korea' },
-  { name: 'Samsung Heavy\n(Korea)', value: 28, color: AMBER, country: 'Korea' },
-  { name: 'Hanwha Ocean\n(Korea)', value: 22, color: AMBER, country: 'Korea' },
+  { name: 'HD Hyundai\n(Korea)', value: 34, color: ACCENT2, country: 'Korea' },
+  { name: 'Samsung Heavy\n(Korea)', value: 28, color: ACCENT2, country: 'Korea' },
+  { name: 'Hanwha Ocean\n(Korea)', value: 22, color: ACCENT2, country: 'Korea' },
   // Chinese yards (~11%)
-  { name: 'COSCO\n(China)', value: 6, color: ACCENT2, country: 'China' },
-  { name: 'Hudong-Zhonghua\n(China)', value: 5, color: ACCENT2, country: 'China' },
+  { name: 'COSCO\n(China)', value: 6, color: ACCENT, country: 'China' },
+  { name: 'Hudong-Zhonghua\n(China)', value: 5, color: ACCENT, country: 'China' },
   // Others (~5%)
   { name: 'Chantiers de\nl\'Atlantique (EU)', value: 3, color: TEAL, country: 'Europe' },
   { name: 'Others', value: 2, color: MUTED, country: 'Other' },

@@ -6,24 +6,24 @@ import type { EChartsOption } from 'echarts'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const ACCENT = '#D85A30'
-const ACCENT2 = '#534AB7'
-const TEAL = '#1D9E75'
+const ACCENT2 = '#155dfc'
+const TEAL = '#00d5be'
 const AMBER = '#EF9F27'
 const MUTED = '#3a4a50'
 
 // HBM global market share (Q2 2025, Counterpoint Research)
 const hbmData = [
-  { name: 'SK Hynix\n(Korea)', value: 62, color: ACCENT },
-  { name: 'Samsung\n(Korea)', value: 28, color: ACCENT },
+  { name: 'SK Hynix\n(Korea)', value: 62, color: ACCENT2 },
+  { name: 'Samsung\n(Korea)', value: 28, color: ACCENT2 },
   { name: 'Micron\n(USA)', value: 10, color: TEAL },
 ]
 
 // DRAM global market share (2026 est.)
 const dramData = [
-  { name: 'Samsung\n(Korea)', value: 33, color: ACCENT },
-  { name: 'SK Hynix\n(Korea)', value: 28, color: ACCENT },
+  { name: 'Samsung\n(Korea)', value: 33, color: ACCENT2 },
+  { name: 'SK Hynix\n(Korea)', value: 28, color: ACCENT2 },
   { name: 'Micron\n(USA)', value: 24, color: TEAL },
-  { name: 'CXMT\n(China)', value: 8, color: AMBER },
+  { name: 'CXMT\n(China)', value: 8, color: ACCENT },
   { name: 'Others', value: 7, color: MUTED },
 ]
 

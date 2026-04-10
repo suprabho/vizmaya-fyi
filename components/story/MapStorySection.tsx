@@ -135,7 +135,25 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
       data-unit-index={unitIndex}
       className="snap-start snap-always h-screen w-full relative"
     >
-      <div className={cardClasses} style={cardStyle}>
+      <div
+        className={[
+          'absolute rounded-lg p-6 backdrop-blur-sm overflow-y-auto',
+          'left-1/2 -translate-x-1/2 bottom-4',
+          'w-[90vw] max-w-[640px] max-h-[50vh]',
+          ...landscapeSlotClasses,
+          '[@media(min-aspect-ratio:1/1)]:max-w-none',
+          '[@media(min-aspect-ratio:1/1)]:max-h-none',
+        ].join(' ')}
+        style={{
+          background: 'rgba(10, 14, 20, 0.2)',
+          border: '0.5px solid var(--color-line, #1a2830)',
+        }}
+      >
+        {/* Inner max-width wrapper. Caps line length when the card spans the
+            full right column (chartless sections), keeps prose readable.
+            With a chart the card is only 33vw wide so the cap is irrelevant.
+            Centered both axes so hero/stat content sits in the middle of
+            the wide slot rather than top-aligned. */}
         <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
           {kind === 'stat' && heading ? (
             <StatPanel value={heading} description={paragraphs.join(' ')} />

@@ -81,7 +81,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
       <div
         className={[
           'absolute rounded-lg p-6 backdrop-blur-sm overflow-y-auto',
-          'left-1/2 -translate-x-1/2 top-[44vh]',
+          'left-1/2 -translate-x-1/2 bottom-4',
           'w-[90vw] max-w-[640px] max-h-[50vh]',
           ...landscapeSlotClasses,
           '[@media(min-aspect-ratio:1/1)]:max-w-none',

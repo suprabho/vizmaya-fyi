@@ -64,6 +64,11 @@ sections:
   - id: gpu-anchor
     kind: stat
     text: "$2.49"
+    paragraphs: [0, 3]         # desktop: all 6 paragraphs, one snap
+    mobileParagraphs:           # mobile: 2 snaps
+    - [0, 1]
+    - [1, 2]
+    - [2, 3]
     map:
       center: [-121.963, 37.370]
       zoom: 9.0
@@ -81,6 +86,10 @@ sections:
 
   - id: crash-context
     text: "The crash nobody expected"
+    paragraphs: [0, 2]         # desktop: all 6 paragraphs, one snap
+    mobileParagraphs:           # mobile: 2 snaps
+    - [0, 1]
+    - [1, 2]
     map:
       center: [126.978, 37.566]
       zoom: 8.0
@@ -120,8 +129,14 @@ sections:
           label: "Seoul"
           color: "#E24B4A"
     subsections:
-      - text: "Worst since 2008"
+      - text: "Worst since 2008"  
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "Act I: The most consequential industrial economy in this crisis"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
 
   # ═══════════════════════════════════════════════
   # ACT I — TRIPLE EXPOSURE
@@ -142,7 +157,13 @@ sections:
           color: "#EF9F27"
     subsections:
       - text: "Oil: 70%"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "Helium: 64.7%"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
         map:
           center: [51.548, 25.897]
           zoom: 7.0
@@ -157,6 +178,9 @@ sections:
               label: "Qatar — LNG, North Field"
               color: "#1D9E75"
       - text: "Gas: 26%"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
         map:
           center: [52.500, 26.000]
           zoom: 6.5
@@ -181,6 +205,9 @@ sections:
 
   - id: fab-icheon
     text: "Icheon: 62% of global HBM"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.435, 37.272]
       zoom: 11.0
@@ -194,6 +221,9 @@ sections:
 
   - id: fab-cheongju
     text: "Cheongju: the M15X expansion"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.574, 36.955]
       zoom: 9.0
@@ -210,6 +240,9 @@ sections:
 
   - id: fab-pyeongtaek
     text: "Pyeongtaek: Samsung's 33% of global DRAM"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.280, 37.050]
       zoom: 8.5
@@ -248,7 +281,13 @@ sections:
           color: "#00d5be"
     subsections:
       - text: "HBM sold out through 2026"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "The $54.6 billion supercycle"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
 
   # ═══════════════════════════════════════════════
   # ACT I — SHIPBUILDING DOMINANCE
@@ -257,6 +296,9 @@ sections:
 
   - id: yard-ulsan
     text: "Ulsan: HD Hyundai"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [129.311, 35.540]
       zoom: 11.5
@@ -290,6 +332,9 @@ sections:
   # Pull back — show all four industry pins across Korea
   - id: one-grid
     text: "One grid, two industries, one crisis"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.800, 36.500]
       zoom: 6.5
@@ -321,6 +366,9 @@ sections:
 
   - id: act-ii-intro
     text: "Act II: The chokepoint"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [56.270, 26.570]
       zoom: 6.5
@@ -334,6 +382,9 @@ sections:
 
   - id: helium-plant-1
     text: "Helium Plant 1: offline since March 2"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [51.548, 25.897]
       zoom: 11.0
@@ -350,6 +401,9 @@ sections:
 
   - id: helium-plant-2
     text: "Helium Plant 2: the world's largest"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [51.548, 25.900]
       zoom: 11.5
@@ -369,6 +423,9 @@ sections:
 
   - id: helium-plant-3
     text: "Helium Plant 3: all three offline"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [51.548, 25.897]
       zoom: 11.5
@@ -407,7 +464,13 @@ sections:
           color: "#E24B4A"
     subsections:
       - text: "The misleading spike"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "The 6-month inflection"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
 
   # ═══════════════════════════════════════════════
   # ACT II — STOCKPILE RUNWAY
@@ -416,6 +479,9 @@ sections:
 
   - id: stockpile-samsung
     text: "Samsung's buffer: six months"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.082, 37.079]
       zoom: 9.5
@@ -429,6 +495,9 @@ sections:
 
   - id: stockpile-tsmc
     text: "TSMC's recycling edge"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [123.800, 36.800]
       zoom: 6.5
@@ -445,6 +514,9 @@ sections:
 
   - id: stockpile-amarillo
     text: "The Amarillo mistake"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [-101.831, 35.222]
       zoom: 7.5
@@ -464,6 +536,9 @@ sections:
 
   - id: stockpile-russia
     text: "Month 7: no easy solution"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [141.049, 53.320]
       zoom: 5.0
@@ -491,6 +566,9 @@ sections:
 
   - id: transmission-chain
     text: "The transmission chain"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [60.000, 30.000]
       zoom: 3.0
@@ -517,6 +595,9 @@ sections:
 
   - id: act-iii-intro
     text: "Act III: One chip price tells the whole story"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [127.082, 37.079]
       zoom: 7.0
@@ -546,8 +627,13 @@ sections:
           color: "#D85A30"
     subsections:
       - text: "From $6.84 to $27.20"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "The pre-existing fire"
-
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
   # DDR5 area chart — 3 scenario bands, map pulls back to global
   - id: ddr5-arc
     chart: ddr5-area
@@ -566,12 +652,24 @@ sections:
           color: "#155dfc"
     subsections:
       - text: "60-day resolution: +2-4% GPU cost"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "6-month scenario: +12-20% GPU cost"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
       - text: "3-5 year force majeure: +30-50% GPU cost"
+        mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
 
   # GPU hour cost in real dollars — map flies to AWS data centre
   - id: gpu-hour-cost
     text: "What +30% means in dollars"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [-77.477, 39.044]
       zoom: 8.0
@@ -588,6 +686,9 @@ sections:
 
   - id: assumption
     text: "The assumption nobody is stress-testing"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [0.000, 20.000]
       zoom: 2.0
@@ -602,6 +703,9 @@ sections:
 
   - id: act-iii-iv-bridge
     text: "Here is the story nobody has told"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [128.950, 35.200]
       zoom: 7.0
@@ -622,6 +726,9 @@ sections:
 
   - id: act-iv-intro
     text: "Act IV: Decisions made now, deliveries missed in 2028"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [129.311, 35.540]
       zoom: 10.0
@@ -676,6 +783,9 @@ sections:
 
   - id: ships-china
     text: "China: fastest-growing buyer"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [117.787, 38.982]
       zoom: 7.0
@@ -695,6 +805,9 @@ sections:
 
   - id: ships-europe
     text: "Europe: rerouting from Russian gas"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [4.018, 51.958]
       zoom: 8.0
@@ -717,6 +830,9 @@ sections:
 
   - id: ships-usa
     text: "USA: Sabine Pass"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [-93.868, 29.731]
       zoom: 9.0
@@ -742,6 +858,9 @@ sections:
 
   - id: ships-india
     text: "India: the last buyer"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [69.706, 22.838]
       zoom: 8.0
@@ -774,6 +893,9 @@ sections:
 
   - id: signal-watch
     text: "The signal to watch now"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [122.500, 33.500]
       zoom: 5.5
@@ -797,6 +919,10 @@ sections:
 
   - id: closing
     text: "The slow bleed"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
+        - [2, 3]
     map:
       center: [55.000, 25.000]
       zoom: 2.8
@@ -820,6 +946,12 @@ sections:
 
   - id: methodology
     text: "Methodology & sources"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
+        - [2, 3]
+        - [3, 4]
+        - [4, 5]
     map:
       center: [55.000, 20.000]
       zoom: 1.8

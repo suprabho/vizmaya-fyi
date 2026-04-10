@@ -13,6 +13,7 @@ export type {
   StorySectionConfig,
   StorySubsectionConfig,
   MapPinConfig,
+  MapOverrides,
   ResolvedUnit,
 } from './storyConfig.types'
 
@@ -51,7 +52,7 @@ export function loadStoryConfig(slug: string): StoryConfig {
   // `paragraphs` may be `N` (number — single index) or `[start, end]` (slice).
   // Caught here so a typo in YAML produces a clear error rather than a silent
   // empty render later.
-  const validateParagraphs = (label: string, p: unknown): void => {
+  const validateParagraphSpec = (label: string, p: unknown): void => {
     if (p === undefined) return
     if (typeof p === 'number') {
       if (!Number.isInteger(p) || p < 0) {
@@ -63,6 +64,20 @@ export function loadStoryConfig(slug: string): StoryConfig {
       return
     }
     throw new Error(`${label}: 'paragraphs' must be a non-negative integer or [start, end]`)
+  }
+
+  const validateParagraphs = (label: string, p: unknown): void => {
+    validateParagraphSpec(label, p)
+  }
+
+  const validateMobileParagraphs = (label: string, mp: unknown): void => {
+    if (mp === undefined) return
+    if (!Array.isArray(mp) || mp.length === 0) {
+      throw new Error(`${label}: 'mobileParagraphs' must be a non-empty array of paragraph specs`)
+    }
+    mp.forEach((spec, k) => {
+      validateParagraphSpec(`${label} mobileParagraphs[${k}]`, spec)
+    })
   }
 
   raw.sections.forEach((s, i) => {
@@ -77,6 +92,7 @@ export function loadStoryConfig(slug: string): StoryConfig {
       )
     }
     validateParagraphs(`Section ${i} in ${slug}.config.yaml`, s.paragraphs)
+    validateMobileParagraphs(`Section ${i} in ${slug}.config.yaml`, s.mobileParagraphs)
     if (hasSubs) {
       s.subsections!.forEach((sub, j) => {
         if (!sub || typeof sub !== 'object' || typeof sub.text !== 'string' || sub.text.trim().length === 0) {
@@ -87,6 +103,10 @@ export function loadStoryConfig(slug: string): StoryConfig {
         validateParagraphs(
           `Section ${i} subsection ${j} in ${slug}.config.yaml`,
           sub.paragraphs
+        )
+        validateMobileParagraphs(
+          `Section ${i} subsection ${j} in ${slug}.config.yaml`,
+          sub.mobileParagraphs
         )
       })
     }

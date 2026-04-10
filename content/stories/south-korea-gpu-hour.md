@@ -31,9 +31,11 @@ theme:
 
 ## $2.49
 
-One H100 GPU hour on Lambda Labs. That is your baseline.
+One H100 GPU hour on Lambda Labs. That is your baseline. A startup running 10,000 GPU-hours a month pays $24,900.
 
-A startup running 10,000 GPU-hours a month pays $24,900. That number is about to move — not because of a chip shortage, but because of a war in a strait most engineers have never thought about. This is the pin where that story ends. It starts 12,000 kilometres east.
+ That number is about to move — not because of a chip shortage, but because of a war in a strait most engineers have never thought about. 
+
+This is the pin where that story ends. It starts 12,000 kilometres east.
 
 ---
 

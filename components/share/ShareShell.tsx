@@ -42,6 +42,14 @@ interface CardEntry {
  * subsection emits the map-title card. Sections with `hide: true` in
  * share overrides are skipped entirely.
  */
+function sliceShareParagraphs(
+  all: string[],
+  spec: number | [number, number]
+): string[] {
+  if (typeof spec === 'number') return all.slice(spec, spec + 1)
+  return all.slice(spec[0], spec[1])
+}
+
 function buildCardList(
   units: ResolvedUnit[],
   overrides: Record<string, ShareSectionOverride> | null
@@ -53,12 +61,27 @@ function buildCardList(
     if (sectionId && overrides?.[sectionId]?.hide) continue
 
     const kind = unit.parentConfig.kind ?? 'text'
+    const shareOverride = sectionId ? overrides?.[sectionId] : undefined
+
     // One map-title card per parent section (dedup subsections)
     if (!seenParents.has(unit.parentIndex)) {
       seenParents.add(unit.parentIndex)
       cards.push({ unit, variant: 'map-title', label: 'map-title' })
     }
-    cards.push({ unit, variant: 'auto', label: kind })
+
+    // If share override has shareParagraphs, expand into multiple cards
+    if (shareOverride?.shareParagraphs && shareOverride.shareParagraphs.length > 0) {
+      shareOverride.shareParagraphs.forEach((spec, sliceIdx) => {
+        const expandedUnit: ResolvedUnit = {
+          ...unit,
+          heading: sliceIdx === 0 ? unit.heading : undefined,
+          paragraphs: sliceShareParagraphs(unit.paragraphs, spec),
+        }
+        cards.push({ unit: expandedUnit, variant: 'auto', label: kind })
+      })
+    } else {
+      cards.push({ unit, variant: 'auto', label: kind })
+    }
   }
   return cards
 }

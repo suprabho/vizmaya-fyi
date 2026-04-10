@@ -31,10 +31,12 @@ export function resolveUnits(
   slug: string,
   sections: ContentSection[],
   config: StoryConfig
-): { units: ResolvedUnit[]; mobileUnits: ResolvedUnit[]; hasMobileOverrides: boolean } {
+): { units: ResolvedUnit[]; mobileUnits: ResolvedUnit[]; shareUnits: ResolvedUnit[]; hasMobileOverrides: boolean; hasShareOverrides: boolean } {
   const units: ResolvedUnit[] = []
   const mobileUnits: ResolvedUnit[] = []
+  const shareUnits: ResolvedUnit[] = []
   let hasMobileOverrides = false
+  let hasShareOverrides = false
 
   config.sections.forEach((section, parentIndex) => {
     const subs = section.subsections
@@ -68,6 +70,28 @@ export function resolveUnits(
           })
         } else {
           mobileUnits.push({
+            parentIndex,
+            subIndex,
+            parentConfig: section,
+            heading,
+            paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
+          })
+        }
+
+        // Share units — expand if shareParagraphs present.
+        if (sub.shareParagraphs) {
+          hasShareOverrides = true
+          sub.shareParagraphs.forEach((shareSpec, sliceIdx) => {
+            shareUnits.push({
+              parentIndex,
+              subIndex,
+              parentConfig: section,
+              heading: sliceIdx === 0 ? heading : undefined,
+              paragraphs: sliceParagraphs(allParagraphs, shareSpec),
+            })
+          })
+        } else {
+          shareUnits.push({
             parentIndex,
             subIndex,
             parentConfig: section,
@@ -112,8 +136,30 @@ export function resolveUnits(
           paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
         })
       }
+
+      // Share units — expand if shareParagraphs present.
+      if (section.shareParagraphs) {
+        hasShareOverrides = true
+        section.shareParagraphs.forEach((shareSpec, sliceIdx) => {
+          shareUnits.push({
+            parentIndex,
+            subIndex: 0,
+            parentConfig: section,
+            heading: sliceIdx === 0 ? heading : undefined,
+            paragraphs: sliceParagraphs(allParagraphs, shareSpec),
+          })
+        })
+      } else {
+        shareUnits.push({
+          parentIndex,
+          subIndex: 0,
+          parentConfig: section,
+          heading,
+          paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
+        })
+      }
     }
   })
 
-  return { units, mobileUnits, hasMobileOverrides }
+  return { units, mobileUnits, shareUnits, hasMobileOverrides, hasShareOverrides }
 }

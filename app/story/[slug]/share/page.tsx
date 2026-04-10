@@ -28,14 +28,14 @@ export default async function SharePage({ params }: RouteParams) {
     notFound()
   }
 
-  const { units } = resolveUnits(slug, story.sections, config)
+  const { units, shareUnits, hasShareOverrides } = resolveUnits(slug, story.sections, config)
   const shareConfig = loadShareConfig(slug)
 
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
       <ShareShell
         slug={slug}
-        units={units}
+        units={hasShareOverrides ? shareUnits : units}
         config={config}
         title={story.frontmatter.title}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}

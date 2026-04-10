@@ -13,8 +13,8 @@ const contractPrices = [560, 555, 548, 540, 535, 525, 520, 520, 680, 1050]
 const spotPrices    = [128,  128,  128,  128,  128,  128,  153, 900, 1200, 1800]
 
 const TITLES: Record<number, string> = {
-  0: 'March 2026: Spot at $153/MCF — but it\'s only 2% of the market. Contracts unmoved.',
-  1: 'Month 4-6: Force majeure triggers contract renegotiation. The 98% starts moving toward $1,000-2,000.',
+  0: 'March 2026: Spot at $153/MCF — \n but it\'s only 2% of the market. Contracts unmoved.',
+  1: 'Month 4-6: Force majeure triggers contract renegotiation. \n  The 98% starts moving toward $1,000-2,000.',
   2: 'Stockpile buffer: Samsung ~6 months + 18% recycling. TSMC 2+ months, 60-75% recycling rate.',
 }
 

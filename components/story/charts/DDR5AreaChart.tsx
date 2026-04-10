@@ -26,7 +26,7 @@ const scenario3yr  = [null, null, null, null, null, null, null, null, 23.5, 37.0
 const TITLES: Record<number, string> = {
   0: 'The fire already burning: DDR5 16Gb rose 3.4× before Hormuz — Sep to Dec 2025',
   1: 'The AI boom ate its own supply chain — HBM crowded out standard DRAM',
-  2: '60-day resolution: stockpiles hold, spot retreats to $18-20. GPU hour +2-4%.',
+  2: '60-day resolution: stockpiles hold, \n spot retreats to $18-20. GPU hour +2-4%.',
   3: '6-month scenario: helium contracts reprice, fabs cut utilisation. GPU hour +12-20%.',
   4: '3-5 year force majeure: structural cost reset. GPU hour +30-50%.',
 }
@@ -78,7 +78,7 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
       data: months,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, interval: 0, rotate: mobile ? 45 : 0 },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, interval: mobile ? 1 : 0, rotate: mobile ? 45 : 0 },
       splitLine: { show: false },
     },
     yAxis: {
@@ -90,6 +90,8 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
       axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, formatter: '${value}' },
       splitLine: { lineStyle: { color: LINE } },
       name: mobile ? '' : 'DDR5 16Gb spot ($/chip)',
+      nameLocation: 'middle',
+      nameGap: 40,
       nameTextStyle: { color: MUTED, fontSize: 9 },
     },
     // Shaded projection zone

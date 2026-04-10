@@ -65,6 +65,18 @@ export interface StorySubsectionConfig {
    *     - [4, 8]
    */
   mobileParagraphs?: Array<number | [number, number]>
+  /**
+   * Share-mode paragraph slices. When present, a single desktop subsection
+   * expands into multiple share cards — one per entry. Each entry follows
+   * the same `[start, end]` semantics as `paragraphs`.
+   *
+   * Example:
+   *   paragraphs: [0, 6]           # desktop — one snap
+   *   shareParagraphs:             # share — two cards
+   *     - [0, 3]
+   *     - [3, 6]
+   */
+  shareParagraphs?: Array<number | [number, number]>
   /** Optional override heading shown above the paragraphs (replaces the anchor's own heading). */
   heading?: string
   /**
@@ -97,6 +109,8 @@ export interface StorySectionConfig {
   paragraphs?: number | [number, number]
   /** Same mobile-split semantics as StorySubsectionConfig.mobileParagraphs. */
   mobileParagraphs?: Array<number | [number, number]>
+  /** Same share-split semantics as StorySubsectionConfig.shareParagraphs. */
+  shareParagraphs?: Array<number | [number, number]>
   /** Optional override heading for the section's text panel. */
   heading?: string
   /** Optional foreground chart id; resolved by ChartPanel registry. */
@@ -133,6 +147,12 @@ export interface ShareSectionOverride {
   heading?: string
   /** Hide this section from share mode entirely. */
   hide?: boolean
+  /**
+   * Override paragraph slices for share mode. When present, a single section
+   * expands into multiple share cards — one per entry. Each entry follows
+   * the same `[start, end]` semantics as `paragraphs`.
+   */
+  shareParagraphs?: Array<number | [number, number]>
   map?: {
     center?: [number, number]
     zoom?: number

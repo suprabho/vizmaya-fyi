@@ -83,6 +83,16 @@ export function loadStoryConfig(slug: string): StoryConfig {
     })
   }
 
+  const validateShareParagraphs = (label: string, sp: unknown): void => {
+    if (sp === undefined) return
+    if (!Array.isArray(sp) || sp.length === 0) {
+      throw new Error(`${label}: 'shareParagraphs' must be a non-empty array of paragraph specs`)
+    }
+    sp.forEach((spec, k) => {
+      validateParagraphSpec(`${label} shareParagraphs[${k}]`, spec)
+    })
+  }
+
   raw.sections.forEach((s, i) => {
     if (!s || typeof s !== 'object') {
       throw new Error(`Section ${i} in ${slug}.config.yaml is not an object`)
@@ -96,6 +106,7 @@ export function loadStoryConfig(slug: string): StoryConfig {
     }
     validateParagraphs(`Section ${i} in ${slug}.config.yaml`, s.paragraphs)
     validateMobileParagraphs(`Section ${i} in ${slug}.config.yaml`, s.mobileParagraphs)
+    validateShareParagraphs(`Section ${i} in ${slug}.config.yaml`, s.shareParagraphs)
     if (hasSubs) {
       s.subsections!.forEach((sub, j) => {
         if (!sub || typeof sub !== 'object' || typeof sub.text !== 'string' || sub.text.trim().length === 0) {
@@ -110,6 +121,10 @@ export function loadStoryConfig(slug: string): StoryConfig {
         validateMobileParagraphs(
           `Section ${i} subsection ${j} in ${slug}.config.yaml`,
           sub.mobileParagraphs
+        )
+        validateShareParagraphs(
+          `Section ${i} subsection ${j} in ${slug}.config.yaml`,
+          sub.shareParagraphs
         )
       })
     }

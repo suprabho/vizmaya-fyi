@@ -7,6 +7,9 @@
 # Available overrides per section:
 #   heading: "Custom heading"     # Override the heading on the map-title card
 #   hide: true                    # Exclude this section from share mode
+#   shareParagraphs:              # Split paragraphs into multiple share cards
+#     - [0, 3]                    # Card 1: paragraphs 0-2
+#     - [3, 6]                    # Card 2: paragraphs 3-5
 #   map:
 #     center: [lng, lat]          # Override map center
 #     zoom: 5                     # Override zoom level

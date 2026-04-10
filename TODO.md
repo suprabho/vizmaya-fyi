@@ -6,9 +6,9 @@
 - [x] Add pretext
 - [ ] Add litegraph
 - [ ] Build specific consumption modes to make it responsive
-  - [ ] Read
-    - [ ] Web
-    - [ ] Mobile
+  - [x] Read
+    - [x] Web
+    - [x] Mobile
   - [ ] Video
     - [ ] Add speech and autoplay mode
   - [ ] Share

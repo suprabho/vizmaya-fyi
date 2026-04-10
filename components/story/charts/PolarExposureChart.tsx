@@ -7,9 +7,9 @@ import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const TITLES: Record<number, string> = {
-  0: "South Korea's triple exposure: three supply lines, one chokepoint",
-  1: 'Oil 70% + Helium 64.7% + Gas 26% — all routed through the Strait of Hormuz',
-  2: 'Every exposure hits the same industries: semiconductor fabs and shipyards',
+  0: "South Korea's triple exposure\n 3 supply lines, one chokepoint",
+  1: 'Oil 70% + Helium 64.7% + Gas 26%\n All routed through the Strait of Hormuz',
+  2: 'Every exposure hits the same industries\n semiconductor fabs and shipyards',
 }
 
 export default function PolarExposureChart({ activeStep }: { activeStep: number }) {
@@ -40,10 +40,10 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
     title: {
       text: title,
       left: 'center',
-      bottom: 0,
-      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      bottom: 12,
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)', width: mobile ? 300 : 400, overflow: 'break' },
     },
-    polar: { radius: mobile ? ['20%', '60%'] : ['25%', '75%'], center: ['50%', '50%'] },
+    polar: { radius: mobile ? ['15%', '45%'] : ['20%', '55%'], center: ['50%', '42%'] },
     angleAxis: {
       type: 'category',
       data: exposures.map(e => e.name),
@@ -117,7 +117,7 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
         notMerge={true}
       />
       <div
-        className="text-center mt-1 shrink-0"
+        className="text-center mt-1 pb-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: KITA (helium 64.7%), Carnegie Endowment (oil 70%), IEEFA (gas 26%).

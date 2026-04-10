@@ -1,0 +1,23 @@
+# Share mode overrides for south-korea-gpu-hour.
+#
+# Each key matches a section `id` from the main .config.yaml.
+# Only fields you specify are overridden — everything else falls
+# back to the main config.
+#
+# Available overrides per section:
+#   heading: "Custom heading"     # Override the heading on the map-title card
+#   hide: true                    # Exclude this section from share mode
+#   shareParagraphs:              # Split paragraphs into multiple share cards
+#     - [0, 3]                    # Card 1: paragraphs 0-2
+#     - [3, 6]                    # Card 2: paragraphs 3-5
+#   map:
+#     center: [lng, lat]          # Override map center
+#     zoom: 5                     # Override zoom level
+#     pitch: 0                    # Override pitch
+#     bearing: 0                  # Override bearing
+#     pins:                       # Replace all pins (not merged — full override)
+#       - coordinates: [lng, lat]
+#         label: "Label"
+#         color: "#hex"
+
+sections: {}

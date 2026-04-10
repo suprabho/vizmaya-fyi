@@ -5,6 +5,7 @@ import type {
   StoryConfig,
   StoryDefaults,
   StorySectionConfig,
+  ShareConfig,
 } from './storyConfig.types'
 
 export type {
@@ -15,6 +16,8 @@ export type {
   MapPinConfig,
   MapOverrides,
   ResolvedUnit,
+  ShareConfig,
+  ShareSectionOverride,
 } from './storyConfig.types'
 
 const STORIES_DIR = path.join(process.cwd(), 'content/stories')
@@ -80,6 +83,16 @@ export function loadStoryConfig(slug: string): StoryConfig {
     })
   }
 
+  const validateShareParagraphs = (label: string, sp: unknown): void => {
+    if (sp === undefined) return
+    if (!Array.isArray(sp) || sp.length === 0) {
+      throw new Error(`${label}: 'shareParagraphs' must be a non-empty array of paragraph specs`)
+    }
+    sp.forEach((spec, k) => {
+      validateParagraphSpec(`${label} shareParagraphs[${k}]`, spec)
+    })
+  }
+
   raw.sections.forEach((s, i) => {
     if (!s || typeof s !== 'object') {
       throw new Error(`Section ${i} in ${slug}.config.yaml is not an object`)
@@ -93,6 +106,7 @@ export function loadStoryConfig(slug: string): StoryConfig {
     }
     validateParagraphs(`Section ${i} in ${slug}.config.yaml`, s.paragraphs)
     validateMobileParagraphs(`Section ${i} in ${slug}.config.yaml`, s.mobileParagraphs)
+    validateShareParagraphs(`Section ${i} in ${slug}.config.yaml`, s.shareParagraphs)
     if (hasSubs) {
       s.subsections!.forEach((sub, j) => {
         if (!sub || typeof sub !== 'object' || typeof sub.text !== 'string' || sub.text.trim().length === 0) {
@@ -108,6 +122,10 @@ export function loadStoryConfig(slug: string): StoryConfig {
           `Section ${i} subsection ${j} in ${slug}.config.yaml`,
           sub.mobileParagraphs
         )
+        validateShareParagraphs(
+          `Section ${i} subsection ${j} in ${slug}.config.yaml`,
+          sub.shareParagraphs
+        )
       })
     }
     if (!s.map || !Array.isArray(s.map.center) || s.map.center.length !== 2) {
@@ -121,5 +139,27 @@ export function loadStoryConfig(slug: string): StoryConfig {
   return {
     defaults: { ...DEFAULTS, ...(raw.defaults ?? {}) },
     sections: raw.sections as StorySectionConfig[],
+  }
+}
+
+/**
+ * Returns true if a sibling .share.yaml exists for the given slug.
+ */
+export function hasShareConfig(slug: string): boolean {
+  return fs.existsSync(path.join(STORIES_DIR, `${slug}.share.yaml`))
+}
+
+/**
+ * Load the share-mode YAML config for a story slug.
+ * Returns null if no share config exists.
+ */
+export function loadShareConfig(slug: string): ShareConfig | null {
+  const filePath = path.join(STORIES_DIR, `${slug}.share.yaml`)
+  if (!fs.existsSync(filePath)) return null
+  const file = fs.readFileSync(filePath, 'utf8')
+  const raw = parseYaml(file) as Partial<ShareConfig> | null
+  if (!raw || typeof raw !== 'object') return null
+  return {
+    sections: raw.sections ?? {},
   }
 }

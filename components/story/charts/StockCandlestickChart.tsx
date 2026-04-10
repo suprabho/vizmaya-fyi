@@ -42,8 +42,8 @@ const LABELS_2026 = ['Feb 26', 'Feb 27', 'Feb 28', 'Mar 1', 'Mar 2', 'Mar 3', 'M
 const LABELS_2008 = ['Oct 07', 'Nov 07', 'Dec 07', 'Jan 08', 'Feb 08', 'Mar 08', 'Apr 08', 'May 08', 'Jun 08', 'Jul 08', 'Aug 08', 'Sep 08', 'Oct 08']
 
 const TITLES: Record<number, string> = {
-  0: '2026: KOSPI falls 18% in 4 trading days — worst since 2008',
-  1: '2008 vs 2026: speed is the difference — 2026 hit in 4 days, 2008 took a year',
+  0: '2026: KOSPI falls 18% in 4 trading days \n worst since 2008',
+  1: '2008 vs 2026 speed is the difference \n 2026 hit in 4 days, 2008 took a year',
 }
 
 // Trading-day offset from each crisis peak (≈21 trading days per month).

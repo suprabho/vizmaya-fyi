@@ -12,8 +12,14 @@
   - [ ] Video
     - [ ] Add speech and autoplay mode
   - [ ] Share
-    - [ ] 3:4 carousel
-    - [ ] 3:4 single
+    - [x] Images
+      - [x] 3:4
+      - [x] 4:3
+      - [x] 1:1
     - [ ] Generate as report
     - [ ] Generate as slide
 
+Bugs
+- [ ] Screen resize back to desktop not triggering website re-render 
+- [ ] Text Breaks for Share
+- [ ] Add space on top of graphs in Share

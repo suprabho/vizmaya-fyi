@@ -2,7 +2,7 @@
 
 import type { ResolvedUnit } from '@/lib/storyConfig.types'
 import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
-import { HeroPanel } from './Hero'
+import { HeroPanel, HeroPanelTitle, HeroPanelDek } from './Hero'
 
 interface Props {
   unitIndex: number
@@ -73,6 +73,63 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
         '[@media(min-aspect-ratio:1/1)]:p-10',
       ]
 
+  const cardClasses = [
+    'absolute rounded-lg p-6 backdrop-blur-sm overflow-y-auto',
+    'left-1/2 -translate-x-1/2 bottom-4',
+    'w-[90vw] max-w-[640px] max-h-[50vh]',
+    ...landscapeSlotClasses,
+    '[@media(min-aspect-ratio:1/1)]:max-w-none',
+    '[@media(min-aspect-ratio:1/1)]:max-h-none',
+  ].join(' ')
+
+  const cardStyle = {
+    background: 'rgba(10, 14, 20, 0.2)',
+    border: '0.5px solid var(--color-line, #1a2830)',
+  }
+
+  // Hero splits into two snap sections on portrait (mobile).
+  // On landscape the full HeroPanel stays in a single section.
+  if (kind === 'hero' && heading) {
+    return (
+      <>
+        <section
+          data-unit-index={unitIndex}
+          className="snap-start snap-always h-screen w-full relative"
+        >
+          <div className={cardClasses} style={cardStyle}>
+            <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
+              {/* Landscape: full hero */}
+              <div className="hidden [@media(min-aspect-ratio:1/1)]:block">
+                <HeroPanel
+                  title={heading}
+                  dek={heroBits?.dek ?? ''}
+                  byline={heroBits?.byline ?? ''}
+                  eyebrow={parentConfig.eyebrow}
+                />
+              </div>
+              {/* Portrait: eyebrow + title only */}
+              <div className="[@media(min-aspect-ratio:1/1)]:hidden">
+                <HeroPanelTitle title={heading} eyebrow={parentConfig.eyebrow} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Portrait-only second snap section: dek + byline */}
+        <section
+          data-unit-index={unitIndex}
+          className="snap-start snap-always h-screen w-full relative [@media(min-aspect-ratio:1/1)]:hidden"
+        >
+          <div className={cardClasses} style={cardStyle}>
+            <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
+              <HeroPanelDek dek={heroBits?.dek ?? ''} byline={heroBits?.byline ?? ''} />
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
+
   return (
     <section
       data-unit-index={unitIndex}
@@ -98,14 +155,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
             Centered both axes so hero/stat content sits in the middle of
             the wide slot rather than top-aligned. */}
         <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
-          {kind === 'hero' && heading ? (
-            <HeroPanel
-              title={heading}
-              dek={heroBits?.dek ?? ''}
-              byline={heroBits?.byline ?? ''}
-              eyebrow={parentConfig.eyebrow}
-            />
-          ) : kind === 'stat' && heading ? (
+          {kind === 'stat' && heading ? (
             <StatPanel value={heading} description={paragraphs.join(' ')} />
           ) : (
             <TextPanel

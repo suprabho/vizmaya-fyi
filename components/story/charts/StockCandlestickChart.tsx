@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -63,6 +63,7 @@ const data2008Overlay = [0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231, 2
 
 export default function StockCandlestickChart({ activeStep }: { activeStep: number }) {
   const { red: RED, accent2: ACCENT2, muted: MUTED, line: LINE, green: GREEN, amber: AMBER } = useChartColors()
+  const mobile = useIsMobile()
   const title = TITLES[activeStep] ?? TITLES[0]
   const show2008 = activeStep >= 1
 
@@ -80,8 +81,8 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
       title: {
         text: title,
         left: 'center',
-        bottom: 0, // pinned to bottom of chart container
-        textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+        bottom: 0,
+        textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
       },
       // ── Legend (the two color swatches above caption) ──
       legend: {
@@ -112,8 +113,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
         ],
       },
       // ── Plot area padding (controls chart inset) ───────
-      // left=Y-axis room, right=label room, top=headroom, bottom=legend+caption room
-      grid: { left: 55, right: 30, top: 35, bottom: 70 },
+      grid: mobile
+        ? { left: 36, right: 16, top: 28, bottom: 55 }
+        : { left: 55, right: 30, top: 35, bottom: 70 },
       // ── X axis: shared "trading days from peak" scale ──
       xAxis: {
         type: 'value',
@@ -121,7 +123,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
         max: 260,
         axisLine: { show: false }, // hide the axis baseline
         axisTick: { show: false }, // hide tick marks
-        axisLabel: { color: MUTED, fontSize: 9, formatter: '{value}d' }, // "0d", "21d"…
+        axisLabel: { color: MUTED, fontSize: mobile ? 7 : 9, formatter: '{value}d' },
         splitLine: { show: false }, // no vertical gridlines
       },
       // ── Y axis: indexed price (100 = peak) ─────────────
@@ -231,15 +233,15 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
     }
 
     return (
-      <div className="w-full">
+      <div className="w-full h-full flex flex-col">
         <ReactECharts
           option={overlayOption}
-          style={{ height: 380, width: '100%' }}
+          style={{ height: mobile ? '100%' : 380, width: '100%', flex: mobile ? 1 : undefined }}
           opts={{ renderer: 'svg' }}
           notMerge={true}
         />
         <div
-          className="text-center mt-1"
+          className="text-center mt-1 shrink-0"
           style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'MUTED' }}
         >
           KOSPI index, rebased to 100 at pre-crisis peak. Both crises overlaid on a shared
@@ -261,7 +263,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
       text: title,
       left: 'center',
       bottom: 0,
-      textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
     },
     // ── Legend swatches above caption ────────────────────
     legend: {
@@ -289,7 +291,9 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
     },
     // ── Plot area inset (left/right/top/bottom padding) ──
     grid: [
-      { left: 55, right: 30, top: 35, bottom: 70 },
+      mobile
+        ? { left: 36, right: 16, top: 28, bottom: 55 }
+        : { left: 55, right: 30, top: 35, bottom: 70 },
     ],
     // ── X axis: date labels for 2026 series ──────────────
     xAxis: [
@@ -424,15 +428,15 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         option={option}
-        style={{ height: 380, width: '100%' }}
+        style={{ height: mobile ? '100%' : 380, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         KOSPI index, rebased to 100 at pre-crisis peak. Sources: AInvest, Bitget News, Bloomberg.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const plants = [
   {
@@ -44,20 +44,21 @@ const TITLES: Record<number, string> = {
 
 export default function QatarPlantMap({ activeStep }: { activeStep: number }) {
   const { red: RED, green: TEAL, muted: MUTED, line: LINE, surface: SURFACE } = useChartColors()
+  const mobile = useIsMobile()
   const title = TITLES[activeStep] ?? TITLES[0]
   const isOffline = activeStep >= 1
   const showImpact = activeStep >= 2
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <div
-        className="text-center mb-3"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: MUTED }}
+        className="text-center mb-3 shrink-0"
+        style={{ fontFamily: 'var(--font-mono)', fontSize: mobile ? '0.55rem' : '0.7rem', color: MUTED }}
       >
         {title}
       </div>
 
-      <svg viewBox="0 0 760 420" className="w-full" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox={mobile ? "20 0 720 420" : "0 0 760 420"} className="w-full flex-1" preserveAspectRatio="xMidYMid meet">
         {/* Background: simplified Gulf map outline */}
         <rect x="0" y="0" width="760" height="420" fill="transparent" />
 
@@ -220,7 +221,7 @@ export default function QatarPlantMap({ activeStep }: { activeStep: number }) {
       </svg>
 
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: USGS 2026 Mineral Commodity Summaries (33.2% of global supply). Plant data: Gasworld, Helium One.

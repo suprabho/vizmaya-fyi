@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -14,6 +14,7 @@ const TITLES: Record<number, string> = {
 
 export default function PolarExposureChart({ activeStep }: { activeStep: number }) {
   const { accent: ACCENT, accent2: ACCENT2, green: HELIUM, muted: MUTED, line: LINE, surface: SURFACE } = useChartColors()
+  const mobile = useIsMobile()
 
   const exposures = [
     { name: 'Oil', value: 70, color: ACCENT, desc: 'from the Middle East', detail: 'Naphtha feedstock for semiconductor chemicals' },
@@ -40,9 +41,9 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
       text: title,
       left: 'center',
       bottom: 0,
-      textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
     },
-    polar: { radius: ['25%', '75%'], center: ['50%', '50%'] },
+    polar: { radius: mobile ? ['20%', '60%'] : ['25%', '75%'], center: ['50%', '50%'] },
     angleAxis: {
       type: 'category',
       data: exposures.map(e => e.name),
@@ -52,7 +53,7 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
       axisLabel: {
         color: '#e0ddd5',
         fontFamily: 'var(--font-sans)',
-        fontSize: 13,
+        fontSize: mobile ? 10 : 13,
         fontWeight: 600,
       },
       splitLine: { lineStyle: { color: LINE, opacity: 0.4 } },
@@ -83,7 +84,7 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
             formatter: `${e.value}%`,
             color: e.color,
             fontFamily: 'var(--font-mono)',
-            fontSize: 16,
+            fontSize: mobile ? 12 : 16,
             fontWeight: 700,
           },
         })),
@@ -108,15 +109,15 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         option={option}
-        style={{ height: 360, width: '100%' }}
+        style={{ height: mobile ? '100%' : 360, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: KITA (helium 64.7%), Carnegie Endowment (oil 70%), IEEFA (gas 26%).

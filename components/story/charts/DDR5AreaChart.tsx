@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -33,6 +33,7 @@ const TITLES: Record<number, string> = {
 
 export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
   const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, amber: AMBER, muted: MUTED, line: LINE } = useChartColors()
+  const mobile = useIsMobile()
 
   const annotations: { x: string; y: number; label: string; color: string }[] = [
     { x: 'Sep 25', y: 6.84, label: '$6.84\nbaseline', color: ACCENT2 },
@@ -56,12 +57,12 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
       text: title,
       left: 'center',
       bottom: 0,
-      textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
     },
     legend: {
-      top: 5,
+      top: mobile ? 2 : 5,
       left: 10,
-      textStyle: { color: MUTED, fontSize: 10, fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 8 : 10, fontFamily: 'var(--font-mono)' },
       data: [
         { name: 'Historical (verified)', itemStyle: { color: ACCENT2 } },
         ...(show60d ? [{ name: '60-day: +2-4% GPU hr', itemStyle: { color: TEAL } }] : []),
@@ -69,13 +70,15 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
         ...(show3yr ? [{ name: '3-5yr: +30-50% GPU hr', itemStyle: { color: ACCENT } }] : []),
       ],
     },
-    grid: { left: 58, right: 30, top: 38, bottom: 50 },
+    grid: mobile
+      ? { left: 40, right: 16, top: 30, bottom: 40 }
+      : { left: 58, right: 30, top: 38, bottom: 50 },
     xAxis: {
       type: 'category',
       data: months,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10, interval: 0 },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, interval: 0, rotate: mobile ? 45 : 0 },
       splitLine: { show: false },
     },
     yAxis: {
@@ -84,9 +87,9 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
       max: 45,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10, formatter: '${value}' },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, formatter: '${value}' },
       splitLine: { lineStyle: { color: LINE } },
-      name: 'DDR5 16Gb spot ($/chip)',
+      name: mobile ? '' : 'DDR5 16Gb spot ($/chip)',
       nameTextStyle: { color: MUTED, fontSize: 9 },
     },
     // Shaded projection zone
@@ -218,15 +221,15 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         option={option}
-        style={{ height: 380, width: '100%' }}
+        style={{ height: mobile ? '100%' : 380, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         DDR5 16Gb (2Gx8) spot. Sources: DRAMeXchange via Tom's Hardware, TrendForce, Accio. Projections: directional estimates only.

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import type { Theme } from '@/types/story'
 
 /**
@@ -44,6 +44,19 @@ export function useChartColors(): ChartColors {
  * `line` has no equivalent in the story frontmatter and stays at the
  * default — adjust here if a story ever needs a custom gridline color.
  */
+/** True when viewport is portrait (mobile-like). Shared across all charts. */
+export function useIsMobile(): boolean {
+  const [mobile, setMobile] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia('(max-aspect-ratio: 1/1)')
+    setMobile(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  return mobile
+}
+
 export function themeToChartColors(theme: Theme): ChartColors {
   return {
     accent: theme.colors.accent,

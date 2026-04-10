@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -14,6 +14,7 @@ const TITLES: Record<number, string> = {
 
 export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
   const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, muted: MUTED } = useChartColors()
+  const mobile = useIsMobile()
 
   const hbmData = [
     { name: 'SK Hynix\n(Korea)', value: 62, color: ACCENT2 },
@@ -44,15 +45,15 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
         name: {
           color: '#fff',
           fontFamily: 'var(--font-sans)',
-          fontSize: 11,
-          lineHeight: 16,
+          fontSize: mobile ? 9 : 11,
+          lineHeight: mobile ? 13 : 16,
         },
         pct: {
           color: d.color === MUTED ? '#8a9a9f' : '#fff',
           fontFamily: 'var(--font-mono)',
           fontWeight: 700,
-          fontSize: 14,
-          lineHeight: 20,
+          fontSize: mobile ? 11 : 14,
+          lineHeight: mobile ? 16 : 20,
         },
       },
     },
@@ -68,13 +69,13 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
         text: subtitle,
         left: 'center',
         top: 4,
-        textStyle: { color: MUTED, fontSize: 10, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+        textStyle: { color: MUTED, fontSize: mobile ? 8 : 10, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
       },
       {
         text: title,
         left: 'center',
         bottom: 0,
-        textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+        textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
       },
     ],
     series: [
@@ -113,16 +114,16 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         key={`${activeStep}`}
         option={option}
-        style={{ height: 360, width: '100%' }}
+        style={{ height: mobile ? '100%' : 360, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: Counterpoint Research (HBM Q2 2025), TrendForce, IDC. DRAM shares are 2026 estimates.

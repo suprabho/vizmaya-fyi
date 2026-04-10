@@ -57,6 +57,10 @@ export default async function StoryPage({ params }: RouteParams) {
   // the resolved anchor. This is how we reveal bullets one-by-one as a chart's
   // activeStep advances — without re-pulling the same anchor and re-rendering
   // the whole text block per chart step.
+  //
+  // Mobile slicing: sections/subsections with `mobileParagraphs` expand into
+  // multiple units on portrait viewports, each showing a subset of the text.
+  // The server generates both arrays; StoryMapShell picks the right one.
   const sliceParagraphs = (
     all: string[],
     spec: number | [number, number] | undefined
@@ -67,6 +71,9 @@ export default async function StoryPage({ params }: RouteParams) {
   }
 
   const units: ResolvedUnit[] = []
+  const mobileUnits: ResolvedUnit[] = []
+  let hasMobileOverrides = false
+
   config.sections.forEach((section, parentIndex) => {
     const subs = section.subsections
     if (subs && subs.length > 0) {
@@ -74,25 +81,78 @@ export default async function StoryPage({ params }: RouteParams) {
         const md = resolveAnchor(story!.sections, sub.text)
         if (!md) console.warn(`[story:${slug}] anchor not found: "${sub.text}"`)
         const allParagraphs = md ? getParagraphs(md) : []
+        const heading = sub.heading ?? md?.heading
+
+        // Desktop unit (always one per subsection)
         units.push({
           parentIndex,
           subIndex,
           parentConfig: section,
-          heading: sub.heading ?? md?.heading,
+          heading,
           paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
         })
+
+        // Mobile units — expand if mobileParagraphs present.
+        // Only the first slice carries the heading; subsequent slices
+        // continue the same text without repeating the header.
+        if (sub.mobileParagraphs) {
+          hasMobileOverrides = true
+          sub.mobileParagraphs.forEach((mobileSpec, sliceIdx) => {
+            mobileUnits.push({
+              parentIndex,
+              subIndex,
+              parentConfig: section,
+              heading: sliceIdx === 0 ? heading : undefined,
+              paragraphs: sliceParagraphs(allParagraphs, mobileSpec),
+            })
+          })
+        } else {
+          mobileUnits.push({
+            parentIndex,
+            subIndex,
+            parentConfig: section,
+            heading,
+            paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
+          })
+        }
       })
     } else if (section.text) {
       const md = resolveAnchor(story!.sections, section.text)
       if (!md) console.warn(`[story:${slug}] anchor not found: "${section.text}"`)
       const allParagraphs = md ? getParagraphs(md) : []
+      const heading = section.heading ?? md?.heading
+
+      // Desktop unit
       units.push({
         parentIndex,
         subIndex: 0,
         parentConfig: section,
-        heading: section.heading ?? md?.heading,
+        heading,
         paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
       })
+
+      // Mobile units — expand if mobileParagraphs present.
+      // Only the first slice carries the heading.
+      if (section.mobileParagraphs) {
+        hasMobileOverrides = true
+        section.mobileParagraphs.forEach((mobileSpec, sliceIdx) => {
+          mobileUnits.push({
+            parentIndex,
+            subIndex: 0,
+            parentConfig: section,
+            heading: sliceIdx === 0 ? heading : undefined,
+            paragraphs: sliceParagraphs(allParagraphs, mobileSpec),
+          })
+        })
+      } else {
+        mobileUnits.push({
+          parentIndex,
+          subIndex: 0,
+          parentConfig: section,
+          heading,
+          paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
+        })
+      }
     }
   })
 
@@ -100,6 +160,7 @@ export default async function StoryPage({ params }: RouteParams) {
     <ThemeProvider theme={story.frontmatter.theme}>
       <StoryMapShell
         units={units}
+        mobileUnits={hasMobileOverrides ? mobileUnits : undefined}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
         defaults={config.defaults}
       />

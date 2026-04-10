@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -20,6 +20,7 @@ const TITLES: Record<number, string> = {
 
 export default function HeliumPriceChart({ activeStep }: { activeStep: number }) {
   const { accent: ACCENT, green: TEAL, muted: MUTED, line: LINE } = useChartColors()
+  const mobile = useIsMobile()
   const title = TITLES[activeStep] ?? TITLES[0]
   const showProjected = activeStep >= 1
   const sliceEnd = showProjected ? 10 : 7
@@ -33,15 +34,17 @@ export default function HeliumPriceChart({ activeStep }: { activeStep: number })
       text: title,
       left: 'center',
       bottom: 0,
-      textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
     },
-    grid: { left: 65, right: 30, top: 35, bottom: 50 },
+    grid: mobile
+      ? { left: 40, right: 16, top: 28, bottom: 40 }
+      : { left: 65, right: 30, top: 35, bottom: 50 },
     xAxis: {
       type: 'category',
       data: months,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10 },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, rotate: mobile ? 45 : 0 },
     },
     yAxis: {
       type: 'value',
@@ -49,7 +52,7 @@ export default function HeliumPriceChart({ activeStep }: { activeStep: number })
       max: 2000,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10, formatter: '${value}' },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, formatter: '${value}' },
       splitLine: { lineStyle: { color: LINE } },
     },
     series: [
@@ -101,9 +104,9 @@ export default function HeliumPriceChart({ activeStep }: { activeStep: number })
         : []),
     ],
     legend: {
-      top: 5,
+      top: mobile ? 2 : 5,
       left: 10,
-      textStyle: { color: MUTED, fontSize: 10, fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 8 : 10, fontFamily: 'var(--font-mono)' },
       data: [
         { name: 'Spot (2% of market)', itemStyle: { color: ACCENT } },
         { name: 'Contract (98%)', itemStyle: { color: TEAL } },
@@ -113,15 +116,15 @@ export default function HeliumPriceChart({ activeStep }: { activeStep: number })
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         option={option}
-        style={{ height: 340, width: '100%' }}
+        style={{ height: mobile ? '100%' : 340, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: IMARC, ChemAnalyst, Phil Kornbluth (CNBC). *Projected if crisis extends.

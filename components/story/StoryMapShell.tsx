@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import MapStorySection from './MapStorySection'
 import ChartPanel from './ChartPanel'
 import type {
@@ -9,6 +9,19 @@ import type {
 } from '@/lib/storyConfig.types'
 import type MapboxBackgroundType from './charts/MapboxBackground'
 import type { MapStep } from './charts/MapboxBackground'
+
+/** Returns true when the viewport is portrait (aspect ratio < 1). */
+function useIsPortrait(): boolean {
+  const [portrait, setPortrait] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia('(max-aspect-ratio: 1/1)')
+    setPortrait(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setPortrait(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  return portrait
+}
 
 type MapboxBackgroundProps = React.ComponentProps<typeof MapboxBackgroundType>
 
@@ -40,6 +53,8 @@ function MapboxBackground(props: MapboxBackgroundProps) {
 
 interface Props {
   units: ResolvedUnit[]
+  /** When present, used instead of `units` on portrait (mobile) viewports. */
+  mobileUnits?: ResolvedUnit[]
   accessToken: string
   defaults: StoryDefaults
 }
@@ -65,28 +80,73 @@ interface Props {
  * Safari and the observer fires reliably as snap settles.
  */
 export default function StoryMapShell({
-  units,
+  units: desktopUnits,
+  mobileUnits,
   accessToken,
   defaults,
 }: Props) {
   const [activeUnit, setActiveUnit] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const isPortrait = useIsPortrait()
+
+  // Pick the right unit array based on viewport orientation.
+  // When mobileUnits is provided and viewport is portrait, use the mobile
+  // array which may have more (smaller) units to avoid text overflow.
+  const units = isPortrait && mobileUnits ? mobileUnits : desktopUnits
+
+  // Reset active unit when switching between arrays to avoid stale index.
+  const prevLengthRef = useRef(units.length)
+  useEffect(() => {
+    if (units.length !== prevLengthRef.current) {
+      prevLengthRef.current = units.length
+      setActiveUnit(0)
+    }
+  }, [units.length])
 
   // One MapStep per unit. Subsections with a `map` override merge their
   // fields on top of the parent section's map state, so each unit can have
   // its own camera position and pins while still sharing the parent's chart.
+  //
+  // When the viewport is portrait (mobile), `map.mobile` overrides are
+  // layered on top of the resolved desktop values — so you can specify
+  // only the fields that differ (e.g. a lower zoom) and everything else
+  // falls through from the desktop config.
   const mapSteps: MapStep[] = units.map((unit) => {
     const parentMap = unit.parentConfig.map
     const sub = unit.parentConfig.subsections?.[unit.subIndex]
     const over = sub?.map
+
+    // Desktop-resolved values (subsection overrides parent)
+    let center = over?.center ?? parentMap.center
+    let zoom = over?.zoom ?? parentMap.zoom
+    let pitch = over?.pitch ?? parentMap.pitch
+    let bearing = over?.bearing ?? parentMap.bearing
+    let flySpeed = over?.flySpeed ?? parentMap.flySpeed ?? defaults.flySpeed
+    let opacity = over?.opacity ?? parentMap.opacity ?? defaults.mapOpacity
+    let pins = over?.pins ?? parentMap.pins
+
+    // Mobile layer: subsection mobile > parent mobile
+    if (isPortrait) {
+      const mob = over?.mobile ?? parentMap.mobile
+      if (mob) {
+        center = mob.center ?? center
+        zoom = mob.zoom ?? zoom
+        pitch = mob.pitch ?? pitch
+        bearing = mob.bearing ?? bearing
+        flySpeed = mob.flySpeed ?? flySpeed
+        opacity = mob.opacity ?? opacity
+        pins = mob.pins ?? pins
+      }
+    }
+
     return {
-      center: over?.center ?? parentMap.center,
-      zoom: over?.zoom ?? parentMap.zoom,
-      pitch: over?.pitch ?? parentMap.pitch,
-      bearing: over?.bearing ?? parentMap.bearing,
-      flySpeed: over?.flySpeed ?? parentMap.flySpeed ?? defaults.flySpeed,
-      opacity: over?.opacity ?? parentMap.opacity ?? defaults.mapOpacity,
-      pins: (over?.pins ?? parentMap.pins)?.map((p) => ({
+      center,
+      zoom,
+      pitch,
+      bearing,
+      flySpeed,
+      opacity,
+      pins: pins?.map((p) => ({
         coordinates: p.coordinates,
         label: p.label,
         color: p.color ?? defaults.pinColor,
@@ -158,15 +218,21 @@ export default function StoryMapShell({
         <div
           className="
             fixed pointer-events-none z-10
-            top-0 right-0 w-screen h-[42vh]
+            top-1/2 -translate-y-2/3 left-1/2 -translate-x-1/2
+            w-[calc(100vw-2.25rem)] aspect-square
             [@media(min-aspect-ratio:1/1)]:top-0
+            [@media(min-aspect-ratio:1/1)]:translate-y-0
+            [@media(min-aspect-ratio:1/1)]:translate-x-0
+            [@media(min-aspect-ratio:1/1)]:left-auto
+            [@media(min-aspect-ratio:1/1)]:right-0
             [@media(min-aspect-ratio:1/1)]:w-[63vw]
+            [@media(min-aspect-ratio:1/1)]:aspect-auto
             [@media(min-aspect-ratio:1/1)]:h-[50vh]
             flex items-center justify-center backdrop-blur-3xl
           "
         >
           <div
-            className="w-full h-full max-w-[760px] [@media(min-aspect-ratio:1/1)]:max-w-none rounded-lg overflow-hidden flex items-center justify-center"
+            className="w-full h-full max-w-[760px] [@media(min-aspect-ratio:1/1)]:max-w-none rounded-lg overflow-hidden flex items-center justify-center p-3 [@media(min-aspect-ratio:1/1)]:p-0"
             style={{
               background: 'rgba(10, 14, 20, 0.2)',
               border: '0.5px solid var(--color-line, #1a2830)',

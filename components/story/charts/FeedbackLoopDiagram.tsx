@@ -1,6 +1,6 @@
 'use client'
 
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const edges = [
   { from: 0, to: 1 },
@@ -24,6 +24,7 @@ const TITLES: Record<number, string> = {
 
 export default function FeedbackLoopDiagram({ activeStep }: { activeStep: number }) {
   const { red: RED, amber: AMBER, accent: ACCENT, green: TEAL, muted: MUTED } = useChartColors()
+  const mobile = useIsMobile()
 
   const nodes = [
     { x: 400, y: 60, w: 220, h: 44, label: 'Hormuz closure', c: RED },
@@ -38,14 +39,14 @@ export default function FeedbackLoopDiagram({ activeStep }: { activeStep: number
   const showBreakers = activeStep >= 1
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <div
-        className="text-center mb-2"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: MUTED }}
+        className="text-center mb-2 shrink-0"
+        style={{ fontFamily: 'var(--font-mono)', fontSize: mobile ? '0.55rem' : '0.7rem', color: MUTED }}
       >
         {title}
       </div>
-      <svg viewBox="0 0 800 420" className="w-full" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox={mobile ? "40 0 720 420" : "0 0 800 420"} className="w-full flex-1" preserveAspectRatio="xMidYMid meet">
         <defs>
           <marker
             id="arrowhead"
@@ -173,7 +174,7 @@ export default function FeedbackLoopDiagram({ activeStep }: { activeStep: number
           ))}
       </svg>
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Feedback loop model. Circuit breakers shown in green. Positive feedback in red.

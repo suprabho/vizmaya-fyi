@@ -23,7 +23,7 @@ export interface MapPinConfig {
 
 export type SectionKind = 'text' | 'hero' | 'stat'
 
-export interface SubsectionMapOverride {
+export interface MapOverrides {
   center?: [number, number]
   zoom?: number
   pitch?: number
@@ -31,6 +31,11 @@ export interface SubsectionMapOverride {
   opacity?: number
   flySpeed?: number
   pins?: MapPinConfig[]
+}
+
+export interface SubsectionMapOverride extends MapOverrides {
+  /** Overrides applied on portrait / mobile viewports. */
+  mobile?: MapOverrides
 }
 
 export interface StorySubsectionConfig {
@@ -47,6 +52,19 @@ export interface StorySubsectionConfig {
    * Use [start, end] semantics matching Array.slice (end is exclusive).
    */
   paragraphs?: number | [number, number]
+  /**
+   * Mobile-only paragraph slices. When present on a portrait viewport, a
+   * single desktop subsection expands into multiple snap targets — one per
+   * entry. Each entry follows the same `[start, end]` semantics as
+   * `paragraphs`. This avoids text overflow on small screens.
+   *
+   * Example:
+   *   paragraphs: [0, 8]           # desktop — one snap
+   *   mobileParagraphs:            # mobile — two snaps
+   *     - [0, 4]
+   *     - [4, 8]
+   */
+  mobileParagraphs?: Array<number | [number, number]>
   /** Optional override heading shown above the paragraphs (replaces the anchor's own heading). */
   heading?: string
   /**
@@ -77,6 +95,8 @@ export interface StorySectionConfig {
   subsections?: StorySubsectionConfig[]
   /** Same paragraph-slice semantics as StorySubsectionConfig.paragraphs. */
   paragraphs?: number | [number, number]
+  /** Same mobile-split semantics as StorySubsectionConfig.mobileParagraphs. */
+  mobileParagraphs?: Array<number | [number, number]>
   /** Optional override heading for the section's text panel. */
   heading?: string
   /** Optional foreground chart id; resolved by ChartPanel registry. */
@@ -91,6 +111,8 @@ export interface StorySectionConfig {
     opacity?: number
     flySpeed?: number
     pins?: MapPinConfig[]
+    /** Overrides applied on portrait / mobile viewports. */
+    mobile?: MapOverrides
   }
 }
 

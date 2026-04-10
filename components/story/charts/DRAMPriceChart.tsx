@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import type { EChartsOption } from 'echarts'
-import { useChartColors } from '@/lib/chartTheme'
+import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
@@ -19,6 +19,7 @@ const TITLES: Record<number, string> = {
 
 export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
   const { accent: ACCENT, accent2: ACCENT2, muted: MUTED, line: LINE } = useChartColors()
+  const mobile = useIsMobile()
   const title = TITLES[activeStep] ?? TITLES[0]
   const showHormuzLegend = activeStep >= 1
 
@@ -44,12 +45,12 @@ export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
       text: title,
       left: 'center',
       bottom: 0,
-      textStyle: { color: MUTED, fontSize: 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
+      textStyle: { color: MUTED, fontSize: mobile ? 9 : 11, fontWeight: 'normal', fontFamily: 'var(--font-mono)' },
     },
     legend: {
       top: 0,
       left: 10,
-      textStyle: { color: MUTED, fontSize: 10 },
+      textStyle: { color: MUTED, fontSize: mobile ? 8 : 10 },
       data: [
         { name: 'Pre-existing supercycle', itemStyle: { color: ACCENT2 } },
         ...(showHormuzLegend
@@ -57,20 +58,22 @@ export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
           : []),
       ],
     },
-    grid: { left: 60, right: 30, top: 40, bottom: 50 },
+    grid: mobile
+      ? { left: 40, right: 16, top: 30, bottom: 40 }
+      : { left: 60, right: 30, top: 40, bottom: 50 },
     xAxis: {
       type: 'category',
       data: labels,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10, interval: 0 },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, interval: 0, rotate: mobile ? 30 : 0 },
     },
     yAxis: {
       type: 'value',
       max: 230,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 10, formatter: '{value}%' },
+      axisLabel: { color: MUTED, fontSize: mobile ? 8 : 10, formatter: '{value}%' },
       splitLine: { lineStyle: { color: LINE } },
     },
     series: [
@@ -107,15 +110,15 @@ export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <ReactECharts
         option={option}
-        style={{ height: 360, width: '100%' }}
+        style={{ height: mobile ? '100%' : 360, width: '100%', flex: mobile ? 1 : undefined }}
         opts={{ renderer: 'svg' }}
         notMerge={true}
       />
       <div
-        className="text-center mt-1"
+        className="text-center mt-1 shrink-0"
         style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
       >
         Sources: TrendForce, Counterpoint, IDC, Gartner. Hormuz increment estimated from helium + energy pass-through.

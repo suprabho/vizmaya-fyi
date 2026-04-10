@@ -312,6 +312,9 @@ sections:
 
   - id: yard-geoje
     text: "Geoje: Samsung Heavy and Hanwha Ocean"
+    mobileParagraphs:           # mobile: 2 snaps
+        - [0, 1]
+        - [1, 2]
     map:
       center: [128.810, 35.200]
       zoom: 10.0

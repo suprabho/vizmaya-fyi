@@ -7,9 +7,9 @@ import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const TITLES: Record<number, string> = {
-  0: "South Korea's triple exposure: three supply lines, one chokepoint",
-  1: 'Oil 70% + Helium 64.7% + Gas 26% — all routed through the Strait of Hormuz',
-  2: 'Every exposure hits the same industries: semiconductor fabs and shipyards',
+  0: "South Korea's triple exposure\n 3 supply lines, one chokepoint",
+  1: 'Oil 70% + Helium 64.7% + Gas 26%\n All routed through the Strait of Hormuz',
+  2: 'Every exposure hits the same industries\n semiconductor fabs and shipyards',
 }
 
 export default function PolarExposureChart({ activeStep }: { activeStep: number }) {

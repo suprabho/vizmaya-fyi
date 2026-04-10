@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { MapPinConfig } from '@/lib/storyConfig.types'
 
 interface Props {
@@ -54,9 +55,10 @@ export default function ShareMapBg({
   const reqW = Math.min(width, 1280)
   const reqH = Math.min(height, 1280)
 
-  const overlay = pins && pins.length > 0 ? `${buildPinOverlay(pins)}/` : ''
-
-  const url = `https://api.mapbox.com/styles/v1/${styleId}/static/${overlay}${center[0]},${center[1]},${zoom},${bearing},${pitch}/${reqW}x${reqH}@2x?access_token=${accessToken}`
+  const url = useMemo(() => {
+    const overlay = pins && pins.length > 0 ? `${buildPinOverlay(pins)}/` : ''
+    return `https://api.mapbox.com/styles/v1/${styleId}/static/${overlay}${center[0]},${center[1]},${zoom},${bearing},${pitch}/${reqW}x${reqH}@2x?access_token=${accessToken}`
+  }, [styleId, center[0], center[1], zoom, bearing, pitch, reqW, reqH, accessToken, pins])
 
   return (
     <img

@@ -7,9 +7,9 @@ import { useChartColors, useIsMobile } from '@/lib/chartTheme'
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 
 const TITLES: Record<number, string> = {
-  0: 'Global HBM market: South Korea holds 90% — every AI GPU depends on it',
-  1: 'Global DRAM market: Korea dominates; Micron is the only non-Korean alternative',
-  2: 'Combined: Korea produces the memory the world cannot build AI without',
+  0: 'Global HBM market: South Korea holds 90% \n every AI GPU depends on it',
+  1: 'Global DRAM market: Korea dominates;\n Micron is the only non-Korean alternative',
+  2: 'Combined: Korea produces the memory that  \n the world cannot build AI without',
 }
 
 export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {

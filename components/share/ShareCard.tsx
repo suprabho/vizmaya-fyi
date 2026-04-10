@@ -186,7 +186,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                   </div>
                 )}
                 <h2
-                  className="font-[family-name:var(--font-serif)] text-[1.6rem] font-bold leading-[1.2]"
+                  className="font-serif text-[1.6rem] font-bold leading-[1.2]"
                   style={{ color: 'var(--color-text)' }}
                 >
                   {heading || title}
@@ -197,19 +197,11 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                     <>
                       {dek && (
                         <p
-                          className="text-[1.1rem] leading-[1.65] mt-3"
+                          className="text-[0.8rem] leading-[1.4] mt-3 max-w-[80%]"
                           style={{ color: 'var(--color-muted)' }}
                         >
                           {dek}
                         </p>
-                      )}
-                      {byline && (
-                        <div
-                          className="font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.1em] mt-3"
-                          style={{ color: 'var(--color-muted)' }}
-                        >
-                          {byline}
-                        </div>
                       )}
                     </>
                   )

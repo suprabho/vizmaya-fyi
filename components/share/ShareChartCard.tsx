@@ -13,7 +13,7 @@ interface Props {
  */
 export default function ShareChartCard({ chartId, activeStep }: Props) {
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full pt-8">
       <ChartPanel chartId={chartId} activeStep={activeStep} />
     </div>
   )

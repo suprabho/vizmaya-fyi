@@ -221,7 +221,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                 <div className="flex-1 min-h-0">
                   <ShareChartCard
                     chartId={parentConfig.chart!}
-                    activeStep={maxSubIndex}
+                    activeStep={unit.subIndex}
                   />
                 </div>
                 <div className="px-6 py-4">

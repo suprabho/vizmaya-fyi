@@ -5,6 +5,7 @@ import type {
   StoryConfig,
   StoryDefaults,
   StorySectionConfig,
+  ShareConfig,
 } from './storyConfig.types'
 
 export type {
@@ -15,6 +16,8 @@ export type {
   MapPinConfig,
   MapOverrides,
   ResolvedUnit,
+  ShareConfig,
+  ShareSectionOverride,
 } from './storyConfig.types'
 
 const STORIES_DIR = path.join(process.cwd(), 'content/stories')
@@ -121,5 +124,27 @@ export function loadStoryConfig(slug: string): StoryConfig {
   return {
     defaults: { ...DEFAULTS, ...(raw.defaults ?? {}) },
     sections: raw.sections as StorySectionConfig[],
+  }
+}
+
+/**
+ * Returns true if a sibling .share.yaml exists for the given slug.
+ */
+export function hasShareConfig(slug: string): boolean {
+  return fs.existsSync(path.join(STORIES_DIR, `${slug}.share.yaml`))
+}
+
+/**
+ * Load the share-mode YAML config for a story slug.
+ * Returns null if no share config exists.
+ */
+export function loadShareConfig(slug: string): ShareConfig | null {
+  const filePath = path.join(STORIES_DIR, `${slug}.share.yaml`)
+  if (!fs.existsSync(filePath)) return null
+  const file = fs.readFileSync(filePath, 'utf8')
+  const raw = parseYaml(file) as Partial<ShareConfig> | null
+  if (!raw || typeof raw !== 'object') return null
+  return {
+    sections: raw.sections ?? {},
   }
 }

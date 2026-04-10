@@ -121,6 +121,31 @@ export interface StoryConfig {
   sections: StorySectionConfig[]
 }
 
+/* ─── Share mode config ─────────────────────────────────────────── */
+
+/**
+ * Per-section overrides for share mode, keyed by section `id`.
+ * Only the fields provided are merged — everything else falls back
+ * to the main story config.
+ */
+export interface ShareSectionOverride {
+  /** Override the heading shown on the map-title card. */
+  heading?: string
+  /** Hide this section from share mode entirely. */
+  hide?: boolean
+  map?: {
+    center?: [number, number]
+    zoom?: number
+    pitch?: number
+    bearing?: number
+    pins?: MapPinConfig[]
+  }
+}
+
+export interface ShareConfig {
+  sections: Record<string, ShareSectionOverride>
+}
+
 /**
  * A renderable unit — one viewport-tall snap target. Sections without
  * subsections produce one unit; sections with N subsections produce N units.

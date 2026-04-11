@@ -57,14 +57,18 @@ export default function ShareMapBg({
 
   const url = useMemo(() => {
     const overlay = pins && pins.length > 0 ? `${buildPinOverlay(pins)}/` : ''
-    return `https://api.mapbox.com/styles/v1/${styleId}/static/${overlay}${center[0]},${center[1]},${zoom},${bearing},${pitch}/${reqW}x${reqH}@2x?access_token=${accessToken}`
+    const mapboxUrl = `https://api.mapbox.com/styles/v1/${styleId}/static/${overlay}${center[0]},${center[1]},${zoom},${bearing},${pitch}/${reqW}x${reqH}@2x?access_token=${accessToken}`
+    // Route through our same-origin proxy so html-to-image can clone and
+    // re-fetch the background without cross-origin canvas tainting. The
+    // proxy sets long-lived Cache-Control headers, so Vercel's edge CDN
+    // serves repeat requests without re-hitting the Mapbox API.
+    return `/api/mapbox-bg?url=${encodeURIComponent(mapboxUrl)}`
   }, [styleId, center[0], center[1], zoom, bearing, pitch, reqW, reqH, accessToken, pins])
 
   return (
     <img
       src={url}
       alt=""
-      crossOrigin="anonymous"
       className="absolute inset-0 w-full h-full object-cover"
       style={{ opacity: 0.55 }}
     />

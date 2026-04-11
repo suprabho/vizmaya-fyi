@@ -3,36 +3,14 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type ComponentType,
 } from 'react'
 import { createBrowserClient } from '@/lib/supabase'
-import ChartPanel from '@/components/story/ChartPanel'
-import { HeroPanel } from '@/components/story/Hero'
-import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
 import type { ResolvedUnit, StoryDefaults } from '@/lib/storyConfig.types'
-import type MapboxBackgroundType from '@/components/story/charts/MapboxBackground'
-import type { MapStep } from '@/components/story/charts/MapboxBackground'
 import AutoplayAspectToggle, { type AutoplayRatio } from './AutoplayAspectToggle'
-
-/* ─── Lazy-load MapboxBackground (client-only) ─────────────────────── */
-
-type MapboxBackgroundProps = React.ComponentProps<typeof MapboxBackgroundType>
-
-function MapboxBackground(props: MapboxBackgroundProps) {
-  const [Comp, setComp] = useState<ComponentType<MapboxBackgroundProps> | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    import('@/components/story/charts/MapboxBackground').then((m) => {
-      if (!cancelled) setComp(() => m.default)
-    })
-    return () => { cancelled = true }
-  }, [])
-  if (!Comp) return null
-  return <Comp {...props} />
-}
 
 /* ─── Audio record from Supabase ───────────────────────────────────── */
 
@@ -48,136 +26,174 @@ interface Props {
   title: string
   units: ResolvedUnit[]
   mobileUnits?: ResolvedUnit[]
+  /**
+   * For each desktop unit (index = position in `units`), the array of mobile
+   * unit indices it expands into. Audio is generated per mobile unit; for
+   * desktop playback we queue these segments back-to-back.
+   */
+  desktopToMobile: number[][]
   accessToken: string
   defaults: StoryDefaults
 }
 
-/* ─── Helpers ──────────────────────────────────────────────────────── */
+/* ─── Fixed viewport dimensions per ratio ──────────────────────────── */
 
-function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } {
-  const dek =
-    paragraphs.find((p) => /^\*[^*]/.test(p))?.replace(/^\*+|\*+$/g, '').trim() ?? ''
-  const byline =
-    paragraphs.find((p) => p.startsWith('**'))?.replace(/^\*+|\*+$/g, '').trim() ?? ''
-  return { dek, byline }
-}
-
-/* ─── Viewport dimensions for aspect ratios ────────────────────────── */
-
-function getViewportStyle(ratio: AutoplayRatio): { width: string; height: string } {
-  if (ratio === '9:16') {
-    return { width: 'min(56.25vh, 100vw)', height: 'min(100vh, 177.78vw)' }
-  }
-  return { width: 'min(100vw, 177.78vh)', height: 'min(56.25vw, 100vh)' }
+/**
+ * Real pixel dimensions used for the iframe. The story page renders at these
+ * dimensions so its `[@media(min-aspect-ratio:1/1)]` queries resolve based on
+ * the iframe viewport (not the parent window). The whole iframe is then
+ * CSS-scaled with `transform: scale()` to fit the available screen height.
+ */
+const VIEWPORT_DIMS: Record<AutoplayRatio, { width: number; height: number }> = {
+  '9:16': { width: 414, height: 736 }, // mobile portrait — true 9:16
+  '16:9': { width: 1280, height: 720 }, // widescreen — true 16:9
 }
 
 /* ─── Component ────────────────────────────────────────────────────── */
 
 export default function AutoplayShell({
   slug,
-  title,
   units: desktopUnits,
   mobileUnits,
-  accessToken,
-  defaults,
+  desktopToMobile,
 }: Props) {
   const [ratio, setRatio] = useState<AutoplayRatio>('9:16')
   const [activeUnit, setActiveUnit] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioLoading, setAudioLoading] = useState(false)
+  const [iframeReady, setIframeReady] = useState(false)
+  const [scale, setScale] = useState(1)
+
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const stageRef = useRef<HTMLDivElement | null>(null)
 
   // Map of unit_index → public_url for available audio
   const [audioMap, setAudioMap] = useState<Map<number, string>>(new Map())
 
   // Use mobileUnits for 9:16 (vertical), desktop for 16:9
+  const isVertical = ratio === '9:16'
   const units = useMemo(
-    () => (ratio === '9:16' && mobileUnits ? mobileUnits : desktopUnits),
-    [ratio, mobileUnits, desktopUnits]
+    () => (isVertical && mobileUnits ? mobileUnits : desktopUnits),
+    [isVertical, mobileUnits, desktopUnits]
   )
 
-  // Load audio records from Supabase
+  /**
+   * For the current display orientation, the list of mobile-unit audio indices
+   * that back each visible unit. In 9:16 mode each visible unit IS a mobile
+   * unit, so the mapping is identity. In 16:9 (desktop) mode each visible unit
+   * may map to multiple mobile audio segments which play back-to-back.
+   */
+  const audioIndicesPerUnit = useMemo<number[][]>(() => {
+    if (isVertical) {
+      // Identity: each mobile unit's audio key = its own index
+      return units.map((_, i) => [i])
+    }
+    return desktopToMobile
+  }, [isVertical, units, desktopToMobile])
+
+  const dims = VIEWPORT_DIMS[ratio]
+  const scaledWidth = dims.width * scale
+  const scaledHeight = dims.height * scale
+
+  /* ─── Compute scale to fit available stage area ──────────────── */
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
+
+    const compute = () => {
+      const rect = stage.getBoundingClientRect()
+      const availW = rect.width
+      const availH = rect.height
+      if (availW <= 0 || availH <= 0) return
+      const s = Math.min(availW / dims.width, availH / dims.height)
+      setScale(s)
+    }
+
+    compute()
+    const ro = new ResizeObserver(compute)
+    ro.observe(stage)
+    window.addEventListener('resize', compute)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', compute)
+    }
+  }, [dims.width, dims.height])
+
+  /* ─── Load audio records from Supabase ───────────────────────── */
+
   useEffect(() => {
     const supabase = createBrowserClient()
     supabase
       .from('story_audio')
       .select('unit_index, public_url')
       .eq('slug', slug)
-      .then(({ data, error }) => {
+      .then((res: { data: AudioRecord[] | null; error: { message: string } | null }) => {
+        const { data, error } = res
         if (error || !data) {
           console.error('[Autoplay] Failed to load audio records:', error?.message)
           setAudioMap(new Map())
           return
         }
         const map = new Map<number, string>()
-        for (const row of data as AudioRecord[]) {
+        for (const row of data) {
           map.set(row.unit_index, row.public_url)
         }
         setAudioMap(map)
       })
   }, [slug])
 
-  // Reset active unit when switching ratio
+  /* ─── Iframe scroll control ──────────────────────────────────── */
+
+  /**
+   * Scroll the iframe's snap-scroll container to the section with the given
+   * `data-unit-index`. Same-origin so we can reach into contentDocument.
+   */
+  const scrollIframeToUnit = useCallback((unitIndex: number) => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+    const doc = iframe.contentDocument
+    if (!doc) return
+    const target = doc.querySelector<HTMLElement>(
+      `[data-unit-index="${unitIndex}"]`
+    )
+    if (!target) return
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
+  // When iframe finishes loading, jump to the active unit (no smooth on init).
+  const handleIframeLoad = useCallback(() => {
+    setIframeReady(true)
+    const iframe = iframeRef.current
+    if (!iframe) return
+    const doc = iframe.contentDocument
+    if (!doc) return
+    const target = doc.querySelector<HTMLElement>(
+      `[data-unit-index="${activeUnit}"]`
+    )
+    if (target) target.scrollIntoView({ block: 'start' })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Sync iframe scroll when activeUnit changes (after the iframe has loaded).
+  useEffect(() => {
+    if (!iframeReady) return
+    scrollIframeToUnit(activeUnit)
+  }, [activeUnit, iframeReady, scrollIframeToUnit])
+
+  // When ratio changes, the iframe reloads (different key) — reset state.
   useEffect(() => {
     setActiveUnit(0)
-    stopPlayback()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ratio, units.length])
+    setIframeReady(false)
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    setIsPlaying(false)
+  }, [ratio])
 
-  // Build map steps (same logic as StoryMapShell)
-  const isVertical = ratio === '9:16'
-  const mapSteps: MapStep[] = useMemo(
-    () =>
-      units.map((unit) => {
-        const parentMap = unit.parentConfig.map
-        const sub = unit.parentConfig.subsections?.[unit.subIndex]
-        const over = sub?.map
-
-        let center = over?.center ?? parentMap.center
-        let zoom = over?.zoom ?? parentMap.zoom
-        let pitch = over?.pitch ?? parentMap.pitch
-        let bearing = over?.bearing ?? parentMap.bearing
-        let flySpeed = over?.flySpeed ?? parentMap.flySpeed ?? defaults.flySpeed
-        let opacity = over?.opacity ?? parentMap.opacity ?? defaults.mapOpacity
-        let pins = over?.pins ?? parentMap.pins
-
-        if (isVertical) {
-          const mob = over?.mobile ?? parentMap.mobile
-          if (mob) {
-            center = mob.center ?? center
-            zoom = mob.zoom ?? zoom
-            pitch = mob.pitch ?? pitch
-            bearing = mob.bearing ?? bearing
-            flySpeed = mob.flySpeed ?? flySpeed
-            opacity = mob.opacity ?? opacity
-            pins = mob.pins ?? pins
-          }
-        }
-
-        return {
-          center,
-          zoom,
-          pitch,
-          bearing,
-          flySpeed,
-          opacity,
-          pins: pins?.map((p) => ({
-            coordinates: p.coordinates,
-            label: p.label,
-            color: p.color ?? defaults.pinColor,
-            radius: p.radius ?? defaults.pinRadius,
-            pulse: p.pulse,
-          })),
-        }
-      }),
-    [units, isVertical, defaults]
-  )
-
-  const current = units[activeUnit] ?? units[0]
-  const activeSub = current?.subIndex ?? 0
-  const currentChartId = current?.parentConfig.chart
-
-  /* ─── Audio (static file playback) ────────────────────────────── */
+  /* ─── Audio playback ─────────────────────────────────────────── */
 
   const stopPlayback = useCallback(() => {
     setIsPlaying(false)
@@ -187,27 +203,23 @@ export default function AutoplayShell({
     }
   }, [])
 
-  const playUnit = useCallback(
-    (unitIndex: number) => {
-      // Stop any existing audio
+  /**
+   * Play one mobile-audio segment, then call `onComplete` so the caller can
+   * decide whether to chain to the next segment within the same unit, advance
+   * to the next unit, or stop. Returns nothing — control flows through
+   * `onComplete` so cancellation (via stopPlayback) is straightforward.
+   */
+  const playSegment = useCallback(
+    (audioIndex: number, onComplete: () => void, onSkip: () => void) => {
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current = null
       }
 
-      setActiveUnit(unitIndex)
-
-      const audioUrl = audioMap.get(unitIndex)
-
+      const audioUrl = audioMap.get(audioIndex)
       if (!audioUrl) {
-        // No audio for this unit — wait then advance
-        setTimeout(() => {
-          if (unitIndex < units.length - 1) {
-            playUnit(unitIndex + 1)
-          } else {
-            setIsPlaying(false)
-          }
-        }, 4000)
+        // No audio for this segment — wait briefly then skip
+        setTimeout(onSkip, 2000)
         return
       }
 
@@ -216,8 +228,32 @@ export default function AutoplayShell({
       audioRef.current = audio
 
       audio.oncanplaythrough = () => setAudioLoading(false)
+      audio.onended = onComplete
+      audio.onerror = () => {
+        setAudioLoading(false)
+        onSkip()
+      }
+      audio.play().catch(() => {
+        setAudioLoading(false)
+        onSkip()
+      })
+    },
+    [audioMap]
+  )
 
-      audio.onended = () => {
+  /**
+   * Play a desktop unit by queueing each of its mobile-audio segments
+   * back-to-back. When all segments finish, advance to the next unit (unless
+   * stopped). Each segment gets a small inter-segment pause; each unit gets a
+   * slightly longer pause before moving on.
+   */
+  const playUnit = useCallback(
+    (unitIndex: number) => {
+      setActiveUnit(unitIndex)
+
+      const audioIndices = audioIndicesPerUnit[unitIndex] ?? []
+
+      const advanceToNextUnit = () => {
         if (unitIndex < units.length - 1) {
           setTimeout(() => playUnit(unitIndex + 1), 800)
         } else {
@@ -225,25 +261,32 @@ export default function AutoplayShell({
         }
       }
 
-      audio.onerror = () => {
-        setAudioLoading(false)
-        if (unitIndex < units.length - 1) {
-          setTimeout(() => playUnit(unitIndex + 1), 3000)
-        } else {
-          setIsPlaying(false)
-        }
+      // No audio segments at all — wait and advance
+      if (audioIndices.length === 0) {
+        setTimeout(advanceToNextUnit, 4000)
+        return
       }
 
-      audio.play().catch(() => {
-        setAudioLoading(false)
-        if (unitIndex < units.length - 1) {
-          setTimeout(() => playUnit(unitIndex + 1), 4000)
-        } else {
-          setIsPlaying(false)
+      let segmentPos = 0
+      const playNextSegment = () => {
+        if (segmentPos >= audioIndices.length) {
+          advanceToNextUnit()
+          return
         }
-      })
+        const currentAudioIndex = audioIndices[segmentPos]
+        segmentPos++
+        playSegment(
+          currentAudioIndex,
+          // onComplete: small pause, then next segment within same unit
+          () => setTimeout(playNextSegment, 250),
+          // onSkip: also try next segment
+          playNextSegment
+        )
+      }
+
+      playNextSegment()
     },
-    [audioMap, units.length]
+    [audioIndicesPerUnit, playSegment, units.length]
   )
 
   const handlePlayPause = useCallback(() => {
@@ -277,20 +320,22 @@ export default function AutoplayShell({
 
   /* ─── Render ───────────────────────────────────────────────────── */
 
-  const viewportStyle = getViewportStyle(ratio)
-  const kind = current?.parentConfig.kind ?? 'text'
-  const heroBits = kind === 'hero' ? extractHeroBits(current.paragraphs) : null
-  const hasAudioForCurrent = audioMap.has(activeUnit)
+  // Total = mobile-grain segments stored in DB
   const totalAudioCount = audioMap.size
+  // For the current visible unit, "ready" means at least one of its
+  // backing mobile audio segments is in the cache.
+  const hasAudioForCurrent = (audioIndicesPerUnit[activeUnit] ?? []).some((i) =>
+    audioMap.has(i)
+  )
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-screen flex flex-col overflow-hidden"
       style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
     >
       {/* Header */}
       <div
-        className="sticky top-0 z-50 backdrop-blur-md border-b"
+        className="shrink-0 backdrop-blur-md border-b z-50"
         style={{
           borderColor: 'var(--color-surface)',
           background: 'rgba(5,47,74,0.85)',
@@ -319,187 +364,107 @@ export default function AutoplayShell({
               style={{ color: 'var(--color-muted)' }}
             >
               {totalAudioCount > 0
-                ? `${totalAudioCount}/${units.length} audio tracks`
+                ? `${totalAudioCount} audio segments`
                 : 'no audio generated'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Viewport container */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      {/* Stage — fills remaining vertical space; iframe is scaled to fit. */}
+      <div
+        ref={stageRef}
+        className="flex-1 min-h-0 flex items-center justify-center p-4"
+      >
         <div
-          className="relative overflow-hidden rounded-xl"
+          className="relative"
           style={{
-            width: viewportStyle.width,
-            height: viewportStyle.height,
-            border: '1px solid var(--color-line, #1a2830)',
-            background: 'var(--color-bg)',
+            width: scaledWidth,
+            height: scaledHeight,
           }}
         >
-          {/* Map background */}
-          <div className="absolute inset-0 z-0">
-            <MapboxBackground
-              accessToken={accessToken}
-              steps={mapSteps}
-              activeStep={activeUnit}
-              style={defaults.mapStyle}
-              defaultPinColor={defaults.pinColor}
-              defaultPinRadius={defaults.pinRadius}
-              defaultOpacity={defaults.mapOpacity}
-              highlightCountry={defaults.highlightCountry}
-              highlightColor={defaults.highlightColor}
+          {/* Scaled wrapper that holds the real-pixel iframe. */}
+          <div
+            className="absolute top-0 left-0 overflow-hidden rounded-xl"
+            style={{
+              width: dims.width,
+              height: dims.height,
+              transform: `scale(${scale})`,
+              transformOrigin: '0 0',
+              border: '1px solid var(--color-line, #1a2830)',
+              background: 'var(--color-bg)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            }}
+          >
+            <iframe
+              key={ratio /* force reload when ratio changes */}
+              ref={iframeRef}
+              src={`/story/${slug}`}
+              onLoad={handleIframeLoad}
+              title="Autoplay preview"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 0,
+                pointerEvents: 'none', // Block direct interaction; controls live in parent
+                display: 'block',
+              }}
             />
           </div>
 
-          {/* Chart panel */}
-          {currentChartId && (
+          {/* Progress dots — sit just below the scaled frame */}
+          <div
+            className="absolute left-0 right-0 flex gap-0.5"
+            style={{ bottom: -14 }}
+          >
+            {units.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  stopPlayback()
+                  setActiveUnit(i)
+                }}
+                className="flex-1 h-1 rounded-full transition-all duration-300"
+                style={{
+                  background:
+                    i <= activeUnit
+                      ? 'var(--color-accent)'
+                      : 'rgba(255,255,255,0.2)',
+                  opacity: i <= activeUnit ? 1 : 0.5,
+                }}
+                aria-label={`Jump to section ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Loading overlay while iframe initializes */}
+          {!iframeReady && (
             <div
-              className="absolute z-10 pointer-events-none flex items-center justify-center"
-              style={
-                isVertical
-                  ? {
-                      top: '5%',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 'calc(100% - 1.5rem)',
-                      aspectRatio: '1',
-                      maxHeight: '40%',
-                    }
-                  : {
-                      top: 0,
-                      right: 0,
-                      width: '55%',
-                      height: '55%',
-                    }
-              }
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: 'rgba(5,47,74,0.6)' }}
             >
               <div
-                className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center p-2"
+                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
                 style={{
-                  background: 'rgba(10, 14, 20, 0.2)',
-                  border: '0.5px solid var(--color-line, #1a2830)',
+                  borderColor: 'var(--color-accent)',
+                  borderTopColor: 'transparent',
                 }}
-              >
-                <ChartPanel
-                  key={currentChartId}
-                  chartId={currentChartId}
-                  activeStep={activeSub}
-                />
-              </div>
+              />
             </div>
           )}
 
-          {/* Text overlay */}
-          <div
-            className="absolute z-20 overflow-y-auto"
-            style={
-              isVertical
-                ? {
-                    bottom: '6rem',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 'calc(100% - 1.5rem)',
-                    maxHeight: currentChartId ? '45%' : '70%',
-                  }
-                : {
-                    bottom: '4rem',
-                    right: '1rem',
-                    width: '50%',
-                    maxHeight: currentChartId ? '40%' : '80%',
-                  }
-            }
-          >
+          {/* Audio loading indicator (top-right corner of frame) */}
+          {audioLoading && iframeReady && (
             <div
-              className="rounded-lg p-4 backdrop-blur-sm"
-              style={{
-                background: 'rgba(10, 14, 20, 0.35)',
-                border: '0.5px solid var(--color-line, #1a2830)',
-              }}
+              className="absolute z-30"
+              style={{ top: 8, right: 8 }}
             >
-              {kind === 'hero' && current.heading ? (
-                <div className="scale-[0.75] origin-top-left">
-                  <HeroPanel
-                    title={current.heading}
-                    dek={heroBits?.dek ?? ''}
-                    byline={heroBits?.byline ?? ''}
-                    eyebrow={current.parentConfig.eyebrow}
-                  />
-                </div>
-              ) : kind === 'stat' && current.heading ? (
-                <div className="flex flex-col items-center text-center py-2">
-                  <div
-                    className="font-[family-name:var(--font-serif)] text-[clamp(2rem,8vw,5rem)] font-bold leading-none mb-2"
-                    style={{
-                      color: current.heading.includes('%')
-                        ? 'var(--color-red, #E24B4A)'
-                        : 'var(--color-accent2)',
-                    }}
-                  >
-                    {current.heading}
-                  </div>
-                  <div
-                    className="font-[family-name:var(--font-sans)] text-[0.8rem] max-w-[340px] leading-[1.5]"
-                    style={{ color: 'var(--color-muted)' }}
-                  >
-                    {current.paragraphs.join(' ')}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {current.heading && (
-                    <div
-                      className="font-[family-name:var(--font-mono)] text-[0.6rem] uppercase tracking-[0.15em] mb-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      {current.heading}
-                    </div>
-                  )}
-                  {current.paragraphs.map((p, i) => (
-                    <p
-                      key={i}
-                      className="font-[family-name:var(--font-serif)] text-[0.85rem] leading-[1.6] mb-2 last:mb-0"
-                      style={{ color: 'var(--color-text)' }}
-                    >
-                      {formatInlineMarkdown(p)}
-                    </p>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 z-30">
-            <div className="flex gap-0.5 px-3 pb-2">
-              {units.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    stopPlayback()
-                    setActiveUnit(i)
-                  }}
-                  className="flex-1 h-1 rounded-full transition-all duration-300"
-                  style={{
-                    background:
-                      i === activeUnit
-                        ? 'var(--color-accent)'
-                        : i < activeUnit
-                          ? 'var(--color-accent)'
-                          : 'rgba(255,255,255,0.2)',
-                    opacity: i <= activeUnit ? 1 : 0.5,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Audio loading indicator */}
-          {audioLoading && (
-            <div className="absolute top-3 right-3 z-30">
               <div
-                className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: 'var(--color-accent)', borderTopColor: 'transparent' }}
+                className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+                style={{
+                  borderColor: 'var(--color-accent)',
+                  borderTopColor: 'transparent',
+                }}
               />
             </div>
           )}
@@ -508,7 +473,7 @@ export default function AutoplayShell({
 
       {/* Playback controls */}
       <div
-        className="sticky bottom-0 z-50 border-t backdrop-blur-md"
+        className="shrink-0 border-t backdrop-blur-md z-50"
         style={{
           borderColor: 'var(--color-surface)',
           background: 'rgba(5,47,74,0.9)',
@@ -532,14 +497,24 @@ export default function AutoplayShell({
               style={{ color: 'var(--color-text)' }}
               aria-label="Previous section"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
 
             <button
               onClick={handlePlayPause}
-              className="p-3 rounded-full transition-colors"
+              disabled={!iframeReady}
+              className="p-3 rounded-full transition-colors disabled:opacity-50"
               style={{
                 background: 'var(--color-accent)',
                 color: 'var(--color-bg)',
@@ -565,7 +540,16 @@ export default function AutoplayShell({
               style={{ color: 'var(--color-text)' }}
               aria-label="Next section"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>

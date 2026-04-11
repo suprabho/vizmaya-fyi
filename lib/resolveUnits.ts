@@ -31,10 +31,24 @@ export function resolveUnits(
   slug: string,
   sections: ContentSection[],
   config: StoryConfig
-): { units: ResolvedUnit[]; mobileUnits: ResolvedUnit[]; shareUnits: ResolvedUnit[]; hasMobileOverrides: boolean; hasShareOverrides: boolean } {
+): {
+  units: ResolvedUnit[]
+  mobileUnits: ResolvedUnit[]
+  shareUnits: ResolvedUnit[]
+  /**
+   * Maps each desktop unit index → array of mobile unit indices that compose
+   * it. For desktop sections without `mobileParagraphs`, this is a single
+   * element. Used by autoplay to queue multiple TTS audio segments back-to-back
+   * when playing a single desktop unit.
+   */
+  desktopToMobile: number[][]
+  hasMobileOverrides: boolean
+  hasShareOverrides: boolean
+} {
   const units: ResolvedUnit[] = []
   const mobileUnits: ResolvedUnit[] = []
   const shareUnits: ResolvedUnit[] = []
+  const desktopToMobile: number[][] = []
   let hasMobileOverrides = false
   let hasShareOverrides = false
 
@@ -57,6 +71,7 @@ export function resolveUnits(
         })
 
         // Mobile units — expand if mobileParagraphs present.
+        const mobileStart = mobileUnits.length
         if (sub.mobileParagraphs) {
           hasMobileOverrides = true
           sub.mobileParagraphs.forEach((mobileSpec, sliceIdx) => {
@@ -77,6 +92,10 @@ export function resolveUnits(
             paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
           })
         }
+        // Record the mobile range that backs this desktop unit
+        const mobileRange: number[] = []
+        for (let mi = mobileStart; mi < mobileUnits.length; mi++) mobileRange.push(mi)
+        desktopToMobile.push(mobileRange)
 
         // Share units — expand if shareParagraphs present.
         if (sub.shareParagraphs) {
@@ -116,6 +135,7 @@ export function resolveUnits(
       })
 
       // Mobile units — expand if mobileParagraphs present.
+      const mobileStart = mobileUnits.length
       if (section.mobileParagraphs) {
         hasMobileOverrides = true
         section.mobileParagraphs.forEach((mobileSpec, sliceIdx) => {
@@ -136,6 +156,10 @@ export function resolveUnits(
           paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
         })
       }
+      // Record the mobile range that backs this desktop unit
+      const mobileRange: number[] = []
+      for (let mi = mobileStart; mi < mobileUnits.length; mi++) mobileRange.push(mi)
+      desktopToMobile.push(mobileRange)
 
       // Share units — expand if shareParagraphs present.
       if (section.shareParagraphs) {
@@ -161,5 +185,5 @@ export function resolveUnits(
     }
   })
 
-  return { units, mobileUnits, shareUnits, hasMobileOverrides, hasShareOverrides }
+  return { units, mobileUnits, shareUnits, desktopToMobile, hasMobileOverrides, hasShareOverrides }
 }

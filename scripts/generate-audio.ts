@@ -104,7 +104,12 @@ interface UnitInfo {
   chart?: string
 }
 
-function resolveUnitsFlat(slug: string): UnitInfo[] {
+/**
+ * Resolve mobile units — the smallest grain. When a section/subsection has
+ * `mobileParagraphs`, expand it into one unit per slice. Audio is generated
+ * per mobile unit; the desktop player concatenates these segments back-to-back.
+ */
+function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
   const { sections } = getStoryContent(slug)
   const configPath = path.join(STORIES_DIR, `${slug}.config.yaml`)
   if (!fs.existsSync(configPath)) return []
@@ -118,22 +123,48 @@ function resolveUnitsFlat(slug: string): UnitInfo[] {
       for (const sub of subs) {
         const md = resolveAnchor(sections, sub.text)
         const allP = md ? getParagraphs(md) : []
-        units.push({
-          heading: sub.heading ?? md?.heading,
-          paragraphs: sliceParagraphs(allP, sub.paragraphs),
-          kind,
-          chart: section.chart,
-        })
+        const heading = sub.heading ?? md?.heading
+
+        if (sub.mobileParagraphs) {
+          sub.mobileParagraphs.forEach((mobileSpec: number | [number, number], sliceIdx: number) => {
+            units.push({
+              heading: sliceIdx === 0 ? heading : undefined,
+              paragraphs: sliceParagraphs(allP, mobileSpec),
+              kind,
+              chart: section.chart,
+            })
+          })
+        } else {
+          units.push({
+            heading,
+            paragraphs: sliceParagraphs(allP, sub.paragraphs),
+            kind,
+            chart: section.chart,
+          })
+        }
       }
     } else if (section.text) {
       const md = resolveAnchor(sections, section.text)
       const allP = md ? getParagraphs(md) : []
-      units.push({
-        heading: section.heading ?? md?.heading,
-        paragraphs: sliceParagraphs(allP, section.paragraphs),
-        kind,
-        chart: section.chart,
-      })
+      const heading = section.heading ?? md?.heading
+
+      if (section.mobileParagraphs) {
+        section.mobileParagraphs.forEach((mobileSpec: number | [number, number], sliceIdx: number) => {
+          units.push({
+            heading: sliceIdx === 0 ? heading : undefined,
+            paragraphs: sliceParagraphs(allP, mobileSpec),
+            kind,
+            chart: section.chart,
+          })
+        })
+      } else {
+        units.push({
+          heading,
+          paragraphs: sliceParagraphs(allP, section.paragraphs),
+          kind,
+          chart: section.chart,
+        })
+      }
     }
   }
 
@@ -215,7 +246,34 @@ if (!GEMINI_API_KEY) {
   process.exit(1)
 }
 
-async function generateSpeech(text: string): Promise<Buffer | null> {
+/**
+ * Rate limiter — enforces a minimum interval between Gemini API calls.
+ * 8000ms ≈ 7.5 req/min. Override with RATE_LIMIT_MS env var if needed.
+ */
+const MIN_INTERVAL_MS = Number(process.env.RATE_LIMIT_MS ?? 8000)
+let lastCallAt = 0
+
+async function rateLimit() {
+  const now = Date.now()
+  const elapsed = now - lastCallAt
+  if (elapsed < MIN_INTERVAL_MS) {
+    const waitMs = MIN_INTERVAL_MS - elapsed
+    await new Promise((r) => setTimeout(r, waitMs))
+  }
+  lastCallAt = Date.now()
+}
+
+/**
+ * Single Gemini TTS call. Returns the parsed WAV buffer, or an object
+ * describing why it failed so the retry layer can decide what to do.
+ */
+async function callGeminiOnce(
+  text: string
+): Promise<
+  | { ok: true; buffer: Buffer }
+  | { ok: false; status: number; retryAfterMs?: number; error: string }
+> {
+  await rateLimit()
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-tts:generateContent?key=${GEMINI_API_KEY}`,
@@ -239,8 +297,21 @@ async function generateSpeech(text: string): Promise<Buffer | null> {
 
     if (!res.ok) {
       const errText = await res.text()
-      console.error(`  Gemini API error ${res.status}: ${errText.slice(0, 200)}`)
-      return null
+      // Try to parse a Retry-After hint from the response body
+      let retryAfterMs: number | undefined
+      try {
+        const errJson = JSON.parse(errText)
+        const details = errJson?.error?.details ?? []
+        for (const d of details) {
+          if (d['@type']?.includes('RetryInfo') && typeof d.retryDelay === 'string') {
+            const m = d.retryDelay.match(/^([\d.]+)s$/)
+            if (m) retryAfterMs = Math.ceil(parseFloat(m[1]) * 1000)
+          }
+        }
+      } catch {
+        // body wasn't JSON
+      }
+      return { ok: false, status: res.status, retryAfterMs, error: errText.slice(0, 200) }
     }
 
     const data = await res.json()
@@ -250,16 +321,42 @@ async function generateSpeech(text: string): Promise<Buffer | null> {
     )
 
     if (!audioPart?.inlineData?.data) {
-      console.error('  No audio data in Gemini response')
-      return null
+      return { ok: false, status: 0, error: 'No audio in response' }
     }
 
     const rawPcm = Buffer.from(audioPart.inlineData.data, 'base64')
-    return wrapPcmInWav(rawPcm)
+    return { ok: true, buffer: wrapPcmInWav(rawPcm) }
   } catch (err) {
-    console.error('  TTS request failed:', err)
-    return null
+    return { ok: false, status: 0, error: String(err) }
   }
+}
+
+/**
+ * Generate speech with automatic retry on rate-limit (429) and transient
+ * server errors (500/503). Honors `Retry-After` hints from Gemini when present.
+ */
+async function generateSpeech(text: string): Promise<Buffer | null> {
+  const MAX_ATTEMPTS = 5
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const result = await callGeminiOnce(text)
+    if (result.ok) return result.buffer
+
+    const retryable = result.status === 429 || result.status === 500 || result.status === 503
+
+    if (!retryable || attempt === MAX_ATTEMPTS) {
+      console.error(`  Gemini API error ${result.status}: ${result.error}`)
+      return null
+    }
+
+    // Backoff: honor server hint if present, otherwise exponential (15s, 30s, 60s, 120s).
+    const backoffMs =
+      result.retryAfterMs ?? Math.min(120_000, 15_000 * Math.pow(2, attempt - 1))
+    process.stdout.write(
+      `\n  ⚠ ${result.status} — backing off ${Math.round(backoffMs / 1000)}s (attempt ${attempt}/${MAX_ATTEMPTS})... `
+    )
+    await new Promise((r) => setTimeout(r, backoffMs))
+  }
+  return null
 }
 
 /* ─── Supabase ─────────────────────────────────────────────────────── */
@@ -347,7 +444,9 @@ async function uploadAudio(
 async function processStory(slug: string, force: boolean) {
   console.log(`\n━━━ ${slug} ━━━`)
 
-  const units = resolveUnitsFlat(slug)
+  // Generate per mobile unit — the smallest grain. Desktop autoplay
+  // concatenates these segments back-to-back.
+  const units = resolveMobileUnitsFlat(slug)
   if (units.length === 0) {
     console.log('  No units found, skipping.')
     return
@@ -393,9 +492,6 @@ async function processStory(slug: string, force: boolean) {
       console.log('✗ TTS failed')
       failed++
     }
-
-    // Rate limiting
-    await new Promise((r) => setTimeout(r, 500))
   }
 
   console.log(`  Done: ${generated} generated, ${skipped} skipped, ${failed} failed`)

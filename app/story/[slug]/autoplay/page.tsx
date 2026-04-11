@@ -28,7 +28,7 @@ export default async function AutoplayPage({ params }: RouteParams) {
     notFound()
   }
 
-  const { units, mobileUnits, hasMobileOverrides } = resolveUnits(
+  const { units, mobileUnits, desktopToMobile, hasMobileOverrides } = resolveUnits(
     slug,
     story.sections,
     config
@@ -41,6 +41,7 @@ export default async function AutoplayPage({ params }: RouteParams) {
         title={story.frontmatter.title}
         units={units}
         mobileUnits={hasMobileOverrides ? mobileUnits : undefined}
+        desktopToMobile={desktopToMobile}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
         defaults={config.defaults}
       />

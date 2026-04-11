@@ -115,10 +115,33 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
     if (!node) return null
     try {
       await document.fonts.ready
+
+      // Wait for every <img> in the capture target (notably the cross-origin
+      // Mapbox static background) to finish loading before snapshotting.
+      // html-to-image clones the node and re-fetches each src; if the image
+      // hasn't resolved yet the cloned <img> rasterizes empty.
+      const imgs = Array.from(node.querySelectorAll('img'))
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete && img.naturalWidth > 0) {
+            return img.decode().catch(() => undefined)
+          }
+          return new Promise<void>((resolve) => {
+            img.addEventListener('load', () => resolve(), { once: true })
+            img.addEventListener('error', () => resolve(), { once: true })
+          })
+        })
+      )
+
       const dataUrl = await toPng(node, {
         width: w,
         height: h,
         pixelRatio,
+        // cacheBust appends a unique query param so html-to-image's internal
+        // fetch bypasses any cached non-CORS response from the initial <img>
+        // request. Without this the Mapbox static background silently drops
+        // out of the exported PNG.
+        cacheBust: true,
         backgroundColor: getComputedStyle(node).getPropertyValue('--color-bg').trim() || '#052f4a',
         filter: (el) => {
           // Hide download buttons during capture

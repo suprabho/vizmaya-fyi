@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useSyncExternalStore } from 'react'
 import type { Theme } from '@/types/story'
 
 /**
@@ -44,17 +44,39 @@ export function useChartColors(): ChartColors {
  * `line` has no equivalent in the story frontmatter and stays at the
  * default — adjust here if a story ever needs a custom gridline color.
  */
-/** True when viewport is portrait (mobile-like). Shared across all charts. */
+/**
+ * True when viewport is portrait (mobile-like). Shared across all charts.
+ *
+ * Uses `useSyncExternalStore` rather than the `useState` + `useEffect`
+ * subscription pattern because React 19's concurrent renderer can miss
+ * updates from external stores when the subscription is set up inside an
+ * effect — the symptom is that resizing _into_ a breakpoint re-renders
+ * (the initial mount runs the effect, which sets the correct state) but
+ * resizing _back out_ does not (the effect's `setState` call from the
+ * `change` handler can be dropped or torn).
+ *
+ * `useSyncExternalStore` is the canonical API for subscribing to an
+ * external mutable source like `matchMedia` and guarantees React stays
+ * in sync with the source on every render.
+ */
+const MOBILE_MEDIA_QUERY = '(max-aspect-ratio: 1/1)'
+
+function subscribeMobile(onStoreChange: () => void): () => void {
+  const mql = window.matchMedia(MOBILE_MEDIA_QUERY)
+  mql.addEventListener('change', onStoreChange)
+  return () => mql.removeEventListener('change', onStoreChange)
+}
+
+function getMobileSnapshot(): boolean {
+  return window.matchMedia(MOBILE_MEDIA_QUERY).matches
+}
+
+function getMobileServerSnapshot(): boolean {
+  return false
+}
+
 export function useIsMobile(): boolean {
-  const [mobile, setMobile] = useState(false)
-  useEffect(() => {
-    const mql = window.matchMedia('(max-aspect-ratio: 1/1)')
-    setMobile(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [])
-  return mobile
+  return useSyncExternalStore(subscribeMobile, getMobileSnapshot, getMobileServerSnapshot)
 }
 
 export function themeToChartColors(theme: Theme): ChartColors {

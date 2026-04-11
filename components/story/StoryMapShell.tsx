@@ -3,25 +3,13 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import MapStorySection from './MapStorySection'
 import ChartPanel from './ChartPanel'
+import { useIsMobile } from '@/lib/chartTheme'
 import type {
   ResolvedUnit,
   StoryDefaults,
 } from '@/lib/storyConfig.types'
 import type MapboxBackgroundType from './charts/MapboxBackground'
 import type { MapStep } from './charts/MapboxBackground'
-
-/** Returns true when the viewport is portrait (aspect ratio < 1). */
-function useIsPortrait(): boolean {
-  const [portrait, setPortrait] = useState(false)
-  useEffect(() => {
-    const mql = window.matchMedia('(max-aspect-ratio: 1/1)')
-    setPortrait(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setPortrait(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [])
-  return portrait
-}
 
 type MapboxBackgroundProps = React.ComponentProps<typeof MapboxBackgroundType>
 
@@ -87,7 +75,10 @@ export default function StoryMapShell({
 }: Props) {
   const [activeUnit, setActiveUnit] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isPortrait = useIsPortrait()
+  // `useIsMobile` and "portrait" use the same (max-aspect-ratio: 1/1)
+  // breakpoint — treat them as the same signal so both charts and the
+  // unit-selector stay consistent when the viewport changes.
+  const isPortrait = useIsMobile()
 
   // Pick the right unit array based on viewport orientation.
   // When mobileUnits is provided and viewport is portrait, use the mobile

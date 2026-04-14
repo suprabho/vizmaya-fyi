@@ -20,12 +20,29 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
   const { slug } = await params
   try {
     const { frontmatter } = getStoryContent(slug)
+    const title = `${frontmatter.title} — ${frontmatter.subtitle}`
+    const url = `/story/${slug}`
+
     return {
-      title: `${frontmatter.title} — ${frontmatter.subtitle}`,
+      title,
       description: frontmatter.subtitle,
+      authors: [{ name: frontmatter.byline }],
       openGraph: {
+        type: 'article',
         title: frontmatter.title,
         description: frontmatter.subtitle,
+        url,
+        siteName: 'vizzmaya',
+        locale: 'en_US',
+        publishedTime: frontmatter.date,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: frontmatter.title,
+        description: frontmatter.subtitle,
+      },
+      alternates: {
+        canonical: url,
       },
     }
   } catch {

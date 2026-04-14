@@ -1,10 +1,12 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getStoryContent, getAllStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
 import ThemeProvider from '@/components/story/ThemeProvider'
 import StoryMapShell from '@/components/story/StoryMapShell'
+import VizmayaLogo from '@/components/VizmayaLogo'
 
 interface RouteParams {
   params: Promise<{ slug: string }>
@@ -71,6 +73,13 @@ export default async function StoryPage({ params }: RouteParams) {
 
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
+      <Link
+        href="/"
+        className="fixed top-4 left-4 z-50 w-80 h-16 bg-white/2 rounded-full backdrop-blur-3xl cursor-pointer"
+        aria-label="Home"
+      >
+        <VizmayaLogo className="w-full h-full" />
+      </Link>
       <StoryMapShell
         units={units}
         mobileUnits={hasMobileOverrides ? mobileUnits : undefined}

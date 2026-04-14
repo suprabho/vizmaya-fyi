@@ -1,5 +1,6 @@
 import { getAllStories } from '@/lib/content'
 import Link from 'next/link'
+import VizmayaLogo from '@/components/VizmayaLogo'
 
 export default async function HomePage() {
   const stories = getAllStories()
@@ -11,9 +12,7 @@ export default async function HomePage() {
     >
       <div className="max-w-[860px] mx-auto px-8 py-20">
         <div className="mb-16">
-          <div className="font-mono text-xs uppercase tracking-[0.15em] text-[#D85A30] mb-4">
-            vizzmaya
-          </div>
+          <VizmayaLogo className="w-full h-24 mb-6" />
           <h1 className="font-serif text-[clamp(2rem,5vw,3.5rem)] font-bold text-white leading-tight mb-3">
             Visual Stories
           </h1>

@@ -1,7 +1,7 @@
 ---
 title: "The Quiet Inflation"
 subtitle: "How a strait reprices a GPU hour"
-byline: "vizzmaya · The Asymmetry Letter · March 2026"
+byline: "vizmaya · The Asymmetry Letter · March 2026"
 date: "2026-03-01"
 theme:
   colors:
@@ -25,7 +25,7 @@ theme:
 
 *The country that fabricates the majority of the world's AI memory chips and 84% of its LNG carriers is simultaneously losing its oil, its gas, and its helium from the same chokepoint.*
 
-**By vizzmaya · The Asymmetry Letter · March 2026**
+**By vizmaya · The Asymmetry Letter · March 2026**
 
 ---
 
@@ -413,4 +413,4 @@ Watch the helium contract price. That is the leading indicator. When it moves, D
 
 ---
 
-*vizzmaya · The Asymmetry Letter · March 2026*
+*vizmaya · The Asymmetry Letter · March 2026*

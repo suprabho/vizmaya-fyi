@@ -7,9 +7,9 @@ export default function FooterBlock({ block }: { block: FooterBlockType }) {
         className="font-[family-name:var(--font-mono)] text-[0.7rem] tracking-[0.12em]"
         style={{ color: 'var(--color-muted)' }}
       >
-        <span style={{ color: 'var(--color-accent)' }}>vizzmaya</span>
+        <span style={{ color: 'var(--color-accent)' }}>vizmaya</span>
         {' · '}
-        {block.text.replace(/^vizzmaya\s*·?\s*/, '')}
+        {block.text.replace(/^vizmaya\s*·?\s*/, '')}
       </span>
     </div>
   )

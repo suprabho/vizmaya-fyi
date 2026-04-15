@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
         title: frontmatter.title,
         description: frontmatter.subtitle,
         url,
-        siteName: 'vizzmaya',
+        siteName: 'vizmaya',
         locale: 'en_US',
         publishedTime: frontmatter.date,
       },

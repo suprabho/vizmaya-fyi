@@ -18,7 +18,7 @@ export default function BrandingHeader({ title }: { title: string }) {
         className="font-[family-name:var(--font-mono)] text-[0.55rem] uppercase tracking-[0.15em] opacity-70"
         style={{ color: 'var(--color-accent)' }}
       >
-        vizzmaya
+        vizmaya
       </span>
     </div>
   )

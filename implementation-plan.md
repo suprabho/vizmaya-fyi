@@ -79,7 +79,7 @@ Each story is a `.md` file with YAML frontmatter for metadata and theme:
 ---
 title: "The Quiet Inflation"
 subtitle: "How a strait reprices a GPU hour"
-byline: "vizzmaya · The Asymmetry Letter · March 2026"
+byline: "vizmaya · The Asymmetry Letter · March 2026"
 date: "2026-03-01"
 theme:
   colors:
@@ -100,7 +100,7 @@ theme:
 
 *The country that produces...*
 
-**By vizzmaya · March 2026**
+**By vizmaya · March 2026**
 
 ---
 

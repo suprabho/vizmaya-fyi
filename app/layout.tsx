@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vizmaya.fyi'),
-  title: 'vizzmaya — Visual Stories',
+  title: 'vizmaya — Visual Stories',
   description:
     'Data-driven narratives on geopolitics, technology, and the asymmetries that reshape markets.',
 }

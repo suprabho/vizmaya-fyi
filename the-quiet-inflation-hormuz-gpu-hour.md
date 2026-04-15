@@ -2,7 +2,7 @@
 
 *The country that produces the majority of the world's AI memory chips and 84% of its LNG carriers is simultaneously losing its oil, its gas, and its helium from the same chokepoint. Here is how that reprices every GPU hour on earth.*
 
-**By vizzmaya · The Asymmetry Letter · March 2026**
+**By Vizmaya · March 2026**
 
 ---
 
@@ -209,6 +209,6 @@ If the cost per GPU hour flattens or reverses, the entire AI industry's margin s
 
 ---
 
-*vizzmaya · The Asymmetry Letter · March 2026*
+*Vizmaya · March 2026*
 
 *The interactive scrollytelling version of this story — with animated charts, scroll-triggered transitions, and a scenario-switching cost model — is available as a self-contained HTML file. Open in any browser, no server required.*

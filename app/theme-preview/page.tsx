@@ -273,7 +273,7 @@ export default function ThemePreviewPage() {
                 content of a story will look.
               </p>
               <p className="text-xs" style={{ color: theme.colors.muted, fontFamily: theme.fonts.sans }}>
-                vizzmaya &middot; The Asymmetry Letter &middot; March 2026
+                vizmaya &middot; The Asymmetry Letter &middot; March 2026
               </p>
               <code
                 className="block text-xs px-3 py-2 rounded"

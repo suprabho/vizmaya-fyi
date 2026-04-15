@@ -50,7 +50,7 @@ export default async function HomePage() {
 
         <div className="mt-20 text-center">
           <span className="font-mono text-xs tracking-[0.12em] text-[#5a6a70]">
-            <span className="text-[#D85A30]">vizzmaya</span> · The Asymmetry
+            <span className="text-[#D85A30]">vizmaya</span> · The Asymmetry
             Letter
           </span>
         </div>

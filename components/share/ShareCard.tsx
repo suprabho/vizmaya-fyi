@@ -74,7 +74,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   const { w, h } = RENDER_SIZE[ratio]
   const output = OUTPUT_SIZE[ratio]
   const pixelRatio = output.w / w
-  const { parentConfig, paragraphs } = unit
+  const { parentConfig, paragraphs, subheading } = unit
   const heading = shareOverride?.heading ?? unit.heading
   const kind = parentConfig.kind ?? 'text'
   const hasChart = !!parentConfig.chart
@@ -262,6 +262,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
             ) : kind === 'stat' && heading ? (
               <ShareStatCard
                 value={heading}
+                subheading={subheading}
                 description={paragraphs.join(' ')}
               />
             ) : (

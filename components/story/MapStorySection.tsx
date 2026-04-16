@@ -43,7 +43,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
  * (or centered with no top strip when chartless).
  */
 export default function MapStorySection({ unitIndex, unit }: Props) {
-  const { parentConfig, heading, paragraphs } = unit
+  const { parentConfig, heading, subheading, paragraphs } = unit
   const kind = parentConfig.kind ?? 'text'
   const heroBits = kind === 'hero' ? extractHeroBits(paragraphs) : null
   const hasChart = !!parentConfig.chart
@@ -138,7 +138,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
       <div className={cardClasses} style={cardStyle}>
         <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
           {kind === 'stat' && heading ? (
-            <StatPanel value={heading} description={paragraphs.join(' ')} />
+            <StatPanel value={heading} subheading={subheading} description={paragraphs.join(' ')} />
           ) : (
             <TextPanel
               heading={heading}
@@ -200,20 +200,28 @@ function TextPanel({
  * body text as caption beneath. Mirrors the legacy StatBlock visual.
  * Color is red for percentages, accent2 otherwise.
  */
-function StatPanel({ value, description }: { value: string; description: string }) {
+function StatPanel({ value, subheading, description }: { value: string; subheading?: string; description: string }) {
   const isPercentage = value.includes('%')
   const color = isPercentage ? 'var(--color-red, #E24B4A)' : 'var(--color-accent2)'
 
   return (
     <div className="flex flex-col items-center text-center py-4">
       <div
-        className="font-[family-name:var(--font-serif)] text-[clamp(3.5rem,11vw,7.5rem)] font-bold leading-none mb-3"
+        className="font-serif text-[clamp(3.5rem,11vw,7.5rem)] font-bold leading-none mb-3"
         style={{ color }}
       >
         {value}
       </div>
+      {subheading && (
+        <div
+          className="font-mono text-[0.65rem] uppercase tracking-[0.15em] mb-3"
+          style={{ color: 'var(--color-accent)' }}
+        >
+          {subheading}
+        </div>
+      )}
       <div
-        className="font-[family-name:var(--font-sans)] text-[0.95rem] max-w-[440px] leading-[1.55]"
+        className="font-sans text-[0.95rem] max-w-[440px] leading-[1.55]"
         style={{ color: 'var(--color-muted)' }}
       >
         {description}

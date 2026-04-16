@@ -19,6 +19,25 @@ function sliceParagraphs(
 }
 
 /**
+ * For `kind: stat` sections, extract the first `*italic*` paragraph as a
+ * subheading (matching the hero dek convention). Returns the subheading text
+ * (without `*` markers) and the remaining paragraphs.
+ */
+function extractStatSubheading(
+  paragraphs: string[],
+  configOverride: string | undefined
+): { subheading: string | undefined; paragraphs: string[] } {
+  if (configOverride) return { subheading: configOverride, paragraphs }
+  const idx = paragraphs.findIndex((p) => /^\*[^*]/.test(p))
+  if (idx === -1) return { subheading: undefined, paragraphs }
+  const subheading = paragraphs[idx].replace(/^\*+|\*+$/g, '').trim()
+  return {
+    subheading,
+    paragraphs: [...paragraphs.slice(0, idx), ...paragraphs.slice(idx + 1)],
+  }
+}
+
+/**
  * Flatten sections + subsections from a StoryConfig into renderable units.
  * Each unit is one viewport-tall snap target. Sections with N subsections
  * expand into N units that share the parent's map state and chart but have
@@ -60,6 +79,11 @@ export function resolveUnits(
         if (!md) console.warn(`[story:${slug}] anchor not found: "${sub.text}"`)
         const allParagraphs = md ? getParagraphs(md) : []
         const heading = sub.heading ?? md?.heading
+        const isStat = (section.kind ?? 'text') === 'stat'
+        const sliced = sliceParagraphs(allParagraphs, sub.paragraphs)
+        const { subheading, paragraphs: statParagraphs } = isStat
+          ? extractStatSubheading(sliced, sub.subheading)
+          : { subheading: sub.subheading, paragraphs: sliced }
 
         // Desktop unit (always one per subsection)
         units.push({
@@ -67,7 +91,8 @@ export function resolveUnits(
           subIndex,
           parentConfig: section,
           heading,
-          paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
+          subheading,
+          paragraphs: statParagraphs,
         })
 
         // Mobile units — expand if mobileParagraphs present.
@@ -80,6 +105,7 @@ export function resolveUnits(
               subIndex,
               parentConfig: section,
               heading: sliceIdx === 0 ? heading : undefined,
+              subheading: sliceIdx === 0 ? subheading : undefined,
               paragraphs: sliceParagraphs(allParagraphs, mobileSpec),
             })
           })
@@ -89,6 +115,7 @@ export function resolveUnits(
             subIndex,
             parentConfig: section,
             heading,
+            subheading,
             paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
           })
         }
@@ -106,6 +133,7 @@ export function resolveUnits(
               subIndex,
               parentConfig: section,
               heading: sliceIdx === 0 ? heading : undefined,
+              subheading: sliceIdx === 0 ? subheading : undefined,
               paragraphs: sliceParagraphs(allParagraphs, shareSpec),
             })
           })
@@ -115,6 +143,7 @@ export function resolveUnits(
             subIndex,
             parentConfig: section,
             heading,
+            subheading,
             paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
           })
         }
@@ -124,6 +153,11 @@ export function resolveUnits(
       if (!md) console.warn(`[story:${slug}] anchor not found: "${section.text}"`)
       const allParagraphs = md ? getParagraphs(md) : []
       const heading = section.heading ?? md?.heading
+      const isStat = (section.kind ?? 'text') === 'stat'
+      const sliced = sliceParagraphs(allParagraphs, section.paragraphs)
+      const { subheading, paragraphs: statParagraphs } = isStat
+        ? extractStatSubheading(sliced, section.subheading)
+        : { subheading: section.subheading, paragraphs: sliced }
 
       // Desktop unit
       units.push({
@@ -131,7 +165,8 @@ export function resolveUnits(
         subIndex: 0,
         parentConfig: section,
         heading,
-        paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
+        subheading,
+        paragraphs: statParagraphs,
       })
 
       // Mobile units — expand if mobileParagraphs present.
@@ -144,6 +179,7 @@ export function resolveUnits(
             subIndex: 0,
             parentConfig: section,
             heading: sliceIdx === 0 ? heading : undefined,
+            subheading: sliceIdx === 0 ? subheading : undefined,
             paragraphs: sliceParagraphs(allParagraphs, mobileSpec),
           })
         })
@@ -153,6 +189,7 @@ export function resolveUnits(
           subIndex: 0,
           parentConfig: section,
           heading,
+          subheading,
           paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
         })
       }
@@ -170,6 +207,7 @@ export function resolveUnits(
             subIndex: 0,
             parentConfig: section,
             heading: sliceIdx === 0 ? heading : undefined,
+            subheading: sliceIdx === 0 ? subheading : undefined,
             paragraphs: sliceParagraphs(allParagraphs, shareSpec),
           })
         })
@@ -179,6 +217,7 @@ export function resolveUnits(
           subIndex: 0,
           parentConfig: section,
           heading,
+          subheading,
           paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
         })
       }

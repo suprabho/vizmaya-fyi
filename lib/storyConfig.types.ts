@@ -19,6 +19,8 @@ export interface MapPinConfig {
   label?: string
   radius?: number
   pulse?: boolean
+  /** Preferred popup anchor direction. Controls which side of the pin the label appears on. */
+  labelAnchor?: 'top' | 'bottom' | 'left' | 'right'
 }
 
 export type SectionKind = 'text' | 'hero' | 'stat'
@@ -79,6 +81,8 @@ export interface StorySubsectionConfig {
   shareParagraphs?: Array<number | [number, number]>
   /** Optional override heading shown above the paragraphs (replaces the anchor's own heading). */
   heading?: string
+  /** Optional short label displayed below the stat number (kind: stat only). */
+  subheading?: string
   /**
    * Optional partial map override. Fields provided here replace the
    * corresponding field from the parent section's `map`. `pins` replaces
@@ -113,6 +117,8 @@ export interface StorySectionConfig {
   shareParagraphs?: Array<number | [number, number]>
   /** Optional override heading for the section's text panel. */
   heading?: string
+  /** Optional short label displayed below the stat number (kind: stat only). */
+  subheading?: string
   /** Optional foreground chart id; resolved by ChartPanel registry. */
   chart?: string
   /** Optional eyebrow line shown above the hero title (kind: hero only). */
@@ -184,5 +190,6 @@ export interface ResolvedUnit {
   subIndex: number
   parentConfig: StorySectionConfig
   heading: string | undefined
+  subheading: string | undefined
   paragraphs: string[]
 }

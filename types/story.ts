@@ -110,6 +110,8 @@ export interface MapPin {
   label?: string
   radius?: number
   pulse?: boolean
+  /** Preferred popup anchor direction. Controls which side of the pin the label appears on. */
+  labelAnchor?: 'top' | 'bottom' | 'left' | 'right'
 }
 
 export interface MapStep {

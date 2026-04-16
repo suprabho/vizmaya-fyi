@@ -276,11 +276,17 @@ export default function MapboxBackground({
         .addTo(map)
 
       if (pin.label) {
+        // labelAnchor describes where the label appears relative to the pin.
+        // Mapbox anchor describes where the popup tip points FROM, so invert.
+        const anchorMap = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' } as const
+        const anchor = pin.labelAnchor ? anchorMap[pin.labelAnchor] : undefined
+
         const popup = new mapboxgl.Popup({
           offset: radius + 8,
           closeButton: false,
           closeOnClick: false,
           className: 'mapbox-highlight-popup',
+          ...(anchor ? { anchor } : {}),
         }).setHTML(
           `<div style="
             font-family: var(--font-mono);

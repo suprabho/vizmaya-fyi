@@ -213,8 +213,22 @@ sections:
               label: "Strait of Hormuz — the chokepoint"
               color: "#EF9F27"
           mobile:
-            center: [54.501, 24.092]
-
+            center: [55.300, 26.329]
+            bearing: -113
+            zoom: 4.2
+            pins:
+            - coordinates: [54.366, 24.466]
+              label: "Oil"
+              color: "#f54900"
+              labelAnchor: "bottom"
+            - coordinates: [51.548, 25.897]
+              label: "LNG + helium | Qatar"
+              color: "#00d5be"
+              labelAnchor: "top"
+            - coordinates: [56.270, 26.570]
+              label: "Strait of Hormuz — the chokepoint"
+              color: "#EF9F27"
+              labelAnchor: "bottom"
   # ═══════════════════════════════════════════════
   # ACT I — MEMORY DOMINANCE
   # Map flies to South Korea. One fab per beat.
@@ -297,7 +311,7 @@ sections:
         - coordinates: [127.082, 37.079]
           label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
-          labelAnchor: top
+          labelAnchor: bottom
 
   # HBM treemap — 2 chart steps, map holds on fab cluster
   - id: hbm-chart
@@ -321,8 +335,8 @@ sections:
           color: "#00d5be"
           labelAnchor: left
       mobile:
-        center: [127.232, 36.602]
-        zoom: 6.7
+        center: [127.451, 36.628]
+        zoom: 7.5
         pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
@@ -335,7 +349,7 @@ sections:
         - coordinates: [127.082, 37.079]
           label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
-          labelAnchor: top
+          labelAnchor: right
     subsections:
       - text: "HBM sold out through 2026"
         mobileParagraphs:           # mobile: 2 snaps
@@ -366,6 +380,9 @@ sections:
         - coordinates: [129.311, 35.540]
           label: "HD Hyundai Heavy Industries — Ulsan"
           color: "#f54900"
+      mobile:
+        center: [129.311, 35.540]
+        zoom: 12.1
 
   - id: yard-geoje
     text: "Geoje: Samsung Heavy and Hanwha Ocean"
@@ -390,6 +407,22 @@ sections:
           label: "Hanwha Ocean — Geoje"
           color: "#00d5be"
           labelAnchor: right
+      mobile:
+        center: [128.717, 34.476]
+        zoom: 8.1
+        pins:
+        - coordinates: [129.311, 35.540]
+          label: "HD Hyundai — Ulsan"
+          color: "#f54900"
+        - coordinates: [128.621, 34.882]
+          label: "Samsung Heavy Industries — Geoje"
+          color: "#155dfc"
+          labelAnchor: top
+        - coordinates: [128.680, 34.860]
+          label: "Hanwha Ocean — Geoje"
+          color: "#00d5be"
+          labelAnchor: bottom
+
 
   # Pull back — show all four industry pins across Korea
   - id: one-grid
@@ -423,7 +456,29 @@ sections:
           label: "Samsung Heavy + Hanwha — Geoje"
           color: "#f54900"
           labelAnchor: left
-
+      mobile:
+        center: [128.117, 34.353]
+        zoom: 4.9  
+        pins:
+        - coordinates: [127.435, 37.272]
+          label: "SK Hynix — Icheon"
+          color: "#155dfc"
+          labelAnchor: bottom
+        - coordinates: [127.714, 36.637]
+          label: "SK Hynix — Cheongju"
+          color: "#155dfc"
+        - coordinates: [127.082, 37.079]
+          label: "Samsung — Pyeongtaek"
+          color: "#00d5be"
+          labelAnchor: left
+        - coordinates: [129.311, 35.540]
+          label: "HD Hyundai — Ulsan"
+          color: "#f54900"
+          labelAnchor: top
+        - coordinates: [128.621, 34.882]
+          label: "Samsung Heavy + Hanwha — Geoje"
+          color: "#f54900"
+          labelAnchor:  bottom
   # ═══════════════════════════════════════════════
   # ACT II — THE CHOKEPOINT
   # Map flies to the Strait. Ras Laffan helium plants

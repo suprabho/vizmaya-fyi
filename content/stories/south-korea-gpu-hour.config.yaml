@@ -507,7 +507,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [51.548, 25.897]
+      center: [51.549, 25.890]
       zoom: 11.0
       pitch: 35
       bearing: 0
@@ -531,6 +531,20 @@ sections:
       pitch: 35
       bearing: 5
       opacity: 0.65
+      pins:
+        - coordinates: [56.270, 26.570]
+          label: "Strait of Hormuz"
+          color: "#E24B4A"
+        - coordinates: [51.545, 25.893]
+          label: "Helium 1 · offline"
+          color: "#E24B4A"
+          labelAnchor: bottom
+        - coordinates: [51.552, 25.901]
+          label: "Helium 2 — 1.3B scf/yr · world's largest · offline"
+          color: "#E24B4A"
+          labelAnchor: top
+    mobile:
+      center: [51.543, 25.891]
       pins:
         - coordinates: [56.270, 26.570]
           label: "Strait of Hormuz"

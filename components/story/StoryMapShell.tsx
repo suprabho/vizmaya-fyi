@@ -85,14 +85,18 @@ export default function StoryMapShell({
   // array which may have more (smaller) units to avoid text overflow.
   const units = isPortrait && mobileUnits ? mobileUnits : desktopUnits
 
-  // Reset active unit when switching between arrays to avoid stale index.
-  const prevLengthRef = useRef(units.length)
+  // Reset active unit AND scroll position when switching between portrait
+  // and landscape unit arrays. Without the scroll reset the snap container
+  // stays at its old position, which can be past the end of the new array
+  // or snapped to a section that no longer matches the desktop content.
+  const prevIsPortraitRef = useRef(isPortrait)
   useEffect(() => {
-    if (units.length !== prevLengthRef.current) {
-      prevLengthRef.current = units.length
+    if (prevIsPortraitRef.current !== isPortrait) {
+      prevIsPortraitRef.current = isPortrait
       setActiveUnit(0)
+      containerRef.current?.scrollTo({ top: 0 })
     }
-  }, [units.length])
+  }, [isPortrait])
 
   // One MapStep per unit. Subsections with a `map` override merge their
   // fields on top of the parent section's map state, so each unit can have
@@ -173,7 +177,7 @@ export default function StoryMapShell({
 
     els.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [units.length])
+  }, [units.length, isPortrait])
 
   return (
     <>

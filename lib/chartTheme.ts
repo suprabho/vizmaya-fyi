@@ -61,14 +61,22 @@ export function useChartColors(): ChartColors {
  */
 const MOBILE_MEDIA_QUERY = '(max-aspect-ratio: 1/1)'
 
+// Cache the MediaQueryList so the subscription target and snapshot reader
+// share the same object and it can never be garbage-collected mid-session.
+let _mql: MediaQueryList | null = null
+function getMql(): MediaQueryList {
+  if (!_mql) _mql = window.matchMedia(MOBILE_MEDIA_QUERY)
+  return _mql
+}
+
 function subscribeMobile(onStoreChange: () => void): () => void {
-  const mql = window.matchMedia(MOBILE_MEDIA_QUERY)
+  const mql = getMql()
   mql.addEventListener('change', onStoreChange)
   return () => mql.removeEventListener('change', onStoreChange)
 }
 
 function getMobileSnapshot(): boolean {
-  return window.matchMedia(MOBILE_MEDIA_QUERY).matches
+  return getMql().matches
 }
 
 function getMobileServerSnapshot(): boolean {

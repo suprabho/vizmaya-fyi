@@ -25,12 +25,23 @@ interface MapboxBackgroundProps {
    * camera focal point should land in landscape orientation. Implemented
    * via Mapbox's `padding` option, so the YAML `center` of each step still
    * corresponds to a real geographic point — the framework just shifts
-   * where on screen that point appears. Ignored in portrait.
+   * where on screen that point appears.
    *
    * Example: `{ top: 0.4, left: 0, width: 0.37, height: 0.6 }` puts the
    * focal point in the bottom-left 37%×60% region of the viewport.
    */
   landscapeFocusArea?: {
+    top: number
+    left: number
+    width: number
+    height: number
+  }
+  /**
+   * Same as landscapeFocusArea but applied in portrait (mobile) orientation.
+   * Shifts the map center upward so pins aren't hidden behind the text card
+   * at the bottom of the viewport.
+   */
+  portraitFocusArea?: {
     top: number
     left: number
     width: number
@@ -74,13 +85,16 @@ function prefersReducedMotion(): boolean {
  */
 function computeFocusPadding(
   container: HTMLDivElement | null,
-  area?: { top: number; left: number; width: number; height: number }
+  landscapeArea?: { top: number; left: number; width: number; height: number },
+  portraitArea?: { top: number; left: number; width: number; height: number }
 ): { top: number; right: number; bottom: number; left: number } {
   const zero = { top: 0, right: 0, bottom: 0, left: 0 }
-  if (!container || !area) return zero
+  if (!container) return zero
   const w = container.clientWidth
   const h = container.clientHeight
-  if (w === 0 || h === 0 || w / h < 1) return zero
+  if (w === 0 || h === 0) return zero
+  const area = w / h < 1 ? portraitArea : landscapeArea
+  if (!area) return zero
   return {
     left: Math.max(0, area.left * w),
     right: Math.max(0, (1 - area.left - area.width) * w),
@@ -101,6 +115,7 @@ export default function MapboxBackground({
   highlightCountry,
   highlightColor,
   landscapeFocusArea,
+  portraitFocusArea,
 }: MapboxBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -121,7 +136,7 @@ export default function MapboxBackground({
       bearing: 0,
     }
 
-    const initialPadding = computeFocusPadding(containerRef.current, landscapeFocusArea)
+    const initialPadding = computeFocusPadding(containerRef.current, landscapeFocusArea, portraitFocusArea)
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -221,7 +236,7 @@ export default function MapboxBackground({
     if (!step) return
 
     const reduceMotion = prefersReducedMotion()
-    const padding = computeFocusPadding(containerRef.current, landscapeFocusArea)
+    const padding = computeFocusPadding(containerRef.current, landscapeFocusArea, portraitFocusArea)
     const camera = {
       center: step.center,
       zoom: step.zoom,
@@ -304,7 +319,7 @@ export default function MapboxBackground({
 
       markersRef.current.set(key, marker)
     }
-  }, [activeStep, steps, loaded, defaultPinColor, defaultPinRadius, landscapeFocusArea])
+  }, [activeStep, steps, loaded, defaultPinColor, defaultPinRadius, landscapeFocusArea, portraitFocusArea])
 
   // Re-evaluate focal padding when the viewport flips between portrait and
   // landscape — without this, rotating the device leaves the camera padded
@@ -314,7 +329,7 @@ export default function MapboxBackground({
     function onResize() {
       const map = mapRef.current
       if (!map) return
-      map.setPadding(computeFocusPadding(containerRef.current, landscapeFocusArea))
+      map.setPadding(computeFocusPadding(containerRef.current, landscapeFocusArea, portraitFocusArea))
       // setPadding by itself doesn't redraw at the new focal point — nudge
       // the camera back to the active step so it re-projects with the new pad.
       const step = steps[activeStep]
@@ -329,7 +344,7 @@ export default function MapboxBackground({
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [loaded, landscapeFocusArea, activeStep, steps])
+  }, [loaded, landscapeFocusArea, portraitFocusArea, activeStep, steps])
 
   const currentOpacity = (steps[activeStep]?.opacity ?? defaultOpacity)
   const reduceMotion = typeof window !== 'undefined' && prefersReducedMotion()

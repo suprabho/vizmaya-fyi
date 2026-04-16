@@ -79,6 +79,9 @@ sections:
         - coordinates: [-121.963, 37.370]
           label: "NVIDIA HQ, Santa Clara, CA"
           color: "#00d5be"
+      mobile:
+        center: [-121.961, 37.402]
+
 
   # ═══════════════════════════════════════════════
   # THE CRASH — map flies to Seoul
@@ -99,6 +102,8 @@ sections:
         - coordinates: [126.9780, 37.5660]
           label: "KOSPI, Seoul"
           color: "#155dfc"
+      mobile:
+        center: [127.016, 37.392]
 
   - id: market-crash
     kind: stat
@@ -113,6 +118,8 @@ sections:
         - coordinates: [126.978, 37.566]
           label: "KOSPI, Seoul"
           color: "#155dfc"
+      mobile:
+        center: [127.016, 37.392]
 
   # Stock candlestick chart — 2 steps, map stays on Seoul
   - id: stock-history
@@ -127,6 +134,9 @@ sections:
         - coordinates: [126.978, 37.566]
           label: "Seoul"
           color: "#155dfc"
+      mobile:
+        center: [127.016, 37.392]
+
     subsections:
       - text: "Worst since 2008"  
         mobileParagraphs:           # mobile: 2 snaps
@@ -154,6 +164,9 @@ sections:
         - coordinates: [54.366, 24.466]
           label: "Crude oil origin | Abu Dhabi, UAE"
           color: "#f54900"
+      mobile:
+        center: [127.016, 37.392]
+
     subsections:
       - text: "Oil: 70%"
         mobileParagraphs:           # mobile: 2 snaps
@@ -176,6 +189,9 @@ sections:
             - coordinates: [51.548, 25.897]
               label: "LNG origin | North Field, Qatar"
               color: "#009966"
+          mobile:
+            center: [52.688, 24.232]
+            zoom: 4.2
       - text: "Gas: 26%"
         mobileParagraphs:           # mobile: 2 snaps
         - [0, 1]
@@ -196,6 +212,8 @@ sections:
             - coordinates: [56.270, 26.570]
               label: "Strait of Hormuz — the chokepoint"
               color: "#EF9F27"
+          mobile:
+            center: [54.501, 24.092]
 
   # ═══════════════════════════════════════════════
   # ACT I — MEMORY DOMINANCE
@@ -236,6 +254,10 @@ sections:
         - coordinates: [127.714, 36.637]
           label: "SK Hynix — Cheongju M15X"
           color: "#155dfc"
+      mobile:
+        center: [127.453, 36.436]
+        zoom: 7.8
+        pitch: 57
 
   - id: fab-pyeongtaek
     text: "Pyeongtaek: Samsung's 33% of global DRAM"
@@ -260,6 +282,22 @@ sections:
           label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
           labelAnchor: left
+      mobile:
+        center: [127.232, 36.602]
+        zoom: 6.7
+        pins:
+        - coordinates: [127.435, 37.272]
+          label: "SK Hynix — Icheon"
+          color: "#155dfc"
+          labelAnchor: top
+        - coordinates: [127.714, 36.637]
+          label: "SK Hynix — Cheongju"
+          color: "#155dfc"
+          labelAnchor: bottom
+        - coordinates: [127.082, 37.079]
+          label: "Samsung — Pyeongtaek P3/P4"
+          color: "#00d5be"
+          labelAnchor: top
 
   # HBM treemap — 2 chart steps, map holds on fab cluster
   - id: hbm-chart
@@ -282,6 +320,22 @@ sections:
           label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
           labelAnchor: left
+      mobile:
+        center: [127.232, 36.602]
+        zoom: 6.7
+        pins:
+        - coordinates: [127.435, 37.272]
+          label: "SK Hynix — Icheon"
+          color: "#155dfc"
+          labelAnchor: top
+        - coordinates: [127.714, 36.637]
+          label: "SK Hynix — Cheongju"
+          color: "#155dfc"
+          labelAnchor: bottom
+        - coordinates: [127.082, 37.079]
+          label: "Samsung — Pyeongtaek P3/P4"
+          color: "#00d5be"
+          labelAnchor: top
     subsections:
       - text: "HBM sold out through 2026"
         mobileParagraphs:           # mobile: 2 snaps
@@ -781,7 +835,7 @@ sections:
           labelAnchor: left
         - coordinates: [128.6800, 34.8600]
           label: "Hanwha Ocean — Geoje"
-          color: "#1D9E75"K
+          color: "#1D9E75"
           radius: 12
           labelAnchor: right
 

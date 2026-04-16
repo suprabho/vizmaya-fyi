@@ -49,7 +49,7 @@ sections:
   - id: hero
     kind: hero
     text: "South Korea Makes the Memory and Builds the Ships"
-    eyebrow: "The Asymmetry Letter · Cost Analysis · March 2026"
+    eyebrow: "Cost Analysis · March 2026"
     map:
       center: [127.5, 36.5]
       zoom: 4.8

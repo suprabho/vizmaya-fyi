@@ -145,7 +145,7 @@ export default function Hero({ block }: { block: HeroBlock }) {
         title={block.title}
         dek={block.dek}
         byline={block.byline}
-        eyebrow="The Asymmetry Letter · Cost Analysis · March 2026"
+        eyebrow="Cost Analysis · March 2026"
       />
     </section>
   )

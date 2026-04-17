@@ -16,7 +16,6 @@
  *   SUPABASE_SERVICE_ROLE_KEY
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { createServiceClient } from "../../lib/supabase";
 
 // ---------------------------------------------------------------------------
@@ -83,31 +82,31 @@ class UnionFind {
 // Claude substory titling
 // ---------------------------------------------------------------------------
 
-const anthropic = new Anthropic();
-
 async function generateSubstoryTitle(
   people: string[],
   locations: string[],
   events: string[]
 ): Promise<{ title: string; summary: string }> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY not set");
+
   const prompt = `Given this cluster of entities from Epstein-related documents, generate a concise substory title and 1-sentence summary.
 
 People: ${people.slice(0, 15).join(", ") || "none"}
 Locations: ${locations.slice(0, 10).join(", ") || "none"}
 Events: ${events.slice(0, 10).join(", ") || "none"}
 
-Respond with JSON: {"title": "...", "summary": "..."}
-Title should be under 60 chars. Summary should be 1 sentence describing the connection.`;
+Respond ONLY with JSON, no markdown: {"title": "...", "summary": "..."}
+Title must be under 60 chars. Summary is 1 sentence describing the connection.`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 256,
-      messages: [{ role: "user", content: prompt }],
+    const { GoogleGenAI } = await import("@google/genai");
+    const genai = new GoogleGenAI({ apiKey });
+    const res = await genai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
     });
-
-    const text = response.content.find((b) => b.type === "text")?.text ?? "{}";
-    // Extract JSON from response (may have surrounding text)
+    const text = res.text ?? "{}";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return { title: "Untitled Cluster", summary: "" };
     const parsed = JSON.parse(match[0]);

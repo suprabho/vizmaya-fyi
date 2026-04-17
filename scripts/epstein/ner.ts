@@ -1,19 +1,18 @@
 /**
- * Epstein NER pipeline: chunk → Claude extraction → entity upsert
+ * Epstein NER pipeline: chunk → Gemini extraction → entity upsert
  *
- * Picks up chunks with ner_done=false, runs structured extraction via Claude,
+ * Picks up chunks with ner_done=false, runs structured extraction via Gemini,
  * and upserts locations/people/events + mention records into Supabase.
  *
  * Usage:
  *   npx tsx scripts/epstein/ner.ts [--limit 50] [--concurrency 5]
  *
  * Environment:
- *   ANTHROPIC_API_KEY
+ *   GEMINI_API_KEY
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { createServiceClient } from "../../lib/supabase";
 
 // ---------------------------------------------------------------------------
@@ -49,9 +48,7 @@ interface NERResult {
 // Claude extraction
 // ---------------------------------------------------------------------------
 
-const anthropic = new Anthropic();
-
-const SYSTEM_PROMPT = `You are an expert analyst extracting structured entities from legal documents related to the Jeffrey Epstein case.
+const NER_PROMPT = `You are an expert analyst extracting structured entities from legal documents related to the Jeffrey Epstein case.
 
 Extract ONLY entities that are clearly mentioned in the text. Do not infer or hallucinate.
 
@@ -59,84 +56,34 @@ For locations: Extract any place names (cities, countries, islands, addresses, p
 For people: Extract any named individuals. Map each person to their primary associated location/country (e.g., "Donald Trump" → "United States", "Mohammed bin Salman" → "Saudi Arabia").
 For events: Extract named events, incidents, legal actions, or notable occurrences. Map each to where it happened.
 
-Be conservative — only include entities with sufficient evidence in the text. Skip vague references.`;
+Be conservative — only include entities with sufficient evidence in the text. Skip vague references.
 
-const NER_TOOL: Anthropic.Tool = {
-  name: "extract_entities",
-  description: "Extract locations, people, and events from the document chunk",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      locations: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            name: { type: "string", description: "Place name" },
-            context: { type: "string", description: "Surrounding context (1-2 sentences)" },
-            mentioned_by: { type: "string", description: "Person who mentioned this location, if identifiable" },
-          },
-          required: ["name", "context"],
-          additionalProperties: false,
-        },
-      },
-      people: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            name: { type: "string", description: "Full name" },
-            role: { type: "string", description: "Role or title, if mentioned" },
-            associated_location: { type: "string", description: "Primary country/region this person is associated with" },
-          },
-          required: ["name"],
-          additionalProperties: false,
-        },
-      },
-      events: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            name: { type: "string", description: "Event name or description" },
-            date: { type: "string", description: "Date or year if mentioned" },
-            location: { type: "string", description: "Where this event occurred" },
-            description: { type: "string", description: "Brief description (1 sentence)" },
-          },
-          required: ["name"],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ["locations", "people", "events"],
-    additionalProperties: false,
-  },
-};
+Respond ONLY with valid JSON in this exact shape, no markdown fences:
+{
+  "locations": [{ "name": "...", "context": "...", "mentioned_by": "..." }],
+  "people": [{ "name": "...", "role": "...", "associated_location": "..." }],
+  "events": [{ "name": "...", "date": "...", "location": "...", "description": "..." }]
+}`;
 
 async function extractEntities(chunkText: string): Promise<NERResult | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY not set");
+
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",  // Haiku for cost efficiency at scale
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      tools: [NER_TOOL],
-      tool_choice: { type: "tool", name: "extract_entities" },
-      messages: [
-        {
-          role: "user",
-          content: `Extract entities from this document chunk:\n\n${chunkText}`,
-        },
-      ],
+    const { GoogleGenAI } = await import("@google/genai");
+    const genai = new GoogleGenAI({ apiKey });
+
+    const res = await genai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `${NER_PROMPT}\n\nDocument chunk:\n\n${chunkText}`,
     });
 
-    const toolUse = response.content.find(
-      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-    );
-    if (!toolUse) return null;
-
-    return toolUse.input as NERResult;
+    const text = res.text ?? "";
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]) as NERResult;
   } catch (err) {
-    console.warn(`    Claude error: ${(err as Error).message}`);
+    console.warn(`    Gemini error: ${(err as Error).message}`);
     return null;
   }
 }

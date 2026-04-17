@@ -16,10 +16,12 @@ const css = `
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 .vz{
   --teal:#0BBFAB;--pink:#E84D7A;--blue:#2B4ACF;
-  --ink:#0C0C10;--cream:#F4F1EC;--muted:#8A8680;
+  --ink:#0C0C10;--cream:#F4F1EC;--muted:#4A4742;
   --ff-d:'Instrument Serif',serif;
   --ff-b:'Libre Franklin',sans-serif;
   --ff-m:'JetBrains Mono',monospace;
+  --ff-script:'Caveat',cursive;
+  --ff-display:'Fraunces',serif;
   background:var(--cream);color:var(--ink);font-family:var(--ff-b);-webkit-font-smoothing:antialiased;
 }
 .vz ::selection{background:var(--teal);color:var(--ink)}
@@ -48,6 +50,9 @@ const css = `
 .vz .kicker{font-family:var(--ff-m);font-size:10px;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:24px}
 .vz .h-d{font-family:var(--ff-d);font-weight:400;font-style:italic;line-height:1.15;margin:0}
 .vz .body{font-family:var(--ff-b);font-size:15px;line-height:1.8;margin:0 0 24px;color:var(--muted)}
+.vz .center{text-align:center}
+.vz .center .beliefs,.vz .center .bento{margin-left:auto;margin-right:auto}
+.vz .mx{margin-left:auto;margin-right:auto}
 .vz .body:last-child{margin-bottom:0}
 .vz .grid-tx{position:absolute;inset:0;opacity:.025;pointer-events:none;background-image:repeating-linear-gradient(0deg,var(--ink) 0px,var(--ink) 1px,transparent 1px,transparent 80px),repeating-linear-gradient(90deg,var(--ink) 0px,var(--ink) 1px,transparent 1px,transparent 80px)}
 .vz .btn{font-family:var(--ff-b);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:14px 30px;border-radius:3px;border:none;font-weight:600;display:inline-block}
@@ -87,7 +92,7 @@ const css = `
 .vz .bn:hover .bn-a{opacity:1}
 .vz .bn.feature{grid-column:span 4;grid-row:span 2;background:var(--ink);border-color:rgba(255,255,255,.08);color:#fff}
 .vz .bn.feature h3{color:#fff;font-size:clamp(26px,3vw,38px);line-height:1.15}
-.vz .bn.feature p{color:rgba(255,255,255,.55);font-size:14.5px;line-height:1.7}
+.vz .bn.feature p{color:rgba(255,255,255,.82);font-size:14.5px;line-height:1.7}
 .vz .bn.feature .bn-k{color:rgba(255,255,255,.4)}
 .vz .bn.feature .bn-n{color:var(--teal)}
 .vz .bn.wide{grid-column:span 2}
@@ -146,7 +151,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;700&family=Fraunces:ital,wght@0,600;0,800;1,600&display=swap"
         rel="stylesheet"
       />
       <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -164,11 +169,11 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         </div>
       </nav>
 
-      <section id="work" className="cream" style={{ padding: '120px clamp(20px,5vw,48px) 60px', position: 'relative' }}>
-        <div className="rv" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16, maxWidth: 1200, margin: '0 auto 32px' }}>
+      <section id="work" className="cream center" style={{ padding: '120px clamp(20px,5vw,48px) 60px', position: 'relative', textAlign: 'center' }}>
+        <div className="rv" style={{ marginBottom: 32, maxWidth: 1200, margin: '0 auto 32px' }}>
           <div>
-            <div className="kicker" style={{ color: 'var(--teal)', marginBottom: 12 }}>Selected work</div>
-            <h2 className="h-d" style={{ fontSize: 'clamp(28px,4vw,44px)', color: 'var(--ink)', lineHeight: 1.15 }}>Visual essays & data stories</h2>
+            <div className="kicker" style={{ color: 'var(--teal)', marginBottom: 12, fontFamily: 'var(--ff-script)', fontSize: 18, letterSpacing: 1, textTransform: 'none' }}>Selected work</div>
+            <h2 className="h-d" style={{ fontFamily: 'var(--ff-display)', fontSize: 'clamp(28px,4vw,44px)', color: 'var(--ink)', lineHeight: 1.15, fontStyle: 'normal', fontWeight: 700 }}>Visual essays &amp; data stories</h2>
           </div>
         </div>
         <div className="bento rv" style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -195,7 +200,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       <section
         id="top"
         className="cream"
-        style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '80px clamp(20px,5vw,48px) 100px', position: 'relative', overflow: 'hidden' }}
+        style={{ minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '80px clamp(20px,5vw,48px) 100px', position: 'relative', overflow: 'hidden' }}
       >
         <div className="grid-tx"></div>
         <div className="crop-tr"></div>
@@ -203,13 +208,13 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         <div className="hero-ghost">
           <VizmayaLogo className="w-[320px] h-[320px]" />
         </div>
-        <div style={{ maxWidth: 800, position: 'relative', zIndex: 1 }}>
-          <div className="hero-k" style={{ fontFamily: 'var(--ff-m)', fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--teal)', marginBottom: 32 }}>
-            Data journalism & editorial intelligence
+        <div style={{ maxWidth: 800, position: 'relative', zIndex: 1, margin: '0 auto' }}>
+          <div className="hero-k" style={{ fontFamily: 'var(--ff-script)', fontSize: 22, letterSpacing: '0.5px', color: 'var(--pink)', marginBottom: 24 }}>
+            Data journalism &amp; editorial intelligence
           </div>
           <h1 className="hero-h h-d" style={{ fontSize: 'clamp(40px,6.5vw,76px)', lineHeight: 1.06, color: 'var(--ink)', margin: '0 0 44px' }}>
-            We turn data into stories<br />
-            <span style={{ color: 'var(--muted)' }}>people actually </span>
+            <span style={{ fontFamily: 'var(--ff-display)', fontStyle: 'normal', fontWeight: 800 }}>We turn data into stories</span><br />
+            <span style={{ color: '#2A2824' }}>people actually </span>
             <span style={{ borderBottom: '4px solid var(--teal)', paddingBottom: 2 }}>remember.</span>
           </h1>
           <div className="hero-b">
@@ -218,65 +223,65 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         </div>
       </section>
 
-      <section className="dark" style={{ padding: '80px clamp(20px,5vw,48px)', borderTop: '3px solid var(--teal)' }}>
-        <div className="rv" style={{ maxWidth: 860 }}>
-          <div className="mark-l">
+      <section className="dark" style={{ padding: '80px clamp(20px,5vw,48px)', borderTop: '3px solid var(--teal)', textAlign: 'center' }}>
+        <div className="rv" style={{ maxWidth: 860, margin: '0 auto' }}>
+          <div className="mark-l" style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
             <div style={{ flexShrink: 0 }}>
               <VizmayaLogo className="w-[180px] h-[210px]" />
             </div>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <p style={{ fontFamily: 'var(--ff-d)', fontSize: 'clamp(18px,2.5vw,26px)', lineHeight: 1.55, color: 'rgba(255,255,255,.85)', fontStyle: 'italic', margin: '0 0 24px' }}>
+            <div style={{ flex: 1, minWidth: 260, maxWidth: 640 }}>
+              <p style={{ fontFamily: 'var(--ff-d)', fontSize: 'clamp(18px,2.5vw,26px)', lineHeight: 1.55, color: 'rgba(255,255,255,.95)', fontStyle: 'italic', margin: '0 0 24px' }}>
                 Our mark borrows from Roger Penrose&apos;s diagram of reality&apos;s three mysteries. Three worlds, each giving rise to the next. None makes sense alone.
               </p>
-              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,.45)', margin: '0 0 24px' }}>
+              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14.5, lineHeight: 1.75, color: 'rgba(255,255,255,.8)', margin: '0 0 24px' }}>
                 <span style={{ color: 'var(--teal)', fontWeight: 600 }}>Data</span> is the pattern that exists whether or not anyone sees it.{' '}
                 <span style={{ color: 'var(--pink)', fontWeight: 600 }}>Narrative</span> is the sense-making that turns pattern into meaning.{' '}
                 <span style={{ color: 'var(--blue)', fontWeight: 600 }}>Design</span> is the artefact that carries meaning into the world.
                 Each node needs the other two. The edges matter as much as the nodes.
               </p>
-              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 13, lineHeight: 1.75, color: 'rgba(255,255,255,.3)', margin: 0 }}>
-                <em style={{ fontFamily: 'var(--ff-d)', fontSize: 16, color: 'rgba(255,255,255,.5)', fontStyle: 'italic' }}>Vismaya</em> is Sanskrit for wonder. The feeling when something you couldn&apos;t see becomes suddenly, undeniably visible. We added the &quot;z&quot; for <em>viz</em>. That&apos;s the job.
+              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 13.5, lineHeight: 1.75, color: 'rgba(255,255,255,.7)', margin: 0 }}>
+                <em style={{ fontFamily: 'var(--ff-script)', fontSize: 22, color: 'var(--teal)', fontStyle: 'normal' }}>Vismaya</em> is Sanskrit for wonder. The feeling when something you couldn&apos;t see becomes suddenly, undeniably visible. We added the &quot;z&quot; for <em>viz</em>. That&apos;s the job.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="cream" style={{ padding: '40px clamp(20px,5vw,48px) 100px' }}>
-        <div style={{ maxWidth: 640 }}>
+      <section className="cream" style={{ padding: '40px clamp(20px,5vw,48px) 100px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto' }}>
           <div className="rv" style={{ marginBottom: 40 }}>
             <div className="kicker" style={{ color: 'var(--pink)' }}>What we believe</div>
           </div>
           <div className="rv">
-            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 28px' }}>
+            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15.5, lineHeight: 1.85, color: '#2A2824', margin: '0 0 28px' }}>
               The world is full of important things that nobody can see. Not because they&apos;re hidden, but because nobody has bothered to make them legible. The supply chain that keeps your phone alive runs through six countries and a chokepoint most people can&apos;t name. The policy shift that will reshape your industry in five years is sitting in an appendix somewhere, unread. The slow variable that explains the fast headline is right there in the dataset, ignored, because it doesn&apos;t fit a news cycle.
             </p>
           </div>
           <div className="rv" data-d="1">
-            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 28px' }}>
+            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15.5, lineHeight: 1.85, color: '#2A2824', margin: '0 0 28px' }}>
               The information landscape has two failure modes. Either things stay buried in jargon and PDFs, technically available but functionally invisible. Or they get compressed into hot takes, visible but stripped of everything that made them true. Both fail the same way: the distance between what is real and what is understood stays wide, and everyone just accepts that.
             </p>
           </div>
           <div className="rv" data-d="2">
-            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 28px' }}>
+            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15.5, lineHeight: 1.85, color: '#2A2824', margin: '0 0 28px' }}>
               We don&apos;t accept it. We think rigour and beauty are the same demand, not a trade-off. You have to understand the data deeply enough to not distort it, and you have to care about craft enough to make the understanding travel. One without the other is either a pretty lie or a correct thing nobody reads.
             </p>
           </div>
           <div className="rv" data-d="3">
-            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: '0 0 28px' }}>
+            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15.5, lineHeight: 1.85, color: '#2A2824', margin: '0 0 28px' }}>
               So we don&apos;t start with a format. We start with a question: what does this insight actually need to land? Sometimes the answer is a ten-minute scrollytelling piece. Sometimes it&apos;s a single chart with a headline. Sometimes it&apos;s a 45-second reel. We&apos;d rather kill a good story than publish a wrong one, and we&apos;d rather make one person think differently than impress ten thousand who scroll past and feel nothing.
             </p>
           </div>
           <div className="rv" data-d="4">
-            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15, lineHeight: 1.85, color: 'var(--muted)', margin: 0 }}>
+            <p style={{ fontFamily: 'var(--ff-b)', fontSize: 15.5, lineHeight: 1.85, color: '#2A2824', margin: 0 }}>
               That&apos;s the job. Sit at the border between what is true and what is understood. Refuse to let the distance between them be someone else&apos;s problem.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="cream pad" id="about" style={{ borderTop: '1px solid rgba(12,12,16,.07)' }}>
-        <div style={{ maxWidth: 720 }}>
+      <section className="cream pad" id="about" style={{ borderTop: '1px solid rgba(12,12,16,.07)', textAlign: 'center' }}>
+        <div style={{ maxWidth: 780, margin: '0 auto' }}>
           <div className="rv">
             <div className="kicker" style={{ color: 'var(--pink)' }}>Who we are</div>
           </div>
@@ -284,14 +289,14 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
             <div className="rv" data-d="1">
               <p style={{ fontFamily: 'var(--ff-d)', fontSize: 22, fontStyle: 'italic', color: 'var(--ink)', margin: '0 0 6px', lineHeight: 1.3 }}>Shashank Mehta</p>
               <p style={{ fontFamily: 'var(--ff-m)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--teal)', margin: '0 0 16px' }}>Data storytelling · Visual journalism</p>
-              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 13.5, lineHeight: 1.75, color: 'var(--muted)', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14, lineHeight: 1.75, color: '#2A2824', margin: 0 }}>
                 Data storyteller and visual journalist based in Jaipur. Previously wrote 40+ articles at Analytics India Magazine, drove 50% user growth at Waxwing AI, and spent eight months building a data visualization practice that accumulated roughly 2 million views, including an a16z Chart of the Week feature. Thinks about AI infrastructure economics, geopolitics, and the gap between what is true and what is understood. Publishes The Asymmetry Letter.
               </p>
             </div>
             <div className="rv" data-d="2">
               <p style={{ fontFamily: 'var(--ff-d)', fontSize: 22, fontStyle: 'italic', color: 'var(--ink)', margin: '0 0 6px', lineHeight: 1.3 }}>Suprabho Dhenki</p>
               <p style={{ fontFamily: 'var(--ff-m)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--teal)', margin: '0 0 16px' }}>[ Role / domain ]</p>
-              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 13.5, lineHeight: 1.75, color: 'var(--muted)', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14, lineHeight: 1.75, color: '#2A2824', margin: 0 }}>
                 [ Suprabho&apos;s bio goes here. Share a few lines about his background, what he brings to Vizmaya, and how you two started working together, and I&apos;ll write this to match. ]
               </p>
             </div>
@@ -304,11 +309,11 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           <div style={{ marginBottom: 36, display: 'flex', justifyContent: 'center' }}>
             <VizmayaLogo className="w-[44px] h-[44px]" />
           </div>
-          <h2 className="h-d" style={{ fontSize: 'clamp(22px,3.5vw,36px)', color: 'rgba(255,255,255,.7)', margin: '0 0 20px', lineHeight: 1.35 }}>
+          <h2 className="h-d" style={{ fontFamily: 'var(--ff-display)', fontStyle: 'normal', fontWeight: 700, fontSize: 'clamp(22px,3.5vw,36px)', color: 'rgba(255,255,255,.92)', margin: '0 0 20px', lineHeight: 1.35 }}>
             Have data that deserves<br />
-            <span style={{ color: '#fff' }}>a better story?</span>
+            <span style={{ color: '#fff', fontFamily: 'var(--ff-script)', fontWeight: 700 }}>a better story?</span>
           </h2>
-          <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14, color: 'rgba(255,255,255,.35)', maxWidth: 400, margin: '0 auto 36px', lineHeight: 1.7 }}>
+          <p style={{ fontFamily: 'var(--ff-b)', fontSize: 14.5, color: 'rgba(255,255,255,.75)', maxWidth: 440, margin: '0 auto 36px', lineHeight: 1.7 }}>
             We work with organisations and research teams who believe data should be seen, not just stored.
           </p>
           <a className="btn" href="mailto:hello@vizmayalabs.com" style={{ background: 'var(--teal)', color: 'var(--ink)' }}>Get in Touch</a>

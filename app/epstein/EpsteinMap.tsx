@@ -424,6 +424,7 @@ export default function EpsteinMap() {
         <Map
           mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle="mapbox://styles/mapbox/dark-v11"
+          projection="mercator"
         />
       </DeckGL>
 

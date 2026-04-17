@@ -142,22 +142,29 @@ pnpm epstein:geocode --limit=500
 ```
 
 ### Phase 4 — Substory Graph
-**Status:** `[ ] Not started`
+**Status:** `[~] Script built — needs sample run`
 
-- [ ] Build co-occurrence graph (nodes: people/locations/events, edges: co-mention in same chunk)
-- [ ] Run Louvain community detection to cluster into substories
-- [ ] Generate substory titles via Claude
-- [ ] Store substory membership
+- [x] `scripts/epstein/substories.ts` — co-occurrence graph via Union-Find, Claude Haiku title generation
+- [ ] Run after NER and validate cluster quality
+- [ ] Tune `--min-edge-weight` threshold for meaningful clusters
+
+Run:
+```bash
+pnpm epstein:substories --min-edge-weight=2
+```
 
 ### Phase 5 — Map Visualization
-**Status:** `[ ] Not started`
+**Status:** `[~] Built — needs data to render`
 
-- [ ] Set up Deck.gl + Mapbox base
-- [ ] Heatmap layer: location mention frequency
-- [ ] Point markers: people (sized by mention count)
-- [ ] Event pins + timeline slider
-- [ ] Substory sidebar panel (narrative + key figures + source docs)
-- [ ] Filters: date range, entity type, document source
+- [x] `app/epstein/page.tsx` + `EpsteinMap.tsx` — Deck.gl + Mapbox dark map
+- [x] Heatmap layer (mention frequency) + Points layer (sized by count) with toggle
+- [x] Substory sidebar — click to filter map to substory locations
+- [x] `app/api/epstein/entities/route.ts` — REST endpoint for locations/people/events
+- [x] `app/api/epstein/substories/route.ts` — REST endpoint for substories
+- [ ] Timeline slider (deferred — needs event dates in corpus)
+- [ ] Source document drill-down links
+
+Visit: `http://localhost:3000/epstein`
 
 ---
 
@@ -168,8 +175,8 @@ pnpm epstein:geocode --limit=500
 | Sample ingest (100 docs) | — | `[ ] Pending` |
 | NER pipeline validated | — | `[ ] Pending` |
 | Full corpus ingested | — | `[ ] Pending` |
-| Map MVP live | — | `[ ] Pending` |
-| Substory clustering | — | `[ ] Pending` |
+| Map MVP live | — | `[~] Built, needs data` |
+| Substory clustering | — | `[~] Built, needs data` |
 | Public launch | — | `[ ] Pending` |
 
 ---

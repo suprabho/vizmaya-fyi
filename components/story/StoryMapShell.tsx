@@ -147,6 +147,7 @@ export default function StoryMapShell({
         color: p.color ?? defaults.pinColor,
         radius: p.radius ?? defaults.pinRadius,
         pulse: p.pulse,
+        labelAnchor: p.labelAnchor,
       })),
     }
   })

@@ -34,11 +34,11 @@
 defaults:
   mapStyle: mapbox://styles/mapbox/dark-v11
   mapOpacity: 0.55
-  pinColor: "#D85A30"
+  pinColor: "#155dfc"
   pinRadius: 12
   flySpeed: 1.2
   highlightCountry: "KR"
-  highlightColor: "#D85A30"
+  highlightColor: "#155dfc"
 
 sections:
 
@@ -51,9 +51,9 @@ sections:
     text: "South Korea Makes the Memory and Builds the Ships"
     eyebrow: "Cost Analysis · March 2026"
     map:
-      center: [127.5, 36.5]
-      zoom: 4.8
-      pitch: 25
+      center: [127.5, 32.5]
+      zoom: 5
+      pitch: 0
       bearing: 0
       opacity: 0.45
 
@@ -70,15 +70,15 @@ sections:
     - [1, 2]
     - [2, 3]
     map:
-      center: [-121.963, 37.370]
-      zoom: 9.0
+      center: [-121.963, 37.170]
+      zoom: 10.0
       pitch: 20
       bearing: 0
       opacity: 0.55
       pins:
         - coordinates: [-121.963, 37.370]
-          label: "NVIDIA HQ — Santa Clara"
-          color: "#155dfc"
+          label: "NVIDIA HQ, Santa Clara, CA"
+          color: "#00d5be"
 
   # ═══════════════════════════════════════════════
   # THE CRASH — map flies to Seoul
@@ -91,43 +91,42 @@ sections:
     - [0, 1]
     - [1, 2]
     map:
-      center: [126.978, 37.566]
-      zoom: 8.0
-      pitch: 25
-      bearing: 0
+      center: [126.741, 36.838]
+      zoom: 7.5
+      pitch: 30
       opacity: 0.50
       pins:
-        - coordinates: [126.978, 37.566]
-          label: "Seoul — KOSPI"
-          color: "#E24B4A"
+        - coordinates: [126.9780, 37.5660]
+          label: "KOSPI, Seoul"
+          color: "#155dfc"
 
   - id: market-crash
     kind: stat
     text: "18%"
     map:
-      center: [126.978, 37.566]
+      center: [126.741, 36.838]
       zoom: 7.5
       pitch: 30
       bearing: 0
       opacity: 0.50
       pins:
         - coordinates: [126.978, 37.566]
-          label: "Seoul — KOSPI −18%"
-          color: "#E24B4A"
+          label: "KOSPI, Seoul"
+          color: "#155dfc"
 
   # Stock candlestick chart — 2 steps, map stays on Seoul
   - id: stock-history
     chart: stock-candlestick
     map:
-      center: [126.978, 37.566]
-      zoom: 7.0
-      pitch: 30
+      center: [126.741, 36.838]
+      zoom: 7.5
+      pitch: 32
       bearing: 0
       opacity: 0.45
       pins:
         - coordinates: [126.978, 37.566]
           label: "Seoul"
-          color: "#E24B4A"
+          color: "#155dfc"
     subsections:
       - text: "Worst since 2008"  
         mobileParagraphs:           # mobile: 2 snaps
@@ -146,15 +145,15 @@ sections:
   - id: exposure
     chart: polar-exposure
     map:
-      center: [53.000, 24.500]
+      center: [53.000, 20.500]
       zoom: 5.5
       pitch: 20
       bearing: 0
       opacity: 0.55
       pins:
         - coordinates: [54.366, 24.466]
-          label: "UAE / Abu Dhabi — crude origin"
-          color: "#EF9F27"
+          label: "Crude oil origin | Abu Dhabi, UAE"
+          color: "#f54900"
     subsections:
       - text: "Oil: 70%"
         mobileParagraphs:           # mobile: 2 snaps
@@ -165,38 +164,38 @@ sections:
         - [0, 1]
         - [1, 2]
         map:
-          center: [51.548, 25.897]
+          center: [51.548, 23.897]
           zoom: 7.0
           pitch: 25
           bearing: -10
           opacity: 0.60
           pins:
             - coordinates: [54.366, 24.466]
-              label: "UAE crude"
-              color: "#EF9F27"
+              label: "Oil"
+              color: "#f54900"
             - coordinates: [51.548, 25.897]
-              label: "Qatar — LNG, North Field"
-              color: "#1D9E75"
+              label: "LNG origin | North Field, Qatar"
+              color: "#009966"
       - text: "Gas: 26%"
         mobileParagraphs:           # mobile: 2 snaps
         - [0, 1]
         - [1, 2]
         map:
-          center: [52.500, 26.000]
-          zoom: 6.5
+          center: [55.500, 22.000]
+          zoom: 6
           pitch: 30
           bearing: -15
           opacity: 0.60
           pins:
             - coordinates: [54.366, 24.466]
-              label: "UAE crude"
-              color: "#EF9F27"
+              label: "Oil"
+              color: "#f54900"
             - coordinates: [51.548, 25.897]
-              label: "Qatar — LNG + helium"
-              color: "#1D9E75"
+              label: "LNG + helium | Qatar"
+              color: "#00d5be"
             - coordinates: [56.270, 26.570]
               label: "Strait of Hormuz — the chokepoint"
-              color: "#E24B4A"
+              color: "#EF9F27"
 
   # ═══════════════════════════════════════════════
   # ACT I — MEMORY DOMINANCE
@@ -209,7 +208,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [127.435, 37.272]
+      center: [127.455, 37.195]
       zoom: 11.0
       pitch: 50
       bearing: -15
@@ -217,7 +216,7 @@ sections:
       pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon M16"
-          color: "#D85A30"
+          color: "#155dfc"
 
   - id: fab-cheongju
     text: "Cheongju: the M15X expansion"
@@ -225,7 +224,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [127.574, 36.955]
+      center: [127.574, 36.5]
       zoom: 9.0
       pitch: 45
       bearing: -10
@@ -233,10 +232,10 @@ sections:
       pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
-          color: "#D85A30"
+          color: "#155dfc"
         - coordinates: [127.714, 36.637]
           label: "SK Hynix — Cheongju M15X"
-          color: "#D85A30"
+          color: "#155dfc"
 
   - id: fab-pyeongtaek
     text: "Pyeongtaek: Samsung's 33% of global DRAM"
@@ -252,33 +251,37 @@ sections:
       pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
-          color: "#D85A30"
+          color: "#155dfc"
+          labelAnchor: right
         - coordinates: [127.714, 36.637]
           label: "SK Hynix — Cheongju"
-          color: "#D85A30"
+          color: "#155dfc"
         - coordinates: [127.082, 37.079]
           label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
+          labelAnchor: left
 
   # HBM treemap — 2 chart steps, map holds on fab cluster
   - id: hbm-chart
     chart: hbm-treemap
     map:
-      center: [127.350, 37.050]
-      zoom: 8.0
-      pitch: 40
-      bearing: 0
-      opacity: 0.55
+      center: [127.280, 37.050]
+      zoom: 8.5
+      pitch: 45
+      bearing: 10
+      opacity: 0.65
       pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
-          color: "#D85A30"
+          color: "#155dfc"
+          labelAnchor: right
         - coordinates: [127.714, 36.637]
           label: "SK Hynix — Cheongju"
-          color: "#D85A30"
+          color: "#155dfc"
         - coordinates: [127.082, 37.079]
-          label: "Samsung — Pyeongtaek"
+          label: "Samsung — Pyeongtaek P3/P4"
           color: "#00d5be"
+          labelAnchor: left
     subsections:
       - text: "HBM sold out through 2026"
         mobileParagraphs:           # mobile: 2 snaps
@@ -300,7 +303,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [129.311, 35.540]
+      center: [129.261, 35.370]
       zoom: 11.5
       pitch: 55
       bearing: 20
@@ -308,7 +311,7 @@ sections:
       pins:
         - coordinates: [129.311, 35.540]
           label: "HD Hyundai Heavy Industries — Ulsan"
-          color: "#1D9E75"
+          color: "#f54900"
 
   - id: yard-geoje
     text: "Geoje: Samsung Heavy and Hanwha Ocean"
@@ -316,21 +319,23 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [128.810, 35.200]
-      zoom: 10.0
+      center: [128.160, 34.30]
+      zoom: 8
       pitch: 50
       bearing: 10
       opacity: 0.65
       pins:
         - coordinates: [129.311, 35.540]
           label: "HD Hyundai — Ulsan"
-          color: "#1D9E75"
+          color: "#f54900"
         - coordinates: [128.621, 34.882]
           label: "Samsung Heavy Industries — Geoje"
-          color: "#1D9E75"
+          color: "#155dfc"
+          labelAnchor: left
         - coordinates: [128.680, 34.860]
           label: "Hanwha Ocean — Geoje"
-          color: "#1D9E75"
+          color: "#00d5be"
+          labelAnchor: right
 
   # Pull back — show all four industry pins across Korea
   - id: one-grid
@@ -339,7 +344,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [127.800, 36.500]
+      center: [127.800, 35.500]
       zoom: 6.5
       pitch: 20
       bearing: 0
@@ -347,19 +352,23 @@ sections:
       pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
-          color: "#D85A30"
+          color: "#155dfc"
+          labelAnchor: right
         - coordinates: [127.714, 36.637]
           label: "SK Hynix — Cheongju"
-          color: "#D85A30"
+          color: "#155dfc"
         - coordinates: [127.082, 37.079]
           label: "Samsung — Pyeongtaek"
-          color: "#D85A30"
+          color: "#00d5be"
+          labelAnchor: left
         - coordinates: [129.311, 35.540]
           label: "HD Hyundai — Ulsan"
-          color: "#1D9E75"
+          color: "#f54900"
+          labelAnchor: right
         - coordinates: [128.621, 34.882]
           label: "Samsung Heavy + Hanwha — Geoje"
-          color: "#1D9E75"
+          color: "#f54900"
+          labelAnchor: left
 
   # ═══════════════════════════════════════════════
   # ACT II — THE CHOKEPOINT
@@ -373,7 +382,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [56.270, 26.570]
+      center: [56.270, 25.570]
       zoom: 6.5
       pitch: 40
       bearing: -20
@@ -381,7 +390,7 @@ sections:
       pins:
         - coordinates: [56.270, 26.570]
           label: "Strait of Hormuz"
-          color: "#E24B4A"
+          color: "#EF9F27"
 
   - id: helium-plant-1
     text: "Helium Plant 1: offline since March 2"
@@ -409,7 +418,7 @@ sections:
         - [1, 2]
     map:
       center: [51.548, 25.900]
-      zoom: 11.5
+      zoom: 13.5
       pitch: 35
       bearing: 5
       opacity: 0.65
@@ -420,9 +429,11 @@ sections:
         - coordinates: [51.545, 25.893]
           label: "Helium 1 · offline"
           color: "#E24B4A"
+          labelAnchor: bottom
         - coordinates: [51.552, 25.901]
           label: "Helium 2 — 1.3B scf/yr · world's largest · offline"
           color: "#E24B4A"
+          labelAnchor: top
 
   - id: helium-plant-3
     text: "Helium Plant 3: all three offline"
@@ -431,7 +442,7 @@ sections:
         - [1, 2]
     map:
       center: [51.548, 25.897]
-      zoom: 11.5
+      zoom: 13.5
       pitch: 35
       bearing: 5
       opacity: 0.65
@@ -442,12 +453,15 @@ sections:
         - coordinates: [51.545, 25.893]
           label: "Helium 1 · offline"
           color: "#E24B4A"
+          labelAnchor: bottom
         - coordinates: [51.552, 25.901]
           label: "Helium 2 · offline"
           color: "#E24B4A"
+          labelAnchor: right
         - coordinates: [51.541, 25.903]
           label: "Helium 3 — 400M scf/yr · offline"
           color: "#E24B4A"
+          labelAnchor: left
 
   # Helium price chart — 2 chart steps, map holds on Ras Laffan
   - id: helium-price-chart
@@ -494,7 +508,7 @@ sections:
       pins:
         - coordinates: [127.082, 37.079]
           label: "Samsung Pyeongtaek — 6-month stockpile"
-          color: "#D85A30"
+          color: "#155dfc"
 
   - id: stockpile-tsmc
     text: "TSMC's recycling edge"
@@ -502,7 +516,7 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [123.800, 36.800]
+      center: [122.800, 36.400]
       zoom: 6.5
       pitch: 25
       bearing: 0
@@ -510,10 +524,10 @@ sections:
       pins:
         - coordinates: [127.082, 37.079]
           label: "Samsung — 6-month stockpile"
-          color: "#D85A30"
+          color: "#155dfc"
         - coordinates: [120.968, 24.793]
           label: "TSMC Hsinchu — 60-75% recycling"
-          color: "#00d5be"
+          color: "#f54900"
 
   - id: stockpile-amarillo
     text: "The Amarillo mistake"
@@ -560,7 +574,7 @@ sections:
           color: "#EF9F27"
         - coordinates: [141.049, 53.320]
           label: "Amur GPP Russia — sanctioned"
-          color: "#aca286"
+          color: "#E24B4A"
 
   # ═══════════════════════════════════════════════
   # TRANSMISSION CHAIN — geographic pull-back shows
@@ -584,10 +598,12 @@ sections:
           color: "#E24B4A"
         - coordinates: [127.082, 37.079]
           label: "② Yield loss → cost-per-die rises"
-          color: "#EF9F27"
+          color: "#155dfc"
+          labelAnchor: bottom
         - coordinates: [127.435, 37.272]
           label: "③ DRAM spot price moves"
-          color: "#D85A30"
+          color: "#00d5be"
+          labelAnchor: top
         - coordinates: [-121.963, 37.370]
           label: "④ GPU hour reprices"
           color: "#155dfc"
@@ -625,9 +641,11 @@ sections:
         - coordinates: [127.082, 37.079]
           label: "Samsung — Pyeongtaek"
           color: "#D85A30"
+          labelAnchor: left
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
           color: "#D85A30"
+          labelAnchor: right
     subsections:
       - text: "From $6.84 to $27.20"
         mobileParagraphs:           # mobile: 2 snaps
@@ -746,21 +764,26 @@ sections:
   - id: causal-step
     text: "One causal step, thirty-six months of consequence"
     map:
-      center: [128.810, 35.200]
-      zoom: 9.0
-      pitch: 45
+      center: [128.538, 34.760]
+      zoom: 8.0
+      pitch: 49
       bearing: 10
       opacity: 0.65
       pins:
-        - coordinates: [129.311, 35.540]
+        - coordinates: [129.3110, 35.5400]
           label: "HD Hyundai — Ulsan"
           color: "#1D9E75"
-        - coordinates: [128.621, 34.882]
+          radius: 12
+        - coordinates: [128.6210, 34.8820]
           label: "Samsung Heavy Industries — Geoje"
           color: "#1D9E75"
-        - coordinates: [128.680, 34.860]
+          radius: 12
+          labelAnchor: left
+        - coordinates: [128.6800, 34.8600]
           label: "Hanwha Ocean — Geoje"
-          color: "#1D9E75"
+          color: "#1D9E75"K
+          radius: 12
+          labelAnchor: right
 
   # ═══════════════════════════════════════════════
   # WHERE KOREAN SHIPS GO — one destination per beat.
@@ -900,8 +923,8 @@ sections:
         - [0, 1]
         - [1, 2]
     map:
-      center: [122.500, 33.500]
-      zoom: 5.5
+      center: [124.500, 33.500]
+      zoom: 5
       pitch: 20
       bearing: 0
       opacity: 0.50
@@ -909,9 +932,11 @@ sections:
         - coordinates: [129.311, 35.540]
           label: "Korean yards — watch Q2-Q3 order flow"
           color: "#EF9F27"
+          labelAnchor: right
         - coordinates: [128.621, 34.882]
           label: "Geoje — Samsung Heavy + Hanwha"
           color: "#EF9F27"
+          labelAnchor: left
         - coordinates: [121.499, 31.305]
           label: "Hudong-Zhonghua Shanghai — gaining share"
           color: "#E24B4A"

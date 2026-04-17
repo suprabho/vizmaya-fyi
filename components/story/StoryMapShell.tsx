@@ -45,6 +45,8 @@ interface Props {
   mobileUnits?: ResolvedUnit[]
   accessToken: string
   defaults: StoryDefaults
+  /** Story slug — used by data-driven charts to locate their JSON config. */
+  slug?: string
 }
 
 /**
@@ -72,6 +74,7 @@ export default function StoryMapShell({
   mobileUnits,
   accessToken,
   defaults,
+  slug,
 }: Props) {
   const [activeUnit, setActiveUnit] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -119,6 +122,8 @@ export default function StoryMapShell({
     let flySpeed = over?.flySpeed ?? parentMap.flySpeed ?? defaults.flySpeed
     let opacity = over?.opacity ?? parentMap.opacity ?? defaults.mapOpacity
     let pins = over?.pins ?? parentMap.pins
+    let regions = over?.regions ?? parentMap.regions
+    let heatmap = over?.heatmap ?? parentMap.heatmap
 
     // Mobile layer: subsection mobile > parent mobile
     if (isPortrait) {
@@ -131,6 +136,8 @@ export default function StoryMapShell({
         flySpeed = mob.flySpeed ?? flySpeed
         opacity = mob.opacity ?? opacity
         pins = mob.pins ?? pins
+        regions = mob.regions ?? regions
+        heatmap = mob.heatmap ?? heatmap
       }
     }
 
@@ -149,6 +156,8 @@ export default function StoryMapShell({
         pulse: p.pulse,
         labelAnchor: p.labelAnchor,
       })),
+      regions,
+      heatmap,
     }
   })
 
@@ -239,6 +248,7 @@ export default function StoryMapShell({
               key={currentChartId}
               chartId={currentChartId}
               activeStep={activeSub}
+              slug={slug}
             />
           </div>
         </div>

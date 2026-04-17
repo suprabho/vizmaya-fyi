@@ -1,6 +1,8 @@
 // Pure type definitions for story configs. No runtime imports — safe for
 // client components to import without dragging fs/path into the bundle.
 
+import type { MapRegionLayer, HeatmapLayer } from '@/types/story'
+
 export interface StoryDefaults {
   mapStyle: string
   mapOpacity: number
@@ -33,6 +35,10 @@ export interface MapOverrides {
   opacity?: number
   flySpeed?: number
   pins?: MapPinConfig[]
+  /** Optional choropleth layer. Replaces (does not merge) the parent's regions. */
+  regions?: MapRegionLayer
+  /** Optional heatmap layer. Replaces (does not merge) the parent's heatmap. */
+  heatmap?: HeatmapLayer
 }
 
 export interface SubsectionMapOverride extends MapOverrides {
@@ -131,6 +137,8 @@ export interface StorySectionConfig {
     opacity?: number
     flySpeed?: number
     pins?: MapPinConfig[]
+    regions?: MapRegionLayer
+    heatmap?: HeatmapLayer
     /** Overrides applied on portrait / mobile viewports. */
     mobile?: MapOverrides
   }

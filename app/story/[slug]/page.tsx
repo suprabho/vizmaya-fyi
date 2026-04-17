@@ -85,6 +85,7 @@ export default async function StoryPage({ params }: RouteParams) {
         mobileUnits={hasMobileOverrides ? mobileUnits : undefined}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
         defaults={config.defaults}
+        slug={slug}
       />
     </ThemeProvider>
   )

@@ -91,6 +91,15 @@ const ALIASES: Record<string, string> = {
   "Manhattan": "Manhattan, New York City",
   "Little St. James": "Little Saint James Island",
   "Little St James": "Little Saint James Island",
+  // US Federal Judicial Districts → representative city
+  "Southern District of Florida": "Miami, Florida",
+  "Northern District of Florida": "Tallahassee, Florida",
+  "Middle District of Florida": "Tampa, Florida",
+  "Southern District of New York": "Manhattan, New York City",
+  "Northern District of New York": "Albany, New York",
+  "Eastern District of New York": "Brooklyn, New York",
+  "Southern District of Texas": "Houston, Texas",
+  "District of Columbia": "Washington, D.C.",
 };
 
 function resolveAlias(name: string): string {

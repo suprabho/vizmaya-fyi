@@ -23,28 +23,28 @@ import { createServiceClient } from "../../lib/supabase";
 const SOURCES = {
   doj: {
     name: "doj" as const,
-    // The DOJ disclosures page lists links to PDF batches
-    indexUrls: [
-      "https://www.justice.gov/epstein/doj-disclosures",
-    ],
+    // Index page lists sub-pages; sub-pages list PDFs
+    indexUrls: ["https://www.justice.gov/epstein/doj-disclosures"],
+    // sub-page pattern: links on the index that lead to per-dataset pages
+    subPagePattern: /justice\.gov\/epstein\/doj-disclosures\/.+/,
     pdfPattern: /\.pdf$/i,
     baseUrl: "https://www.justice.gov",
   },
   fbi: {
     name: "fbi" as const,
-    // FBI Vault lists 22 parts
-    indexUrls: [
-      "https://vault.fbi.gov/jeffrey-epstein",
-    ],
+    // FBI Vault index lists part pages; each part page links to a PDF
+    indexUrls: ["https://vault.fbi.gov/jeffrey-epstein"],
+    subPagePattern: /vault\.fbi\.gov\/jeffrey-epstein\/.+/,
     pdfPattern: /\.pdf$/i,
     baseUrl: "https://vault.fbi.gov",
   },
   house: {
     name: "house_oversight" as const,
+    // Direct release pages with embedded PDF links
     indexUrls: [
-      "https://oversight.house.gov/epstein",
-      "https://oversight.house.gov/release/epstein-documents",
+      "https://oversight.house.gov/release/oversight-committee-releases-epstein-records-provided-by-the-department-of-justice/",
     ],
+    subPagePattern: null,
     pdfPattern: /\.pdf$/i,
     baseUrl: "https://oversight.house.gov",
   },
@@ -88,18 +88,38 @@ async function discoverUrls(
   source: (typeof SOURCES)[keyof typeof SOURCES]
 ): Promise<string[]> {
   const all: string[] = [];
+
   for (const indexUrl of source.indexUrls) {
     console.log(`  Fetching index: ${indexUrl}`);
     try {
-      const html = await fetchHtml(indexUrl);
-      const links = extractLinks(html, source.baseUrl, source.pdfPattern);
-      console.log(`  Found ${links.length} PDF links`);
-      all.push(...links);
+      const indexHtml = await fetchHtml(indexUrl);
+
+      // If source has sub-pages, crawl one level deeper
+      if (source.subPagePattern) {
+        const subPages = extractLinks(indexHtml, source.baseUrl, source.subPagePattern);
+        console.log(`  Found ${subPages.length} sub-pages — crawling each...`);
+        for (const subUrl of subPages) {
+          try {
+            const subHtml = await fetchHtml(subUrl);
+            const pdfs = extractLinks(subHtml, source.baseUrl, source.pdfPattern);
+            all.push(...pdfs);
+            process.stdout.write(`\r    ${all.length} PDFs found so far`);
+          } catch (err) {
+            console.warn(`\n    Failed sub-page ${subUrl}: ${(err as Error).message}`);
+          }
+        }
+        console.log(`\n  Total: ${all.length} PDF links`);
+      } else {
+        // Single-level: PDFs directly on the index page
+        const links = extractLinks(indexHtml, source.baseUrl, source.pdfPattern);
+        console.log(`  Found ${links.length} PDF links`);
+        all.push(...links);
+      }
     } catch (err) {
       console.warn(`  Failed to fetch ${indexUrl}: ${(err as Error).message}`);
     }
   }
-  // Deduplicate
+
   return [...new Set(all)];
 }
 

@@ -90,23 +90,34 @@ A geospatial intelligence tool that ingests official Epstein-related government 
 ## Phases & Progress
 
 ### Phase 1 — Ingestion & Text Extraction
-**Status:** `[ ] Not started`
+**Status:** `[~] Scripts built — needs sample run`
 
-- [ ] Crawl DOJ/FBI/House Oversight pages
-- [ ] Download PDFs + images (sample: 100 docs first)
-- [ ] Extract text via `pdf-parse` / `pdfjs`
-- [ ] OCR scanned images via Tesseract.js
-- [ ] Chunk into ~2,000-token segments
-- [ ] Store in pgvector with source metadata (doc ID, page, URL)
+- [x] `scripts/epstein/crawl.ts` — crawls DOJ/FBI/House Oversight, upserts PDF URLs into `epstein_documents`
+- [x] `scripts/epstein/ingest.ts` — downloads PDFs, extracts text via `pdf-parse`, chunks into ~2k tokens, stores in `epstein_chunks`
+- [x] Supabase migration `002_epstein_pipeline.sql` — all tables + pgvector
+- [ ] Run on sample 100 docs and validate
+- [ ] OCR for scanned images (Tesseract.js — deferred until sample validates)
+
+Run order:
+```bash
+pnpm epstein:crawl --source=doj --limit=100 --dry-run  # preview
+pnpm epstein:crawl --source=doj --limit=100            # upsert URLs
+pnpm epstein:ingest --limit=100 --concurrency=3        # download + chunk
+```
 
 ### Phase 2 — Entity Extraction (NER)
-**Status:** `[ ] Not started`
+**Status:** `[~] Script built — needs sample run`
 
-- [ ] Design Claude structured output prompt for locations / people / events
-- [ ] Run extraction on sample corpus
-- [ ] Validate quality manually
-- [ ] Cache results by chunk hash
+- [x] `scripts/epstein/ner.ts` — Claude Haiku structured extraction (locations/people/events) with tool_use, hash-cached per chunk
+- [x] Entity upsert with mention_count tracking
+- [x] `epstein_mentions` junction table populated
+- [ ] Run on sample chunks and validate quality
 - [ ] Scale to full corpus
+
+Run:
+```bash
+pnpm epstein:ner --limit=50 --concurrency=5
+```
 
 **NER Prompt Target Output:**
 ```json
@@ -118,12 +129,17 @@ A geospatial intelligence tool that ingests official Epstein-related government 
 ```
 
 ### Phase 3 — Entity Resolution & Geocoding
-**Status:** `[ ] Not started`
+**Status:** `[~] Script built — needs sample run`
 
-- [ ] Deduplicate entities across chunks (e.g. "NYC" = "New York")
-- [ ] People → location lookup (Wikidata/Wikipedia API)
-- [ ] Geocode all locations via Nominatim
-- [ ] Persist as normalized entity records
+- [x] `scripts/epstein/geocode.ts` — Nominatim geocoding (1 req/sec, free), alias deduplication (NYC→New York City etc.), canonical name storage
+- [ ] Run on extracted locations
+- [ ] People → location resolution via Wikidata (deferred)
+- [ ] Validate geocoding accuracy on known locations (Palm Beach, Little St. James, etc.)
+
+Run:
+```bash
+pnpm epstein:geocode --limit=500
+```
 
 ### Phase 4 — Substory Graph
 **Status:** `[ ] Not started`

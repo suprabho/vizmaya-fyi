@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import mapboxgl from "mapbox-gl";
+import { useEffect, useState, useCallback } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { Map } from "react-map-gl/mapbox";
 import { DeckGL } from "@deck.gl/react";
 import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import { ScatterplotLayer, TextLayer } from "@deck.gl/layers";
@@ -45,8 +45,7 @@ type LayerMode = "heatmap" | "points" | "people";
 // ---------------------------------------------------------------------------
 
 export default function EpsteinMap() {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+
   const [viewState, setViewState] = useState({
     longitude: -40,
     latitude: 30,
@@ -173,14 +172,11 @@ export default function EpsteinMap() {
         onViewStateChange={({ viewState: vs }) => setViewState(vs as typeof viewState)}
         controller={true}
         layers={layers}
-        style={{ position: "absolute", inset: 0 }}
+        style={{ position: "absolute", top: "0", right: "0", bottom: "0", left: "0" }}
       >
-        <mapboxgl.Map
-          // @ts-expect-error – DeckGL passes map ref via child function
-          ref={map}
-          mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        <Map
+          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           mapStyle="mapbox://styles/mapbox/dark-v11"
-          style={{ width: "100%", height: "100%" }}
         />
       </DeckGL>
 

@@ -170,16 +170,17 @@ async function main() {
         status: "pending" as const,
       }));
 
-      const { error, count } = await supabase
+      const { data, error } = await supabase
         .from("epstein_documents")
         .upsert(batch, { onConflict: "source_url", ignoreDuplicates: true })
-        .select("id", { count: "exact", head: true });
+        .select("id");
 
       if (error) {
         console.error(`  DB error: ${error.message}`);
       } else {
-        totalInserted += count ?? 0;
-        totalSkipped += batch.length - (count ?? 0);
+        const inserted = data?.length ?? 0;
+        totalInserted += inserted;
+        totalSkipped += batch.length - inserted;
       }
     }
   }

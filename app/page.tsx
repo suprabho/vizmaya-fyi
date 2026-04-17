@@ -123,14 +123,7 @@ export default function HomePage() {
           className="nav-logo"
           onClick={() => document.getElementById('top')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-            <line x1="13" y1="5.7" x2="4.7" y2="21.3" stroke="rgba(12,12,16,.12)" strokeWidth="1" />
-            <line x1="13" y1="5.7" x2="21.3" y2="21.3" stroke="rgba(12,12,16,.12)" strokeWidth="1" />
-            <line x1="4.7" y1="21.3" x2="21.3" y2="21.3" stroke="rgba(12,12,16,.12)" strokeWidth="1" />
-            <circle cx="13" cy="5.7" r="3.1" fill="#0BBFAB" />
-            <circle cx="4.7" cy="21.3" r="3.1" fill="#E84D7A" />
-            <circle cx="21.3" cy="21.3" r="3.1" fill="#2B4ACF" />
-          </svg>
+          <VizmayaLogo className="w-[26px] h-[26px]" />
           <div className="nav-wm"><span>Vizmaya</span><span>Labs</span></div>
         </button>
         <div className="nav-r">

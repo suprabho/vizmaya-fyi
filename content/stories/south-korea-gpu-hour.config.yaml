@@ -229,6 +229,7 @@ sections:
               label: "Strait of Hormuz — the chokepoint"
               color: "#EF9F27"
               labelAnchor: "bottom"
+
   # ═══════════════════════════════════════════════
   # ACT I — MEMORY DOMINANCE
   # Map flies to South Korea. One fab per beat.
@@ -458,7 +459,7 @@ sections:
           labelAnchor: left
       mobile:
         center: [128.117, 34.353]
-        zoom: 4.9  
+        zoom: 4.9
         pins:
         - coordinates: [127.435, 37.272]
           label: "SK Hynix — Icheon"
@@ -479,6 +480,7 @@ sections:
           label: "Samsung Heavy + Hanwha — Geoje"
           color: "#f54900"
           labelAnchor:  bottom
+
   # ═══════════════════════════════════════════════
   # ACT II — THE CHOKEPOINT
   # Map flies to the Strait. Ras Laffan helium plants

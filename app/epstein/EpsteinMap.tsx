@@ -47,9 +47,9 @@ type LayerMode = "heatmap" | "points" | "people";
 export default function EpsteinMap() {
 
   const [viewState, setViewState] = useState({
-    longitude: -40,
-    latitude: 30,
-    zoom: 2,
+    longitude: -95,
+    latitude: 38,
+    zoom: 3.8,
     pitch: 0,
     bearing: 0,
   });
@@ -130,7 +130,7 @@ export default function EpsteinMap() {
 
   const labelLayer = new TextLayer<Location>({
     id: "location-labels",
-    data: activeLocations.filter((l) => l.mention_count > 5),
+    data: activeLocations.filter((l) => l.lat && l.lng),
     getPosition: (d) => [d.lng, d.lat],
     getText: (d) => d.canonical_name ?? d.name,
     getSize: (d) => Math.min(8 + Math.sqrt(d.mention_count), 18),

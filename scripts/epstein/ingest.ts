@@ -25,11 +25,21 @@ const CHUNK_OVERLAP_CHARS = 200;
 // Text extraction
 // ---------------------------------------------------------------------------
 
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  // pdf-parse is a CJS module
-  const pdfParse = (await import("pdf-parse")).default;
-  const data = await pdfParse(buffer);
-  return data.text ?? "";
+async function extractPdfText(buffer: Buffer): Promise<{ text: string; pages?: number }> {
+  // pdf-parse v2 exposes PDFParse class, not a default function
+  const mod = (await import("pdf-parse")) as unknown as {
+    PDFParse: new (opts: { data: Uint8Array }) => {
+      getText(): Promise<{ text: string; numpages: number }>;
+      destroy(): Promise<void>;
+    };
+  };
+  const parser = new mod.PDFParse({ data: new Uint8Array(buffer) });
+  try {
+    const result = await parser.getText();
+    return { text: result.text ?? "", pages: result.numpages };
+  } finally {
+    await parser.destroy();
+  }
 }
 
 async function downloadBuffer(url: string): Promise<Buffer> {
@@ -37,10 +47,16 @@ async function downloadBuffer(url: string): Promise<Buffer> {
     headers: {
       "User-Agent":
         "Mozilla/5.0 (compatible; EpsteinVizBot/1.0; research purposes)",
+      // Age-gate cookie required for justice.gov/epstein documents
+      "Cookie": "justiceGovAgeVerified=true",
     },
     redirect: "follow",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} downloading ${url}`);
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("text/html")) {
+    throw new Error(`Got HTML instead of file (age gate or redirect?) for ${url}`);
+  }
   const ab = await res.arrayBuffer();
   return Buffer.from(ab);
 }
@@ -100,10 +116,9 @@ async function processDocument(
     const buffer = await downloadBuffer(doc.source_url);
 
     if (doc.file_type === "pdf" || doc.source_url.endsWith(".pdf")) {
-      const pdfParse = (await import("pdf-parse")).default;
-      const data = await pdfParse(buffer);
-      rawText = data.text ?? "";
-      pageCount = data.numpages;
+      const { text, pages } = await extractPdfText(buffer);
+      rawText = text;
+      pageCount = pages;
     } else {
       rawText = buffer.toString("utf-8");
     }

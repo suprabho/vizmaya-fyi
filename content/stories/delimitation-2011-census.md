@@ -51,13 +51,7 @@ Using the 2011 Census data to allocate 850 seats reveals a stark disparity compa
 
 The five states gaining the most seats relative to a proportional increase are all in the Hindi Heartland. The five that lose the most are predominantly in the South and East.
 
----
-
-## A New Political Arithmetic
-
 This shift reflects decades of divergent demographic trends across the country, creating a new political arithmetic where population size becomes the primary determinant of parliamentary power.
-
-The five-decade freeze on seat allocation—pegged to the 1971 Census—was designed precisely to prevent this outcome. Its removal recasts the rules of representation for every Indian state.
 
 ---
 

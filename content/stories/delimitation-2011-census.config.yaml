@@ -43,6 +43,9 @@ sections:
   - id: gains-losses-chart
     text: "A Stark Divide"
     chart: data:state-gains-losses
+    mobileParagraphs:
+      - [0, 1]
+      - [1, 2]
     map:
       center: [78.9629, 22.5937]
       zoom: 4.2
@@ -80,15 +83,6 @@ sections:
           - code: "31"  # Tamil Nadu     -11
             color: "$red"
             opacity: 0.85
-
-  - id: new-political-arithmetic
-    text: "A New Political Arithmetic"
-    map:
-      center: [78.9629, 22.5937]
-      zoom: 4.2
-      pitch: 0
-      bearing: 0
-      opacity: 0.45
 
   - id: heartland-gains
     text: "The Hindi Heartland: Overwhelming Beneficiaries"

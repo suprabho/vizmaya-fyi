@@ -40,6 +40,7 @@ interface Substory {
   id: string;
   title: string;
   summary: string;
+  narrative: string | null;
   doc_count: number;
   people: string[];
   locations: string[];
@@ -559,94 +560,116 @@ export default function EpsteinMap() {
       )}
 
       {/* ── Substory sidebar (right) ──────────────────────────────────────── */}
-      <div className="absolute right-0 top-0 bottom-0 z-10 w-72 flex flex-col bg-black/75 backdrop-blur-sm border-l border-white/10 overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/10 flex-shrink-0">
-          <p className="text-xs font-mono uppercase tracking-widest text-white/40">Stories</p>
-          {selectedSubstory && (
-            <p className="text-xs text-white/30 mt-0.5">
-              Filtering {totalEntities} entities
-            </p>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="px-4 py-8 text-center text-white/30 text-xs font-mono">Loading…</div>
-          ) : substories.length === 0 ? (
-            <div className="px-4 py-8 text-center text-white/30 text-xs font-mono">
-              No stories yet.
-              <br />
-              <code className="text-orange-400">pnpm epstein:substories</code>
-            </div>
-          ) : (
-            substories.map((sub) => (
+      <div className="absolute right-0 top-0 bottom-0 z-10 w-80 flex flex-col bg-black/75 backdrop-blur-sm border-l border-white/10 overflow-hidden">
+        {selectedSubstory ? (
+          <>
+            <div className="px-4 py-3 border-b border-orange-500/20 flex-shrink-0 flex items-center gap-2">
               <button
-                key={sub.id}
-                onClick={() => {
-                  const next = selectedSubstory?.id === sub.id ? null : sub;
-                  setSelectedSubstory(next);
-                  if (next) flyToSubstory(next);
-                }}
-                className={`w-full text-left px-4 py-3 border-b border-white/5 transition-colors ${
-                  selectedSubstory?.id === sub.id
-                    ? "bg-orange-500/10 border-l-2 border-l-orange-500"
-                    : "hover:bg-white/5"
-                }`}
+                onClick={() => setSelectedSubstory(null)}
+                className="text-white/40 hover:text-white text-sm font-mono transition-colors"
+                aria-label="Back to stories"
               >
-                <p className="text-xs font-mono text-white leading-snug">{sub.title}</p>
-                {sub.summary && (
-                  <p className="text-xs text-white/40 mt-1 leading-snug line-clamp-2">
-                    {sub.summary}
-                  </p>
-                )}
-                <div className="flex gap-3 mt-1.5 text-xs text-white/30">
-                  <span>{sub.doc_count} docs</span>
-                  <span>{sub.people.length} people</span>
-                  <span>{sub.locations.length} places</span>
-                </div>
+                ←
               </button>
-            ))
-          )}
-        </div>
+              <p className="text-xs font-mono uppercase tracking-widest text-orange-400 truncate">
+                Story
+              </p>
+              <span className="ml-auto text-xs font-mono text-white/30">
+                {totalEntities} entities
+              </span>
+            </div>
 
-        {/* Selected substory detail */}
-        {selectedSubstory && (
-          <div className="border-t border-orange-500/20 bg-orange-500/5 px-4 py-3 max-h-52 overflow-y-auto flex-shrink-0">
-            <p className="text-xs font-mono font-bold text-orange-400 mb-2 leading-snug">
-              {selectedSubstory.title}
-            </p>
-            {selectedSubstory.people.length > 0 && (
-              <div className="mb-2">
-                <p className="text-xs text-white/30 mb-0.5 uppercase tracking-wider">People</p>
-                <p className="text-xs text-blue-300/80 leading-relaxed">
-                  {selectedSubstory.people.slice(0, 8).join(", ")}
-                  {selectedSubstory.people.length > 8 && ` +${selectedSubstory.people.length - 8}`}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <h2 className="text-sm font-mono font-bold text-white leading-snug mb-1">
+                {selectedSubstory.title}
+              </h2>
+              {selectedSubstory.summary && (
+                <p className="text-xs text-white/50 italic leading-relaxed mb-4">
+                  {selectedSubstory.summary}
                 </p>
-              </div>
-            )}
-            {selectedSubstory.locations.length > 0 && (
-              <div className="mb-2">
-                <p className="text-xs text-white/30 mb-0.5 uppercase tracking-wider">Places</p>
-                <p className="text-xs text-orange-300/80 leading-relaxed">
-                  {selectedSubstory.locations.slice(0, 6).join(", ")}
-                </p>
-              </div>
-            )}
-            {selectedSubstory.events.length > 0 && (
-              <div className="mb-2">
-                <p className="text-xs text-white/30 mb-0.5 uppercase tracking-wider">Events</p>
-                <p className="text-xs text-purple-300/80 leading-relaxed">
-                  {selectedSubstory.events.join(", ")}
-                </p>
-              </div>
-            )}
-            <button
-              onClick={() => setSelectedSubstory(null)}
-              className="mt-1 text-xs text-white/30 hover:text-white/60 transition-colors"
-            >
-              Clear filter ×
-            </button>
-          </div>
+              )}
+
+              {selectedSubstory.narrative && (
+                <div className="space-y-3 mb-5">
+                  {selectedSubstory.narrative.split(/\n\n+/).map((para, i) => (
+                    <p key={i} className="text-xs text-white/70 leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {selectedSubstory.people.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-white/30 mb-1 uppercase tracking-wider">People</p>
+                  <p className="text-xs text-blue-300/80 leading-relaxed">
+                    {selectedSubstory.people.slice(0, 12).join(", ")}
+                    {selectedSubstory.people.length > 12 &&
+                      ` +${selectedSubstory.people.length - 12}`}
+                  </p>
+                </div>
+              )}
+              {selectedSubstory.locations.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-white/30 mb-1 uppercase tracking-wider">Places</p>
+                  <p className="text-xs text-orange-300/80 leading-relaxed">
+                    {selectedSubstory.locations.slice(0, 10).join(", ")}
+                  </p>
+                </div>
+              )}
+              {selectedSubstory.events.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-white/30 mb-1 uppercase tracking-wider">Events</p>
+                  <p className="text-xs text-purple-300/80 leading-relaxed">
+                    {selectedSubstory.events.join(", ")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="px-4 py-3 border-b border-white/10 flex-shrink-0">
+              <p className="text-xs font-mono uppercase tracking-widest text-white/40">Stories</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="px-4 py-8 text-center text-white/30 text-xs font-mono">
+                  Loading…
+                </div>
+              ) : substories.length === 0 ? (
+                <div className="px-4 py-8 text-center text-white/30 text-xs font-mono">
+                  No stories yet.
+                  <br />
+                  <code className="text-orange-400">pnpm epstein:substories</code>
+                </div>
+              ) : (
+                substories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => {
+                      setSelectedSubstory(sub);
+                      flyToSubstory(sub);
+                    }}
+                    className="w-full text-left px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors"
+                  >
+                    <p className="text-xs font-mono text-white leading-snug">{sub.title}</p>
+                    {sub.summary && (
+                      <p className="text-xs text-white/40 mt-1 leading-snug line-clamp-2">
+                        {sub.summary}
+                      </p>
+                    )}
+                    <div className="flex gap-3 mt-1.5 text-xs text-white/30">
+                      <span>{sub.doc_count} docs</span>
+                      <span>{sub.people.length} people</span>
+                      <span>{sub.locations.length} places</span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </>
         )}
       </div>
 

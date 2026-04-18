@@ -201,8 +201,8 @@ async function main() {
     `  ${significantClusters.length} substory clusters (≥3 entities)`
   );
 
-  // 5. Delete old substories and insert new ones
-  await supabase.from("epstein_substories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  // 5. Delete old generated substories (preserve seeds) and insert new ones
+  await supabase.from("epstein_substories").delete().eq("is_seed", false);
 
   let inserted = 0;
   for (const cluster of significantClusters) {

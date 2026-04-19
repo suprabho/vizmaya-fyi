@@ -162,7 +162,6 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           onClick={() => document.getElementById('top')?.scrollIntoView({ behavior: 'smooth' })}
         >
           <VizmayaLogo className="w-[26px] h-[26px]" />
-          <div className="nav-wm"><span>Vizmaya</span><span>Labs</span></div>
         </button>
         <div className="nav-r">
           <a className="nav-cta" href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Subscribe</a>
@@ -307,7 +306,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       <section className="dark" style={{ padding: '100px clamp(20px,5vw,48px)', textAlign: 'center' }}>
         <div className="rv">
           <div style={{ marginBottom: 36, display: 'flex', justifyContent: 'center' }}>
-            <VizmayaLogo className="w-[44px] h-[44px]" />
+            <VizmayaLogo className="w-[120px] h-[120px]" />
           </div>
           <h2 className="h-d" style={{ fontFamily: 'var(--ff-display)', fontStyle: 'normal', fontWeight: 700, fontSize: 'clamp(22px,3.5vw,36px)', color: 'rgba(255,255,255,.92)', margin: '0 0 20px', lineHeight: 1.35 }}>
             Have data that deserves<br />
@@ -322,14 +321,6 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
 
       <footer style={{ background: 'var(--ink)', padding: '36px clamp(20px,5vw,48px)', borderTop: '1px solid rgba(255,255,255,.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <line x1="8" y1="3.5" x2="2.8" y2="13.2" stroke="rgba(255,255,255,.08)" strokeWidth=".7" />
-            <line x1="8" y1="3.5" x2="13.2" y2="13.2" stroke="rgba(255,255,255,.08)" strokeWidth=".7" />
-            <line x1="2.8" y1="13.2" x2="13.2" y2="13.2" stroke="rgba(255,255,255,.08)" strokeWidth=".7" />
-            <circle cx="8" cy="3.5" r="1.9" fill="#0BBFAB" />
-            <circle cx="2.8" cy="13.2" r="1.9" fill="#E84D7A" />
-            <circle cx="13.2" cy="13.2" r="1.9" fill="#2B4ACF" />
-          </svg>
           <span style={{ fontFamily: 'var(--ff-d)', fontSize: 14, color: 'rgba(255,255,255,.3)', fontStyle: 'italic' }}>Vizmaya Labs</span>
           <span style={{ fontFamily: 'var(--ff-m)', fontSize: 10, color: 'rgba(255,255,255,.15)', letterSpacing: '1px' }}>Jaipur · Singapore</span>
         </div>

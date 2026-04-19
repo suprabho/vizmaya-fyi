@@ -257,7 +257,7 @@ export default function StoryMapShell({
       {/* Snap-scroll container — the scrollable element, root of the observer */}
       <div
         ref={containerRef}
-        className="relative z-0 h-screen overflow-y-scroll snap-y snap-mandatory"
+        className="relative z-0 h-svh overflow-y-scroll snap-y snap-mandatory"
       >
         {units.map((unit, i) => (
           <MapStorySection

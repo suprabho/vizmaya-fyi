@@ -161,7 +161,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           className="nav-logo"
           onClick={() => document.getElementById('top')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <VizmayaLogo className="w-[26px] h-[26px]" />
+          <VizmayaLogo className="w-80 h-16" />
         </button>
         <div className="nav-r">
           <a className="nav-cta" href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Subscribe</a>

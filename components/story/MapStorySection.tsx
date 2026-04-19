@@ -74,12 +74,13 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
       ]
 
   const cardClasses = [
-    'absolute rounded-lg p-6 pb-10 backdrop-blur-sm overflow-y-auto',
-    'left-1/2 -translate-x-1/2 bottom-4',
+    'absolute rounded-lg p-6 backdrop-blur-sm overflow-y-auto',
+    'left-1/2 -translate-x-1/2 bottom-4 mb-4',
     'w-[90vw] max-w-[640px] max-h-[50svh]',
     ...landscapeSlotClasses,
     '[@media(min-aspect-ratio:1/1)]:max-w-none',
     '[@media(min-aspect-ratio:1/1)]:max-h-none',
+    '[@media(min-aspect-ratio:1/1)]:mb-0',
   ].join(' ')
 
   const cardStyle = {

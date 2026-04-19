@@ -76,7 +76,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
   const cardClasses = [
     'absolute rounded-lg p-6 backdrop-blur-sm overflow-y-auto',
     'left-1/2 -translate-x-1/2 bottom-4',
-    'w-[90vw] max-w-[640px] max-h-[50vh]',
+    'w-[90vw] max-w-[640px] max-h-[50svh]',
     ...landscapeSlotClasses,
     '[@media(min-aspect-ratio:1/1)]:max-w-none',
     '[@media(min-aspect-ratio:1/1)]:max-h-none',
@@ -94,7 +94,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
       <>
         <section
           data-unit-index={unitIndex}
-          className="snap-start snap-always h-screen w-full relative"
+          className="snap-start snap-always h-svh w-full relative"
         >
           <div className={cardClasses} style={cardStyle}>
             <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
@@ -118,7 +118,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
         {/* Portrait-only second snap section: dek + byline */}
         <section
           data-unit-index={unitIndex}
-          className="snap-start snap-always h-screen w-full relative [@media(min-aspect-ratio:1/1)]:hidden"
+          className="snap-start snap-always h-svh w-full relative [@media(min-aspect-ratio:1/1)]:hidden"
         >
           <div className={cardClasses} style={cardStyle}>
             <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
@@ -133,7 +133,7 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
   return (
     <section
       data-unit-index={unitIndex}
-      className="snap-start snap-always h-screen w-full relative"
+      className="snap-start snap-always h-svh w-full relative"
     >
       <div className={cardClasses} style={cardStyle}>
         <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">

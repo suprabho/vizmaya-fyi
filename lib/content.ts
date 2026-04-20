@@ -18,12 +18,40 @@ export interface StoryContent {
 }
 
 /**
+ * A story is viewable at its URL unless it's an unpublished draft in production.
+ * Drafts stay accessible in dev so authors can preview them locally.
+ */
+export function isViewable(fm: Pick<Frontmatter, 'status'>): boolean {
+  if (fm.status === 'draft') return process.env.NODE_ENV !== 'production'
+  return true
+}
+
+/**
+ * A story appears on the home grid only when it's actively published and not
+ * explicitly unlisted. Archived stories remain reachable by URL but drop off
+ * the index.
+ */
+export function isListed(fm: Pick<Frontmatter, 'status' | 'listed'>): boolean {
+  const status = fm.status ?? 'published'
+  if (status !== 'published') return false
+  return fm.listed !== false
+}
+
+/**
  * Reads a story markdown file and returns frontmatter + content split into sections by heading.
  * Each story page decides how to use these sections.
+ *
+ * Throws for drafts in production so the story route renders a 404 rather than
+ * leaking unfinished work.
  */
 export function getStoryContent(slug: string): StoryContent {
   const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
   const { data, content } = matter(file)
+
+  const frontmatter = data as Frontmatter
+  if (!isViewable(frontmatter)) {
+    throw new Error(`Story "${slug}" is a draft and not viewable in this environment`)
+  }
 
   const sections: ContentSection[] = []
   let current: ContentSection | null = null
@@ -47,7 +75,7 @@ export function getStoryContent(slug: string): StoryContent {
   }
   if (current) sections.push(current)
 
-  return { frontmatter: data as Frontmatter, sections, raw: content }
+  return { frontmatter, sections, raw: content }
 }
 
 /**
@@ -138,11 +166,28 @@ export function getAllStorySlugs(): string[] {
 }
 
 /**
- * Get summary info for all stories (for the homepage).
+ * Get summary info for stories shown on the home grid. Filters out drafts,
+ * archived stories, and anything explicitly marked `listed: false`.
  */
 export function getAllStories() {
-  return getAllStorySlugs().map((slug) => {
-    const { frontmatter } = getStoryContent(slug)
-    return { slug, ...frontmatter }
+  return getAllStorySlugs()
+    .map((slug) => {
+      const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
+      const { data } = matter(file)
+      return { slug, frontmatter: data as Frontmatter }
+    })
+    .filter(({ frontmatter }) => isListed(frontmatter))
+    .map(({ slug, frontmatter }) => ({ slug, ...frontmatter }))
+}
+
+/**
+ * Slugs whose story page should render (i.e. not a draft in production).
+ * Used by generateStaticParams so drafts don't get pre-rendered on deploy.
+ */
+export function getViewableStorySlugs(): string[] {
+  return getAllStorySlugs().filter((slug) => {
+    const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
+    const { data } = matter(file)
+    return isViewable(data as Frontmatter)
   })
 }

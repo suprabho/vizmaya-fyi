@@ -19,12 +19,18 @@ export interface Theme {
   }
 }
 
+export type StoryStatus = 'draft' | 'published' | 'archived'
+
 export interface Frontmatter {
   title: string
   subtitle: string
   byline: string
   date: string
   theme: Theme
+  /** Publication state. Missing = 'published' (backwards compatible). */
+  status?: StoryStatus
+  /** Whether the story appears on the home grid. Missing = true. */
+  listed?: boolean
 }
 
 export type BlockType =

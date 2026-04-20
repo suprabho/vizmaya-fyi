@@ -1,8 +1,8 @@
-import { getAllStorySlugs, getStoryContent } from '@/lib/content'
+import { getViewableStorySlugs, getStoryContent } from '@/lib/content'
 import { NextResponse } from 'next/server'
 
 export function GET() {
-  const slugs = getAllStorySlugs()
+  const slugs = getViewableStorySlugs()
   const stories = slugs.map((slug) => {
     const { frontmatter } = getStoryContent(slug)
     return {

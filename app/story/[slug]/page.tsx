@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getStoryContent, getAllStorySlugs } from '@/lib/content'
+import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
 import ThemeProvider from '@/components/story/ThemeProvider'
@@ -13,7 +13,7 @@ interface RouteParams {
 }
 
 export async function generateStaticParams() {
-  return getAllStorySlugs()
+  return getViewableStorySlugs()
     .filter((slug) => hasStoryConfig(slug))
     .map((slug) => ({ slug }))
 }

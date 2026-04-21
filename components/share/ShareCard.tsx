@@ -34,7 +34,7 @@ const OUTPUT_SIZE: Record<AspectRatio, { w: number; h: number }> = {
   '4:3': { w: 1440, h: 1080 },
 }
 
-export type CardVariant = 'auto' | 'map-title'
+export type CardVariant = 'auto' | 'map-title' | 'graph'
 
 interface Props {
   unit: ResolvedUnit
@@ -53,11 +53,6 @@ interface Props {
 
 export interface ShareCardHandle {
   capture: () => Promise<string | null>
-}
-
-/** Strip basic markdown bold/italic markers for plain-text rendering. */
-function stripMarkdown(text: string): string {
-  return text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1')
 }
 
 /**
@@ -101,6 +96,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   const kind = parentConfig.kind ?? 'text'
   const hasChart = !!parentConfig.chart
   const isMapTitle = variant === 'map-title'
+  const isGraph = variant === 'graph'
   // Only show map bg on hero cards and map-title variant
   const showMap = !!parentConfig.map?.center && (kind === 'hero' || isMapTitle)
 
@@ -267,34 +263,15 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                   )
                 })()}
               </div>
-            ) : hasChart ? (
-              /* Chart + text composite layout */
-              <>
-                <div className="flex-1 min-h-0">
-                  <ShareChartCard
-                    chartId={parentConfig.chart!}
-                    activeStep={unit.subIndex}
-                  />
-                </div>
-                <div className="px-6 py-4">
-                  {heading && (
-                    <div
-                      className="font-[family-name:var(--font-mono)] text-[0.6rem] uppercase tracking-[0.15em] mb-2"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      {heading}
-                    </div>
-                  )}
-                  {paragraphs.length > 0 && (
-                    <p
-                      className="font-[family-name:var(--font-serif)] text-[0.85rem] leading-[1.6] line-clamp-2"
-                      style={{ color: 'var(--color-text)' }}
-                    >
-                      {stripMarkdown(paragraphs[0])}
-                    </p>
-                  )}
-                </div>
-              </>
+            ) : isGraph && hasChart ? (
+              /* Chart-only card — renders final data view via maxSubIndex */
+              <div className="h-full min-h-0">
+                <ShareChartCard
+                  chartId={parentConfig.chart!}
+                  activeStep={maxSubIndex}
+                  slug={slug}
+                />
+              </div>
             ) : kind === 'hero' && heading ? (
               <ShareHeroCard
                 title={heading}

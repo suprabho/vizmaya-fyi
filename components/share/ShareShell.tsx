@@ -60,24 +60,39 @@ function buildCardList(
   overrides: Record<string, ShareSectionOverride> | null
 ): CardEntry[] {
   const cards: CardEntry[] = []
-  const seenParents = new Set<number>()
+  const seenParentsForMap = new Set<number>()
+  const seenParentsForGraph = new Set<number>()
   for (const unit of units) {
     const sectionId = unit.parentConfig.id
     if (sectionId && overrides?.[sectionId]?.hide) continue
 
     const kind = unit.parentConfig.kind ?? 'text'
+    const hasChart = !!unit.parentConfig.chart
     const shareOverride = sectionId ? overrides?.[sectionId] : undefined
 
-    // One map-title card per parent section (dedup subsections)
-    if (!seenParents.has(unit.parentIndex)) {
-      seenParents.add(unit.parentIndex)
+    // 1. Map + Heading — one per parent section (dedup subsections)
+    if (!seenParentsForMap.has(unit.parentIndex)) {
+      seenParentsForMap.add(unit.parentIndex)
       cards.push({ unit, variant: 'map-title', label: 'map-title' })
     }
 
-    // Resolve the effective override for this unit. Per-subsection overrides
-    // (if present for this unit's subIndex) take precedence over the section-
-    // level override — needed when a parent section has multiple subsections
-    // and we only want to rewrite one.
+    // 2. Graph — one per parent section when a chart is configured.
+    // Renders with activeStep=maxSubIndex for the most complete data view.
+    if (hasChart && !seenParentsForGraph.has(unit.parentIndex)) {
+      seenParentsForGraph.add(unit.parentIndex)
+      cards.push({ unit, variant: 'graph', label: 'graph' })
+    }
+
+    // 3. Content cards — hero/stat kinds render a single card (their content
+    // is shaped by the variant itself). Text-kind sections split one card
+    // per paragraph, respecting existing overrides.
+    if (kind !== 'text') {
+      cards.push({ unit, variant: 'auto', label: kind })
+      continue
+    }
+
+    // Per-subsection overrides take precedence over section-level overrides —
+    // needed when a parent has multiple subsections and only one is rewritten.
     const subOverride = shareOverride?.subsections?.[unit.subIndex]
     const paragraphsOverride =
       subOverride?.paragraphsOverride ?? shareOverride?.paragraphsOverride
@@ -85,7 +100,6 @@ function buildCardList(
       subOverride?.shareParagraphs ?? shareOverride?.shareParagraphs
 
     if (paragraphsOverride && paragraphsOverride.length > 0) {
-      // Literal-text override — each entry is one card, fully replacing the MD paragraphs.
       paragraphsOverride.forEach((entry, sliceIdx) => {
         const expandedUnit: ResolvedUnit = {
           ...unit,
@@ -103,8 +117,17 @@ function buildCardList(
         }
         cards.push({ unit: expandedUnit, variant: 'auto', label: kind })
       })
-    } else {
+    } else if (unit.paragraphs.length === 0) {
       cards.push({ unit, variant: 'auto', label: kind })
+    } else {
+      unit.paragraphs.forEach((p, idx) => {
+        const expandedUnit: ResolvedUnit = {
+          ...unit,
+          heading: idx === 0 ? unit.heading : undefined,
+          paragraphs: [p],
+        }
+        cards.push({ unit: expandedUnit, variant: 'auto', label: kind })
+      })
     }
   }
   return cards

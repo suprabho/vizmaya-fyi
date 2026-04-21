@@ -50,6 +50,11 @@ function sliceShareParagraphs(
   return all.slice(spec[0], spec[1])
 }
 
+/** Normalize a paragraphsOverride entry to a string[] (one card's paragraphs). */
+function normalizeOverrideEntry(entry: string | string[]): string[] {
+  return typeof entry === 'string' ? [entry] : entry
+}
+
 function buildCardList(
   units: ResolvedUnit[],
   overrides: Record<string, ShareSectionOverride> | null
@@ -69,9 +74,28 @@ function buildCardList(
       cards.push({ unit, variant: 'map-title', label: 'map-title' })
     }
 
-    // If share override has shareParagraphs, expand into multiple cards
-    if (shareOverride?.shareParagraphs && shareOverride.shareParagraphs.length > 0) {
-      shareOverride.shareParagraphs.forEach((spec, sliceIdx) => {
+    // Resolve the effective override for this unit. Per-subsection overrides
+    // (if present for this unit's subIndex) take precedence over the section-
+    // level override — needed when a parent section has multiple subsections
+    // and we only want to rewrite one.
+    const subOverride = shareOverride?.subsections?.[unit.subIndex]
+    const paragraphsOverride =
+      subOverride?.paragraphsOverride ?? shareOverride?.paragraphsOverride
+    const shareParagraphs =
+      subOverride?.shareParagraphs ?? shareOverride?.shareParagraphs
+
+    if (paragraphsOverride && paragraphsOverride.length > 0) {
+      // Literal-text override — each entry is one card, fully replacing the MD paragraphs.
+      paragraphsOverride.forEach((entry, sliceIdx) => {
+        const expandedUnit: ResolvedUnit = {
+          ...unit,
+          heading: sliceIdx === 0 ? unit.heading : undefined,
+          paragraphs: normalizeOverrideEntry(entry),
+        }
+        cards.push({ unit: expandedUnit, variant: 'auto', label: kind })
+      })
+    } else if (shareParagraphs && shareParagraphs.length > 0) {
+      shareParagraphs.forEach((spec, sliceIdx) => {
         const expandedUnit: ResolvedUnit = {
           ...unit,
           heading: sliceIdx === 0 ? unit.heading : undefined,

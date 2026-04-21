@@ -55,6 +55,11 @@ export interface ShareCardHandle {
   capture: () => Promise<string | null>
 }
 
+/** Strip basic markdown bold/italic markers for plain-text rendering. */
+function stripMarkdown(text: string): string {
+  return text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1')
+}
+
 /**
  * Extract hero dek and byline from paragraphs (matches MapStorySection logic).
  */
@@ -282,10 +287,10 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                   )}
                   {paragraphs.length > 0 && (
                     <p
-                      className="font-[family-name:var(--font-serif)] text-[0.85rem] leading-[1.6] line-clamp-3"
+                      className="font-[family-name:var(--font-serif)] text-[0.85rem] leading-[1.6] line-clamp-2"
                       style={{ color: 'var(--color-text)' }}
                     >
-                      {paragraphs[0]}
+                      {stripMarkdown(paragraphs[0])}
                     </p>
                   )}
                 </div>

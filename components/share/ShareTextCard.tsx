@@ -19,7 +19,7 @@ const TEXT_WIDTH = 310
 
 export default function ShareTextCard({ heading, paragraphs }: Props) {
   return (
-    <div className="flex flex-col justify-center h-full px-10 py-8">
+    <div className="flex flex-col justify-center h-full px-10 pt-12 pb-8 overflow-hidden min-h-0">
       {heading && (
         <div
           className="font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-[0.15em] mb-4"

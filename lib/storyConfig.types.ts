@@ -156,6 +156,27 @@ export interface StoryConfig {
  * Only the fields provided are merged — everything else falls back
  * to the main story config.
  */
+/**
+ * Per-subsection overrides for share mode, keyed by the subsection's
+ * zero-based index within its parent section's `subsections` array.
+ *
+ * Use this when a parent section has multiple subsections and you need
+ * to rewrite one without touching the others (e.g. shortening only the
+ * "Oil: 70%" subsection's copy for a share card).
+ */
+export interface ShareSubsectionOverride {
+  /**
+   * Literal replacement paragraphs for this subsection's share card(s).
+   * Each entry becomes one card:
+   *   - a `string` is a card with a single paragraph
+   *   - a `string[]` is a card with multiple stacked paragraphs
+   * Takes precedence over `shareParagraphs` when both are set.
+   */
+  paragraphsOverride?: Array<string | string[]>
+  /** Same `shareParagraphs` semantics as the parent override, scoped to this subsection. */
+  shareParagraphs?: Array<number | [number, number]>
+}
+
 export interface ShareSectionOverride {
   /** Override the heading shown on the map-title card. */
   heading?: string
@@ -167,6 +188,20 @@ export interface ShareSectionOverride {
    * the same `[start, end]` semantics as `paragraphs`.
    */
   shareParagraphs?: Array<number | [number, number]>
+  /**
+   * Literal replacement paragraphs for this section's share card(s).
+   * Same semantics as `ShareSubsectionOverride.paragraphsOverride`.
+   * Takes precedence over `shareParagraphs` when both are set. Does NOT
+   * target subsections — use `subsections` for per-subsection rewrites.
+   */
+  paragraphsOverride?: Array<string | string[]>
+  /**
+   * Per-subsection overrides, keyed by the subsection's zero-based index
+   * within the parent section's `subsections` array in the main config.
+   * When a subsection override is present for a unit, it takes precedence
+   * over the section-level `paragraphsOverride` / `shareParagraphs`.
+   */
+  subsections?: Record<number, ShareSubsectionOverride>
   map?: {
     center?: [number, number]
     zoom?: number

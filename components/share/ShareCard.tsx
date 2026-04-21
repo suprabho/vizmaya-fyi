@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import { toPng } from 'html-to-image'
 import type { ResolvedUnit, MapPinConfig, ShareSectionOverride } from '@/lib/storyConfig.types'
 import type { AspectRatio } from './AspectRatioToggle'
@@ -71,6 +71,23 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
+  const mapReadyRef = useRef(false)
+  const mapReadyResolvers = useRef<Array<() => void>>([])
+  const [, setMapReadyTick] = useState(0)
+  const handleMapReady = useCallback(() => {
+    mapReadyRef.current = true
+    for (const r of mapReadyResolvers.current) r()
+    mapReadyResolvers.current = []
+    setMapReadyTick((t) => t + 1)
+  }, [])
+  const waitForMap = useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        if (mapReadyRef.current) resolve()
+        else mapReadyResolvers.current.push(resolve)
+      }),
+    []
+  )
   const { w, h } = RENDER_SIZE[ratio]
   const output = OUTPUT_SIZE[ratio]
   const pixelRatio = output.w / w
@@ -87,6 +104,10 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   const mapZoom = shareOverride?.map?.zoom ?? parentConfig.map?.zoom
   const mapPitch = shareOverride?.map?.pitch ?? parentConfig.map?.pitch
   const mapBearing = shareOverride?.map?.bearing ?? parentConfig.map?.bearing
+  // Regions and heatmap aren't overridable per-section in share config yet,
+  // so just pull from the parent section's map config.
+  const mapRegions = parentConfig.map?.regions
+  const mapHeatmap = parentConfig.map?.heatmap
 
   // Collect all pins for this section: share override pins (if set, replaces all),
   // otherwise parent pins + all subsection pins
@@ -116,8 +137,22 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
     try {
       await document.fonts.ready
 
-      // Wait for every <img> in the capture target (notably the Mapbox
-      // static background, served via /api/mapbox-bg) to finish loading
+      // Wait for the Mapbox GL map to finish loading its style, tiles,
+      // region layer (for custom GeoJSON this includes the fetch) and
+      // go idle. Without this, toPng rasterizes an empty canvas or a
+      // map without regions drawn.
+      if (showMap) {
+        // The map is mounted lazily via IntersectionObserver to stay under
+        // the browser's WebGL context cap. Scroll the card into view so its
+        // observer fires before we start waiting.
+        node.scrollIntoView({ block: 'center', behavior: 'auto' })
+        await waitForMap()
+        // One extra rAF so popup DOM elements have a chance to lay out
+        // their final position after the map resolves.
+        await new Promise<void>((r) => requestAnimationFrame(() => r()))
+      }
+
+      // Wait for every <img> in the capture target to finish loading
       // before snapshotting. html-to-image clones the node and re-fetches
       // each src; if the image hasn't resolved yet the cloned <img>
       // rasterizes empty.
@@ -150,7 +185,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
       console.error('Share card capture failed:', err)
       return null
     }
-  }, [w, h, pixelRatio])
+  }, [w, h, pixelRatio, showMap, waitForMap])
 
   useImperativeHandle(ref, () => ({ capture }), [capture])
 
@@ -182,10 +217,11 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
               zoom={mapZoom!}
               pitch={mapPitch}
               bearing={mapBearing}
-              width={output.w}
-              height={output.h}
               accessToken={accessToken}
               pins={allPins}
+              regions={mapRegions}
+              heatmap={mapHeatmap}
+              onReady={handleMapReady}
             />
           )}
 

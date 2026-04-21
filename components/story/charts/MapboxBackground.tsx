@@ -52,6 +52,19 @@ interface MapboxBackgroundProps {
     width: number
     height: number
   }
+  /**
+   * When true, enables WebGL `preserveDrawingBuffer` so the canvas can be
+   * snapshotted by html-to-image / toDataURL. Costs a bit of memory, so only
+   * opt in where capture is needed (share mode). Also skips the fly animation
+   * on step changes — captures should render at the final pose immediately.
+   */
+  staticCapture?: boolean
+  /**
+   * Fires once the map is idle AND the initial step's regions/pins/heatmap
+   * have been applied. Share mode waits on this before toPng so captures
+   * don't rasterize a half-built map.
+   */
+  onReady?: () => void
 }
 
 const DEFAULT_STYLE = 'mapbox://styles/mapbox/dark-v11'
@@ -423,6 +436,8 @@ export default function MapboxBackground({
   highlightColor,
   landscapeFocusArea,
   portraitFocusArea,
+  staticCapture = false,
+  onReady,
 }: MapboxBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -458,6 +473,7 @@ export default function MapboxBackground({
       interactive,
       attributionControl: false,
       fadeDuration: 0,
+      preserveDrawingBuffer: staticCapture,
     })
 
     // Apply focal padding immediately so the first paint already has the
@@ -555,7 +571,7 @@ export default function MapboxBackground({
       padding,
     }
 
-    if (reduceMotion) {
+    if (reduceMotion || staticCapture) {
       map.jumpTo(camera)
     } else {
       map.flyTo({
@@ -576,12 +592,23 @@ export default function MapboxBackground({
     removeStoryLayers(map)
     const myGen = ++layerGenRef.current
     const isStale = () => layerGenRef.current !== myGen
-    if (step.regions) {
-      const accent = resolvePaintColor(defaultPinColor)
-      void applyRegionLayer(map, step.regions, accent, isStale, containerRef.current)
-    }
+    const regionPromise = step.regions
+      ? applyRegionLayer(map, step.regions, resolvePaintColor(defaultPinColor), isStale, containerRef.current)
+      : Promise.resolve()
     if (step.heatmap) {
       applyHeatmapLayer(map, step.heatmap)
+    }
+
+    // Share mode waits on this to know when to rasterize. Fire once the
+    // region layer has been applied (or skipped) AND the map reports idle.
+    if (onReady && staticCapture) {
+      void regionPromise.then(() => {
+        if (layerGenRef.current !== myGen) return
+        map.once('idle', () => {
+          if (layerGenRef.current !== myGen) return
+          onReady()
+        })
+      })
     }
 
     // Diff pins: keep shared markers, remove vanished ones, add new ones.
@@ -647,7 +674,7 @@ export default function MapboxBackground({
 
       markersRef.current.set(key, marker)
     }
-  }, [activeStep, steps, loaded, defaultPinColor, defaultPinRadius, landscapeFocusArea, portraitFocusArea])
+  }, [activeStep, steps, loaded, defaultPinColor, defaultPinRadius, landscapeFocusArea, portraitFocusArea, staticCapture, onReady])
 
   // Re-evaluate focal padding when the viewport flips between portrait and
   // landscape — without this, rotating the device leaves the camera padded

@@ -745,8 +745,6 @@ function SharePreview({
         zoom={state.zoom}
         pitch={state.pitch}
         bearing={state.bearing}
-        width={dims.width}
-        height={dims.height}
         style={state.mapStyle}
         accessToken={accessToken}
         pins={state.pins.length > 0 ? state.pins : undefined}

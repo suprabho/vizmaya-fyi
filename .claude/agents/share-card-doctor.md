@@ -1,6 +1,6 @@
 ---
 name: share-card-doctor
-description: Diagnose and fix visual bugs in share-page cards — text overflow/clipping, branding-header overlap, section-eyebrow clipping, map-label overflow past card edges, chart+text composite overflow at non-square ratios. Use proactively when the user shows screenshots of cards with cut-off content, or says "fix share cards", "text is clipping on share", "cards look broken", or similar.
+description: Diagnose and fix visual bugs in share-page cards — text overflow/clipping, branding-header overlap, section-eyebrow clipping, map-label overflow past card edges, map pins/labels off-center or hidden behind chrome, chart+text composite overflow at non-square ratios. Use proactively when the user shows screenshots of cards with cut-off content, pins near card edges, or says "fix share cards", "text is clipping on share", "cards look broken", "map points aren't visible", or similar.
 tools: Read, Edit, Glob, Grep, Bash, mcp__Claude_Preview__preview_start, mcp__Claude_Preview__preview_stop, mcp__Claude_Preview__preview_list, mcp__Claude_Preview__preview_screenshot, mcp__Claude_Preview__preview_click, mcp__Claude_Preview__preview_eval, mcp__Claude_Preview__preview_snapshot, mcp__Claude_Preview__preview_console_logs, mcp__Claude_Preview__preview_logs, mcp__Claude_Preview__preview_resize
 model: sonnet
 ---
@@ -37,6 +37,8 @@ If a screenshot matches one of these, map it to the fix site directly:
 | `"197"` instead of `"1976"` at top (eyebrow clipped) | `ShareCard.tsx` around line 229 & `BrandingFooter.tsx` | Inner content needs top padding that clears the 24–28px branding band; or push section eyebrow below it |
 | Two header bands stacked ("MARKETS" over story title) | `BrandingFooter.tsx` + map-title variant | The section eyebrow renders at top *and* the branding header overlaps — reserve space or move one |
 | Map pin label clipped by left/right card edge | `ShareMapBg.tsx` | Add viewport padding to `fitBounds` / popup offset, or switch label to anchor:`center` with max-width |
+| Map pin hidden behind branding header (top) or DOWNLOAD PNG button / title block (bottom) | `ShareMapBg.tsx` + card config | Nudge map `center` up/down or raise `zoom` so the pin lands in the visible band between header (~28px) and title/footer chrome; or switch label anchor to avoid overlapping chrome |
+| Map pin/labels sit near the card edge instead of near center | story config `map.center` / `map.zoom` (or `ShareMapBg` pin offset) | Re-center so all configured pins are inside the middle ~60% of the card; if multiple pins, use the centroid; never leave a pin within 40px of any card edge at any ratio |
 | Chart + text composite overflows at 4:3 | `ShareCard.tsx` ~line 265 | Tighten `line-clamp-3` → `line-clamp-2`, or swap chart container to `flex-1 min-h-0 overflow-hidden` |
 
 If a symptom doesn't match, **say "unknown symptom"** and stop for user input
@@ -68,6 +70,20 @@ Work one bug at a time. For each bug:
 5. **Check for collateral damage.** Before declaring the card fixed, screenshot
    the same card at the other two ratios. A fix that works at 1:1 but breaks 3:4
    is not a fix.
+
+6. **For map cards, verify pin+label placement explicitly.** For every card that
+   uses `ShareMapBg`:
+   - Every configured pin must be visible in the screenshot (not cropped by the
+     card's rounded edges, not hidden under the top branding header or the
+     bottom title/footer/DOWNLOAD PNG button).
+   - Every pin and its label must sit inside the middle ~60% of the card —
+     roughly 40px or more from every edge at 390px base. Labels anchored
+     outside that band routinely clip at 4:3 or 3:4 even when 1:1 looks fine.
+   - If a pin lands under chrome or near an edge, prefer adjusting the story
+     config's `map.center` / `map.zoom` (or `ShareMapBg` label anchor) over
+     shrinking the chrome. Never fix this by hiding pins or labels.
+   - Re-check at all three ratios — a centered pin at 1:1 often drifts to the
+     edge at 4:3 because the map re-crops, not re-centers.
 
 # Guardrails
 

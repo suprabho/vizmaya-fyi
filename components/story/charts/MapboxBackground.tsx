@@ -666,7 +666,9 @@ export default function MapboxBackground({
             padding: 4px 10px;
             border-radius: 4px;
             border: 0.5px solid #1a2830;
-            white-space: nowrap;
+            ${staticCapture
+              ? 'white-space: normal; max-width: 140px; text-align: left;'
+              : 'white-space: nowrap;'}
           ">${pin.label}</div>`
         )
         marker.setPopup(popup).togglePopup()

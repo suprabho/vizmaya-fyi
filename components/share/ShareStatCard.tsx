@@ -11,7 +11,7 @@ export default function ShareStatCard({ value, subheading, description }: Props)
   const color = isPercentage ? 'var(--color-red, #E24B4A)' : 'var(--color-accent2)'
 
   return (
-    <div className="flex flex-col items-center justify-center text-center h-full px-10 py-8">
+    <div className="flex flex-col items-center justify-center text-center h-full px-10 pt-12 pb-8">
       <div
         className="font-[family-name:var(--font-serif)] text-[5.5rem] font-bold leading-none mb-4"
         style={{ color }}

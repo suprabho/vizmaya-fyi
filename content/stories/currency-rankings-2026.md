@@ -46,19 +46,6 @@ Trading Economics' April 6 table ranks the large-economy currencies that have ga
 
 Ten currencies cleared the double-digit line. Only three of them belong to countries the market routinely classifies as "safe-haven" in the G10 sense. The rest are emerging-market, frontier, or commodity exporters whose FX histories are not usually told as stories of dollar weakness.
 
-| Currency | Year-Over-Year Performance |
-| --- | --- |
-| Israeli shekel | 20.2% |
-| Colombian peso | 19.7% |
-| South African rand | 16.4% |
-| Mexican peso | 16.4% |
-| Australian dollar | 14.8% |
-| Brazilian real | 14.5% |
-| Nigerian naira | 13.5% |
-| Norwegian krone | 12.7% |
-| Kazakhstani tenge | 12.3% |
-| Malaysian ringgit | 11.2% |
-
 ---
 
 ## Act I: The top of the table

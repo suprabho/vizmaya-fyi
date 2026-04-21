@@ -90,7 +90,6 @@ sections:
     mobileParagraphs:
       - [0, 1]
       - [1, 2]
-      - [2, 3]
     map:
       center: [10.0, 20.0]
       zoom: 1.6

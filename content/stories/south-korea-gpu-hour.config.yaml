@@ -165,7 +165,8 @@ sections:
           label: "Crude oil origin | Abu Dhabi, UAE"
           color: "#f54900"
       mobile:
-        center: [127.016, 37.392]
+        center: [54.366, 24.466]
+        zoom: 4.2
 
     subsections:
       - text: "Oil: 70%"
@@ -177,7 +178,7 @@ sections:
         - [0, 1]
         - [1, 2]
         map:
-          center: [51.548, 23.897]
+          center: [51.548, 25.897]
           zoom: 7.0
           pitch: 25
           bearing: -10

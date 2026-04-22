@@ -6,12 +6,14 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import type {
   StoryConfig,
   MapPinConfig,
+  MapPalette,
   ShareConfig,
   ResolvedUnit,
   StoryDefaults,
 } from '@/lib/storyConfig.types'
 import ShareMapBg from '@/components/share/ShareMapBg'
 import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
+import { applyMapPalette, applyMapFontstack } from '@/lib/applyMapPalette'
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 
@@ -37,6 +39,10 @@ interface MapState {
   highlightCountry: string
   highlightColor: string
   mapStyle: string
+  /** Palette applied to the base Mapbox style at runtime. Unset fields keep the base colors. */
+  palette: MapPalette
+  /** Fontstack applied to every text layer. Must exist on the style's glyphs URL. */
+  fontstack: string[]
 }
 
 /* ─── Defaults ──────────────────────────────────────────────────── */
@@ -52,7 +58,20 @@ const DEFAULT_MAP: MapState = {
   highlightCountry: '',
   highlightColor: '',
   mapStyle: 'mapbox://styles/mapbox/dark-v11',
+  palette: {},
+  fontstack: [],
 }
+
+/** Palette roles the editor exposes as color swatches. Order matters for the UI. */
+const PALETTE_FIELDS: Array<{ key: keyof MapPalette; label: string }> = [
+  { key: 'land', label: 'Land' },
+  { key: 'water', label: 'Water' },
+  { key: 'border', label: 'Borders' },
+  { key: 'labelText', label: 'Label text' },
+  { key: 'labelHalo', label: 'Label halo' },
+  { key: 'road', label: 'Roads' },
+  { key: 'building', label: 'Buildings' },
+]
 
 const MOBILE_SIZE = { width: 390, height: 844 }
 
@@ -117,6 +136,8 @@ function resolveMapStateFromUnit(
     highlightCountry: defaults.highlightCountry ?? '',
     highlightColor: defaults.highlightColor ?? defaults.pinColor,
     mapStyle: defaults.mapStyle,
+    palette: { ...(defaults.mapPalette ?? {}) },
+    fontstack: defaults.mapFontstack ? [...defaults.mapFontstack] : [],
   }
 }
 
@@ -143,6 +164,35 @@ function toYaml(state: MapState): string {
   return lines.join('\n')
 }
 
+/**
+ * YAML for the `defaults.mapPalette` + `defaults.mapFontstack` blocks.
+ * These live under `defaults:` in the story config, not under `map:`, so the
+ * editor surfaces them as a separate copyable snippet from the per-unit YAML.
+ * Returns an empty string when there's nothing to emit.
+ */
+function paletteYaml(state: MapState): string {
+  const paletteEntries = PALETTE_FIELDS.filter(({ key }) => {
+    const v = state.palette[key]
+    return typeof v === 'string' && v.trim().length > 0
+  })
+  const hasFontstack = state.fontstack.length > 0
+  if (paletteEntries.length === 0 && !hasFontstack) return ''
+
+  const lines: string[] = []
+  lines.push('defaults:')
+  if (paletteEntries.length > 0) {
+    lines.push('  mapPalette:')
+    for (const { key } of paletteEntries) {
+      lines.push(`    ${key}: "${state.palette[key]}"`)
+    }
+  }
+  if (hasFontstack) {
+    const quoted = state.fontstack.map((f) => `"${f}"`).join(', ')
+    lines.push(`  mapFontstack: [${quoted}]`)
+  }
+  return lines.join('\n')
+}
+
 /** Build a display label for a unit in the selector dropdown. */
 function unitLabel(unit: ResolvedUnit, idx: number): string {
   const section = unit.parentConfig
@@ -156,6 +206,126 @@ function unitLabel(unit: ResolvedUnit, idx: number): string {
   const truncated = heading.length > 40 ? heading.slice(0, 40) + '...' : heading
 
   return `${idx}. ${kindTag}${id ? id + ': ' : ''}${truncated}${subTag}`
+}
+
+/* ─── Palette Editor ────────────────────────────────────────────── */
+
+/**
+ * Sidebar panel for editing the per-story `mapPalette` + `mapFontstack`.
+ * Each palette role gets a native color-picker swatch plus a text input so
+ * the user can paste hex/rgb/hsl without fighting the picker. Clearing a
+ * field via the ✕ button removes it from the palette; the live map effect
+ * does NOT revert the paint to the stylesheet default, so the sidebar shows
+ * a small hint nudging the user to reload for a clean slate.
+ */
+function PaletteEditor({
+  palette,
+  onChange,
+  fontstack,
+  onFontstackChange,
+}: {
+  palette: MapPalette
+  onChange: (palette: MapPalette) => void
+  fontstack: string[]
+  onFontstackChange: (fontstack: string[]) => void
+}) {
+  const setField = (key: keyof MapPalette, value: string) => {
+    const next = { ...palette }
+    if (value.trim() === '') delete next[key]
+    else next[key] = value
+    onChange(next)
+  }
+
+  const anySet = PALETTE_FIELDS.some(({ key }) => typeof palette[key] === 'string' && palette[key]!.length > 0)
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+          Palette
+        </span>
+        {anySet && (
+          <button
+            onClick={() => onChange({})}
+            className="text-[0.6rem] px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-500 hover:bg-neutral-700 hover:text-neutral-300"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+
+      {PALETTE_FIELDS.map(({ key, label }) => {
+        const value = palette[key] ?? ''
+        // A blank value means "not overridden" — render a muted placeholder swatch
+        // so the user can still click it to open a picker.
+        const swatch = value || '#000000'
+        return (
+          <div key={key} className="flex items-center gap-1.5">
+            <input
+              type="color"
+              value={swatch}
+              onChange={(e) => setField(key, e.target.value)}
+              className="w-7 h-7 rounded border border-neutral-700 bg-neutral-900 cursor-pointer shrink-0"
+              title={`${label} color`}
+              style={{ opacity: value ? 1 : 0.4 }}
+            />
+            <label className="flex-1 text-xs flex flex-col">
+              <span className="text-neutral-500 text-[0.65rem]">{label}</span>
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => setField(key, e.target.value)}
+                placeholder="inherit"
+                className="w-full bg-neutral-900 border border-neutral-700 rounded px-1.5 py-1 text-neutral-200 font-mono"
+              />
+            </label>
+            {value && (
+              <button
+                onClick={() => setField(key, '')}
+                className="text-neutral-500 hover:text-neutral-300 text-sm leading-none shrink-0"
+                title="Clear — revert to base style on next reload"
+                aria-label={`Clear ${label}`}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Fontstack — single comma-separated string, round-tripped through an array */}
+      <div className="pt-1">
+        <label className="text-xs flex flex-col">
+          <span className="text-neutral-500 text-[0.65rem] uppercase tracking-wider">
+            Fontstack
+          </span>
+          <input
+            type="text"
+            value={fontstack.join(', ')}
+            onChange={(e) => {
+              const parts = e.target.value
+                .split(',')
+                .map((p) => p.trim())
+                .filter(Boolean)
+              onFontstackChange(parts)
+            }}
+            placeholder='e.g. "Vizmaya Serif Regular"'
+            className="w-full bg-neutral-900 border border-neutral-700 rounded px-1.5 py-1 text-neutral-200 font-mono text-xs"
+          />
+          <span className="text-[0.6rem] text-neutral-600 mt-0.5">
+            Comma-separated. Fonts must exist on the style&apos;s glyphs URL.
+          </span>
+        </label>
+      </div>
+
+      {anySet && (
+        <p className="text-[0.6rem] text-neutral-600 leading-snug">
+          Clearing a field doesn&apos;t revert the map to its base color —
+          reload to reset.
+        </p>
+      )}
+    </div>
+  )
 }
 
 /* ─── Pin Editor ────────────────────────────────────────────────── */
@@ -476,6 +646,11 @@ function InteractiveMap({
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
 
     map.on('load', () => {
+      // Apply palette + fontstack before the country highlight so the highlight
+      // fill color wins on top of any label recolor — same ordering as
+      // MapboxBackground.
+      if (Object.keys(state.palette).length > 0) applyMapPalette(map, state.palette)
+      if (state.fontstack.length > 0) applyMapFontstack(map, state.fontstack)
       if (state.highlightCountry) {
         addCountryHighlight(map, state.highlightCountry, state.highlightColor || '#155dfc')
       }
@@ -643,6 +818,16 @@ function InteractiveMap({
     }
   }, [state.highlightCountry, state.highlightColor])
 
+  // Live re-apply palette + fontstack whenever the sidebar edits them.
+  // Note: clearing a palette key does NOT reset the layer to its stylesheet
+  // default — the previous override stays. Reload the page for a clean slate.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    if (Object.keys(state.palette).length > 0) applyMapPalette(map, state.palette)
+    if (state.fontstack.length > 0) applyMapFontstack(map, state.fontstack)
+  }, [state.palette, state.fontstack])
+
   return (
     <div style={containerStyle} className="relative bg-neutral-950 rounded-lg overflow-hidden">
       <style jsx global>{`
@@ -748,6 +933,8 @@ function SharePreview({
         style={state.mapStyle}
         accessToken={accessToken}
         pins={state.pins.length > 0 ? state.pins : undefined}
+        palette={Object.keys(state.palette).length > 0 ? state.palette : undefined}
+        fontstack={state.fontstack.length > 0 ? state.fontstack : undefined}
       />
     </div>
   )
@@ -869,11 +1056,20 @@ export default function MapEditShell({ accessToken }: { accessToken: string }) {
   }, [])
 
   const yaml = toYaml(mapState)
+  const paletteYamlText = paletteYaml(mapState)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(yaml)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  const [palCopied, setPalCopied] = useState(false)
+  const handleCopyPalette = () => {
+    if (!paletteYamlText) return
+    navigator.clipboard.writeText(paletteYamlText)
+    setPalCopied(true)
+    setTimeout(() => setPalCopied(false), 1500)
   }
 
   return (
@@ -1077,6 +1273,14 @@ export default function MapEditShell({ accessToken }: { accessToken: string }) {
             </div>
           </div>
 
+          {/* Palette */}
+          <PaletteEditor
+            palette={mapState.palette}
+            onChange={(palette) => patch({ palette })}
+            fontstack={mapState.fontstack}
+            onFontstackChange={(fontstack) => patch({ fontstack })}
+          />
+
           {/* Pins */}
           <PinEditor
             pins={mapState.pins}
@@ -1101,6 +1305,27 @@ export default function MapEditShell({ accessToken }: { accessToken: string }) {
               {yaml}
             </pre>
           </div>
+
+          {/* Palette YAML — rendered only when there's something to emit, so it
+              doesn't clutter the sidebar for stories using base colors. */}
+          {paletteYamlText && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                  defaults YAML
+                </span>
+                <button
+                  onClick={handleCopyPalette}
+                  className="text-xs px-2 py-0.5 rounded bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200 transition-colors"
+                >
+                  {palCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <pre className="bg-neutral-900 border border-neutral-800 rounded p-2 text-xs text-neutral-300 font-mono whitespace-pre overflow-x-auto max-h-48">
+                {paletteYamlText}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
 

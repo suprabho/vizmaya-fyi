@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useInView } from '@/lib/use-in-view'
 import { ScenarioToggleBlock } from '@/types/story'
+import { useChartColors } from '@/lib/chartTheme'
 import dynamic from 'next/dynamic'
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
@@ -10,12 +11,6 @@ const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
 function stripMarkdown(text: string): string {
   return text.replace(/\*\*/g, '').replace(/\*/g, '')
 }
-
-const TEAL = '#1D9E75'
-const AMBER = '#EF9F27'
-const ACCENT = '#D85A30'
-
-const SCENARIO_COLORS = [TEAL, AMBER, ACCENT]
 
 const SCENARIO_DATA = [
   {
@@ -57,7 +52,10 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
   const [active, setActive] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { threshold: 0.1 })
-  const color = SCENARIO_COLORS[active]
+  const chartColors = useChartColors()
+  const { chromeBg, chromeText, chromeTextDim } = chartColors
+  const scenarioColors = [chartColors.teal, chartColors.amber, chartColors.accent]
+  const color = scenarioColors[active]
   const data = SCENARIO_DATA[active]
   const labels = block.scenarios.map((s) => s.label)
 
@@ -75,7 +73,7 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
       type: 'category' as const,
       data: data.layers.map((l) => l.name).reverse(),
       axisLabel: {
-        color: '#e0ddd5',
+        color: chromeText,
         fontFamily: 'var(--font-sans)',
         fontSize: 12,
       },
@@ -101,7 +99,7 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
         label: {
           show: true,
           position: 'right' as const,
-          color: '#8a9a9f',
+          color: chromeTextDim,
           fontFamily: 'var(--font-mono)',
           fontSize: 11,
           formatter: (params: { dataIndex: number }) => {
@@ -115,10 +113,10 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
     ],
     tooltip: {
       show: true,
-      backgroundColor: '#111820',
+      backgroundColor: chromeBg,
       borderColor: color,
       borderWidth: 1,
-      textStyle: { color: '#e0ddd5', fontFamily: 'var(--font-mono)', fontSize: 12 },
+      textStyle: { color: chromeText, fontFamily: 'var(--font-mono)', fontSize: 12 },
       formatter: (params: { name: string; value: number; dataIndex: number }) => {
         const idx = data.layers.length - 1 - params.dataIndex
         return `<strong>${params.name}</strong><br/>${data.layers[idx].desc}`
@@ -136,9 +134,9 @@ export default function ScenarioToggle({ block }: { block: ScenarioToggleBlock }
             onClick={() => setActive(i)}
             className="px-5 py-2 rounded-full font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-[0.08em] transition-all duration-300 cursor-pointer"
             style={{
-              border: `1px solid ${active === i ? SCENARIO_COLORS[i] : 'var(--color-line, #1a2830)'}`,
-              color: active === i ? SCENARIO_COLORS[i] : 'var(--color-muted)',
-              background: active === i ? `${SCENARIO_COLORS[i]}15` : 'transparent',
+              border: `1px solid ${active === i ? scenarioColors[i] : 'var(--color-line, #1a2830)'}`,
+              color: active === i ? scenarioColors[i] : 'var(--color-muted)',
+              background: active === i ? `${scenarioColors[i]}15` : 'transparent',
             }}
           >
             {label}

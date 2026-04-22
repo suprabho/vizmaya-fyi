@@ -12,7 +12,8 @@ const TITLES: Record<number, string> = {
 }
 
 export default function LNGCarrierTreemap({ activeStep }: { activeStep: number }) {
-  const { teal: TEAL, accent2: ACCENT2, accent: ACCENT, muted: MUTED } = useChartColors()
+  const chart = useChartColors()
+  const { teal: TEAL, accent2: ACCENT2, accent: ACCENT, muted: MUTED } = chart
   const mobile = useIsMobile()
 
   const carriers = [
@@ -39,13 +40,13 @@ export default function LNGCarrierTreemap({ activeStep }: { activeStep: number }
       formatter: `{name|${d.name}}\n{pct|${d.value}%}`,
       rich: {
         name: {
-          color: d.color === MUTED ? '#8a9a9f' : '#fff',
+          color: d.color === MUTED ? chart.chromeTextDim : '#fff',
           fontFamily: 'var(--font-sans)',
           fontSize: mobile ? 8 : 10,
           lineHeight: mobile ? 12 : 15,
         },
         pct: {
-          color: d.color === MUTED ? '#8a9a9f' : '#fff',
+          color: d.color === MUTED ? chart.chromeTextDim : '#fff',
           fontFamily: 'var(--font-mono)',
           fontWeight: 700,
           fontSize: mobile ? 11 : 14,
@@ -100,9 +101,9 @@ export default function LNGCarrierTreemap({ activeStep }: { activeStep: number }
     ],
     tooltip: {
       show: true,
-      backgroundColor: '#111820',
-      borderColor: '#1a2830',
-      textStyle: { color: '#e0ddd5', fontFamily: 'var(--font-mono)', fontSize: 11 },
+      backgroundColor: chart.chromeBg,
+      borderColor: chart.line,
+      textStyle: { color: chart.chromeText, fontFamily: 'var(--font-mono)', fontSize: 11 },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formatter: (params: any) => {
         const c = carriers.find(x => x.name === params.name)
@@ -122,7 +123,7 @@ export default function LNGCarrierTreemap({ activeStep }: { activeStep: number }
       />
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Sources: BusinessKorea (248 vs 48 carrier deliveries, 2021-2025), VesselsValue ($71.3B orderbook).
       </div>

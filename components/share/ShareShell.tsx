@@ -173,7 +173,7 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
       style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
     >
       {/* Header */}
-      <div className="sticky top-0 z-30 backdrop-blur-md border-b" style={{ borderColor: 'var(--color-surface)', background: 'rgba(5,47,74,0.85)' }}>
+      <div className="sticky top-0 z-30 backdrop-blur-md border-b" style={{ borderColor: 'var(--color-surface)', background: 'rgb(var(--color-bg-rgb) / 0.85)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <a

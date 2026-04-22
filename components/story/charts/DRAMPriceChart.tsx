@@ -119,7 +119,7 @@ export default function DRAMPriceChart({ activeStep }: { activeStep: number }) {
       />
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Sources: TrendForce, Counterpoint, IDC, Gartner. Hormuz increment estimated from helium + energy pass-through.
       </div>

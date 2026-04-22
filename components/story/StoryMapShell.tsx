@@ -263,8 +263,8 @@ export default function StoryMapShell({
           <div
             className="w-full h-full max-w-[760px] [@media(min-aspect-ratio:1/1)]:max-w-none rounded-lg overflow-hidden flex items-center justify-center p-3 [@media(min-aspect-ratio:1/1)]:p-0"
             style={{
-              background: 'rgba(10, 14, 20, 0.2)',
-              border: '0.5px solid var(--color-line, #1a2830)',
+              background: 'rgb(var(--color-panel-rgb) / 0.2)',
+              border: '0.5px solid var(--color-line)',
             }}
           >
             <ChartPanel

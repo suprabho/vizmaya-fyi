@@ -45,7 +45,7 @@ export default function DataTable({ block }: { block: DataTableBlock }) {
                 fontFamily: 'var(--font-mono)',
                 fontSize: 11,
               },
-              splitLine: { lineStyle: { color: '#1a2830' } },
+              splitLine: { lineStyle: { color: 'var(--color-line)' } },
               axisLine: { show: false },
             },
             yAxis: {

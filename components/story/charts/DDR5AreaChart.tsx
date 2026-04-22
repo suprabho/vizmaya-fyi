@@ -232,7 +232,7 @@ export default function DDR5AreaChart({ activeStep }: { activeStep: number }) {
       />
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         DDR5 16Gb (2Gx8) spot. Sources: DRAMeXchange via Tom's Hardware, TrendForce, Accio. Projections: directional estimates only.
       </div>

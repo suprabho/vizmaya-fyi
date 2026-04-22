@@ -1,6 +1,5 @@
-import fs from 'fs'
-import path from 'path'
 import { parse as parseYaml } from 'yaml'
+import { getContentSource } from './contentSource'
 import type {
   StoryConfig,
   StoryDefaults,
@@ -21,8 +20,6 @@ export type {
   ShareSectionOverride,
 } from './storyConfig.types'
 
-const STORIES_DIR = path.join(process.cwd(), 'content/stories')
-
 const DEFAULTS: StoryDefaults = {
   mapStyle: 'mapbox://styles/mapbox/dark-v11',
   mapOpacity: 0.6,
@@ -32,18 +29,22 @@ const DEFAULTS: StoryDefaults = {
 }
 
 /**
- * Returns true if a sibling .config.yaml exists for the given slug.
+ * Returns true if a config exists for the given slug.
  */
-export function hasStoryConfig(slug: string): boolean {
-  return fs.existsSync(path.join(STORIES_DIR, `${slug}.config.yaml`))
+export async function hasStoryConfig(slug: string): Promise<boolean> {
+  const raw = await getContentSource().readConfigYaml(slug)
+  return raw != null
 }
 
 /**
  * Load and validate the YAML config for a story slug.
  * Throws if the file is missing, malformed, or missing required fields.
  */
-export function loadStoryConfig(slug: string): StoryConfig {
-  const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.config.yaml`), 'utf8')
+export async function loadStoryConfig(slug: string): Promise<StoryConfig> {
+  const file = await getContentSource().readConfigYaml(slug)
+  if (file == null) {
+    throw new Error(`Story config for ${slug} is missing`)
+  }
   const raw = parseYaml(file) as Partial<StoryConfig> | null
 
   if (!raw || typeof raw !== 'object') {
@@ -144,20 +145,20 @@ export function loadStoryConfig(slug: string): StoryConfig {
 }
 
 /**
- * Returns true if a sibling .share.yaml exists for the given slug.
+ * Returns true if share config exists for the given slug.
  */
-export function hasShareConfig(slug: string): boolean {
-  return fs.existsSync(path.join(STORIES_DIR, `${slug}.share.yaml`))
+export async function hasShareConfig(slug: string): Promise<boolean> {
+  const raw = await getContentSource().readShareYaml(slug)
+  return raw != null
 }
 
 /**
  * Load the share-mode YAML config for a story slug.
  * Returns null if no share config exists.
  */
-export function loadShareConfig(slug: string): ShareConfig | null {
-  const filePath = path.join(STORIES_DIR, `${slug}.share.yaml`)
-  if (!fs.existsSync(filePath)) return null
-  const file = fs.readFileSync(filePath, 'utf8')
+export async function loadShareConfig(slug: string): Promise<ShareConfig | null> {
+  const file = await getContentSource().readShareYaml(slug)
+  if (file == null) return null
   const raw = parseYaml(file) as Partial<ShareConfig> | null
   if (!raw || typeof raw !== 'object') return null
   return {

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { getContentSource } from '@/lib/contentSource'
 
-const STORIES_DIR = path.join(process.cwd(), 'content/stories')
 const SAFE_ID = /^[a-zA-Z0-9_-]+$/
 
 export async function GET(
@@ -11,22 +9,15 @@ export async function GET(
 ) {
   const { slug, id } = await params
 
-  // Defensive: the API reads straight from disk, so reject anything that
-  // could escape the charts directory (e.g. "../../.env").
+  // Slug/id format check is still useful: catches bad client requests early
+  // and keeps fs-mode safe from path traversal when CONTENT_SOURCE=fs.
   if (!SAFE_ID.test(slug) || !SAFE_ID.test(id)) {
     return NextResponse.json({ error: 'invalid slug or id' }, { status: 400 })
   }
 
-  const filePath = path.join(STORIES_DIR, slug, 'charts', `${id}.json`)
-  if (!fs.existsSync(filePath)) {
+  const data = await getContentSource().readChart(slug, id)
+  if (data == null) {
     return NextResponse.json({ error: 'chart not found' }, { status: 404 })
   }
-
-  const raw = fs.readFileSync(filePath, 'utf8')
-  try {
-    const parsed = JSON.parse(raw)
-    return NextResponse.json(parsed)
-  } catch {
-    return NextResponse.json({ error: 'invalid JSON' }, { status: 500 })
-  }
+  return NextResponse.json(data)
 }

@@ -13,15 +13,17 @@ interface RouteParams {
 }
 
 export async function generateStaticParams() {
-  return getViewableStorySlugs()
-    .filter((slug) => hasStoryConfig(slug))
-    .map((slug) => ({ slug }))
+  const slugs = await getViewableStorySlugs()
+  const withConfig = await Promise.all(
+    slugs.map(async (slug) => ((await hasStoryConfig(slug)) ? slug : null))
+  )
+  return withConfig.filter((s): s is string => s !== null).map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
   const { slug } = await params
   try {
-    const { frontmatter } = getStoryContent(slug)
+    const { frontmatter } = await getStoryContent(slug)
     const title = `${frontmatter.title} — ${frontmatter.subtitle}`
     const url = `/story/${slug}`
 
@@ -58,9 +60,9 @@ export default async function StoryPage({ params }: RouteParams) {
   let story
   let config
   try {
-    story = getStoryContent(slug)
-    if (!hasStoryConfig(slug)) notFound()
-    config = loadStoryConfig(slug)
+    story = await getStoryContent(slug)
+    if (!(await hasStoryConfig(slug))) notFound()
+    config = await loadStoryConfig(slug)
   } catch {
     notFound()
   }

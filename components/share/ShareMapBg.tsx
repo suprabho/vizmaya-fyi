@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { MapPinConfig } from '@/lib/storyConfig.types'
+import type { MapPinConfig, MapPalette } from '@/lib/storyConfig.types'
 import type { MapRegionLayer, HeatmapLayer, MapStep } from '@/types/story'
 import MapboxBackground from '@/components/story/charts/MapboxBackground'
 
@@ -16,6 +16,8 @@ interface Props {
   regions?: MapRegionLayer
   heatmap?: HeatmapLayer
   onReady?: () => void
+  palette?: MapPalette
+  fontstack?: string[]
 }
 
 /**
@@ -43,6 +45,8 @@ export default function ShareMapBg({
   regions,
   heatmap,
   onReady,
+  palette,
+  fontstack,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -101,6 +105,8 @@ export default function ShareMapBg({
           interactive={false}
           staticCapture
           onReady={onReady}
+          palette={palette}
+          fontstack={fontstack}
         />
       )}
     </div>

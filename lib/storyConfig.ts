@@ -15,6 +15,7 @@ export type {
   StorySubsectionConfig,
   MapPinConfig,
   MapOverrides,
+  MapPalette,
   ResolvedUnit,
   ShareConfig,
   ShareSectionOverride,

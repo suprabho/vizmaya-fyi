@@ -9,6 +9,8 @@ import type {
   MapRegionLayer,
   HeatmapLayer,
 } from '@/types/story'
+import type { MapPalette } from '@/lib/storyConfig.types'
+import { applyMapPalette, applyMapFontstack } from '@/lib/applyMapPalette'
 
 export type { MapStep, MapPin }
 
@@ -65,6 +67,13 @@ interface MapboxBackgroundProps {
    * don't rasterize a half-built map.
    */
   onReady?: () => void
+  /**
+   * Optional per-story color overrides applied to the base style on load.
+   * See `lib/applyMapPalette.ts` for the supported keys.
+   */
+  palette?: MapPalette
+  /** Optional fontstack applied to every text layer (must exist on the style's glyphs). */
+  fontstack?: string[]
 }
 
 const DEFAULT_STYLE = 'mapbox://styles/mapbox/dark-v11'
@@ -438,6 +447,8 @@ export default function MapboxBackground({
   portraitFocusArea,
   staticCapture = false,
   onReady,
+  palette,
+  fontstack,
 }: MapboxBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -483,6 +494,11 @@ export default function MapboxBackground({
     }
 
     map.on('load', () => {
+      // Per-story palette + fontstack overrides. Run BEFORE the highlight
+      // block so the highlight fill color wins on top of any new label color.
+      if (palette) applyMapPalette(map, palette)
+      if (fontstack && fontstack.length > 0) applyMapFontstack(map, fontstack)
+
       // Highlight a single country (e.g. South Korea) using Mapbox's
       // country-boundaries-v1 vector tileset. Inserted beneath the first
       // label layer so country/place labels stay readable on top.

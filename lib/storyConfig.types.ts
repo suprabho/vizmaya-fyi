@@ -3,6 +3,32 @@
 
 import type { MapRegionLayer, HeatmapLayer } from '@/types/story'
 
+/**
+ * Semantic color overrides applied on top of the base Mapbox style at runtime.
+ * Each field maps to a group of layers in the style (by id pattern + type),
+ * so you can restyle a stock Mapbox template to match the story's palette
+ * without forking the style in Studio.
+ *
+ * Every field is optional — unset fields keep the base style's value.
+ * Colors must be concrete (hex, rgb, hsl) — Mapbox doesn't accept CSS vars.
+ */
+export interface MapPalette {
+  /** Base map background color — applies to `background` + `land` layers. */
+  land?: string
+  /** Water fill color — applies to `water`, `water-shadow`, `waterway-*` fills. */
+  water?: string
+  /** Country/state border line color — applies to `admin-*-boundary[-bg]` lines. */
+  border?: string
+  /** Text fill for every symbol layer with a `text-field`. */
+  labelText?: string
+  /** Text halo (outline) for every symbol layer with a `text-field`. */
+  labelHalo?: string
+  /** Road line color — applies to `road-*`, `tunnel-*`, `bridge-*` (non-label) lines. */
+  road?: string
+  /** 3D/2D building fill color. */
+  building?: string
+}
+
 export interface StoryDefaults {
   mapStyle: string
   mapOpacity: number
@@ -13,6 +39,14 @@ export interface StoryDefaults {
   highlightCountry?: string
   /** Override color for the country highlight. Defaults to pinColor. */
   highlightColor?: string
+  /** Per-story semantic color overrides applied to the base Mapbox style. */
+  mapPalette?: MapPalette
+  /**
+   * Optional Mapbox fontstack to apply to every text layer. Must reference
+   * fonts that exist on the `glyphs:` URL of the active style (i.e. uploaded
+   * to Mapbox Studio under your account, e.g. `["Vizmaya Serif Regular"]`).
+   */
+  mapFontstack?: string[]
 }
 
 export interface MapPinConfig {

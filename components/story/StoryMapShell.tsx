@@ -229,6 +229,8 @@ export default function StoryMapShell({
           defaultOpacity={defaults.mapOpacity}
           highlightCountry={defaults.highlightCountry}
           highlightColor={defaults.highlightColor}
+          palette={defaults.mapPalette}
+          fontstack={defaults.mapFontstack}
           landscapeFocusArea={{ top: 0.4, left: 0, width: 0.37, height: 0.6 }}
           portraitFocusArea={{ top: 0.05, left: 0, width: 1.0, height: 0.45 }}
         />

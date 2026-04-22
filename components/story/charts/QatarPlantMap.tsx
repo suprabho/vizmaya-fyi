@@ -222,7 +222,7 @@ export default function QatarPlantMap({ activeStep }: { activeStep: number }) {
 
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Sources: USGS 2026 Mineral Commodity Summaries (33.2% of global supply). Plant data: Gasworld, Helium One.
       </div>

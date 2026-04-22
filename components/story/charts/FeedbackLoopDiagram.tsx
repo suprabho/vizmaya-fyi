@@ -175,7 +175,7 @@ export default function FeedbackLoopDiagram({ activeStep }: { activeStep: number
       </svg>
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Feedback loop model. Circuit breakers shown in green. Positive feedback in red.
       </div>

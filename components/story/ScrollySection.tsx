@@ -89,8 +89,8 @@ export default function ScrollySection({ block }: { block: ScrollySectionBlock }
             <div
               className="scrolly-card rounded-lg p-6 backdrop-blur-sm transition-all duration-500"
               style={{
-                background: 'rgba(10, 14, 20, 0.92)',
-                border: '0.5px solid var(--color-line, #1a2830)',
+                background: 'rgb(var(--color-panel-rgb) / 0.92)',
+                border: '0.5px solid var(--color-line)',
                 opacity: i === activeStep ? 1 : 0.4,
                 transform: i === activeStep ? 'translateY(0)' : 'translateY(10px)',
               }}

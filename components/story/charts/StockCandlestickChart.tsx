@@ -437,7 +437,7 @@ export default function StockCandlestickChart({ activeStep }: { activeStep: numb
       />
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         KOSPI index, rebased to 100 at pre-crisis peak. Sources: AInvest, Bitget News, Bloomberg.
       </div>

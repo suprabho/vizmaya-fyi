@@ -13,7 +13,8 @@ const TITLES: Record<number, string> = {
 }
 
 export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
-  const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, muted: MUTED } = useChartColors()
+  const chart = useChartColors()
+  const { accent: ACCENT, accent2: ACCENT2, teal: TEAL, muted: MUTED } = chart
   const mobile = useIsMobile()
 
   const hbmData = [
@@ -49,7 +50,7 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
           lineHeight: mobile ? 13 : 16,
         },
         pct: {
-          color: d.color === MUTED ? '#8a9a9f' : '#fff',
+          color: d.color === MUTED ? chart.chromeTextDim : '#fff',
           fontFamily: 'var(--font-mono)',
           fontWeight: 700,
           fontSize: mobile ? 11 : 14,
@@ -104,9 +105,9 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
     ],
     tooltip: {
       show: true,
-      backgroundColor: '#111820',
-      borderColor: '#1a2830',
-      textStyle: { color: '#e0ddd5', fontFamily: 'var(--font-mono)', fontSize: 11 },
+      backgroundColor: chart.chromeBg,
+      borderColor: chart.line,
+      textStyle: { color: chart.chromeText, fontFamily: 'var(--font-mono)', fontSize: 11 },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formatter: (params: any) =>
         `${String(params.name).replace(/\n/g, ' ')}: <strong>${params.value}%</strong>`,
@@ -124,7 +125,7 @@ export default function HBMDRAMTreemap({ activeStep }: { activeStep: number }) {
       />
       <div
         className="text-center mt-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Sources: Counterpoint Research (HBM Q2 2025), TrendForce, IDC. DRAM shares are 2026 estimates.
       </div>

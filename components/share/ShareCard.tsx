@@ -184,7 +184,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
         width: w,
         height: h,
         pixelRatio,
-        backgroundColor: getComputedStyle(node).getPropertyValue('--color-bg').trim() || '#052f4a',
+        backgroundColor: getComputedStyle(node).getPropertyValue('--color-bg').trim() || '#0a0e14',
         filter: (el) => {
           // Hide download buttons during capture
           if (el instanceof HTMLElement && el.dataset.shareUi === 'true') return false

@@ -13,7 +13,8 @@ const TITLES: Record<number, string> = {
 }
 
 export default function PolarExposureChart({ activeStep }: { activeStep: number }) {
-  const { accent: ACCENT, accent2: ACCENT2, green: HELIUM, muted: MUTED, line: LINE, surface: SURFACE } = useChartColors()
+  const chart = useChartColors()
+  const { accent: ACCENT, accent2: ACCENT2, green: HELIUM, muted: MUTED, line: LINE, surface: SURFACE } = chart
   const mobile = useIsMobile()
 
   const exposures = [
@@ -51,7 +52,7 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
       axisLine: { lineStyle: { color: LINE } },
       axisTick: { show: false },
       axisLabel: {
-        color: '#e0ddd5',
+        color: chart.chromeText,
         fontFamily: 'var(--font-sans)',
         fontSize: mobile ? 10 : 13,
         fontWeight: 600,
@@ -96,9 +97,9 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
     tooltip: {
       show: true,
       backgroundColor: SURFACE,
-      borderColor: '#1a2830',
+      borderColor: LINE,
       borderWidth: 1,
-      textStyle: { color: '#e0ddd5', fontFamily: 'var(--font-mono)', fontSize: 11 },
+      textStyle: { color: chart.chromeText, fontFamily: 'var(--font-mono)', fontSize: 11 },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formatter: (params: any) => {
         const e = exposures[params.dataIndex]
@@ -118,7 +119,7 @@ export default function PolarExposureChart({ activeStep }: { activeStep: number 
       />
       <div
         className="text-center mt-1 pb-1 shrink-0"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: '#3a4a50' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--color-chrome-text-muted)' }}
       >
         Sources: KITA (helium 64.7%), Carnegie Endowment (oil 70%), IEEFA (gas 26%).
       </div>

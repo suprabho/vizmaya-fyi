@@ -83,8 +83,8 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
   ].join(' ')
 
   const cardStyle = {
-    background: 'rgba(10, 14, 20, 0.2)',
-    border: '0.5px solid var(--color-line, #1a2830)',
+    background: 'rgb(var(--color-panel-rgb) / 0.2)',
+    border: '0.5px solid var(--color-line)',
   }
 
   // Hero splits into two snap sections on portrait (mobile).

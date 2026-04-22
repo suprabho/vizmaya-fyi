@@ -24,6 +24,13 @@ export const defaultChartColors = {
   muted: '#aca286',
   line: '#1a2830',
   surface: '#023555',
+  // Chart chrome — tooltip surface, label text, dimmed text (treemap tiles
+  // that aren't highlighted), and muted caption text. Separate from the
+  // palette so stories can later retheme chart UI without touching brand colors.
+  chromeBg: '#111820',
+  chromeText: '#e0ddd5',
+  chromeTextDim: '#8a9a9f',
+  chromeTextMuted: '#3a4a50',
 } as const
 
 export type ChartColors = { -readonly [K in keyof typeof defaultChartColors]: string }
@@ -98,5 +105,9 @@ export function themeToChartColors(theme: Theme): ChartColors {
     muted: theme.colors.muted,
     line: theme.colors.line ?? defaultChartColors.line,
     surface: theme.colors.surface,
+    chromeBg: defaultChartColors.chromeBg,
+    chromeText: defaultChartColors.chromeText,
+    chromeTextDim: defaultChartColors.chromeTextDim,
+    chromeTextMuted: defaultChartColors.chromeTextMuted,
   }
 }

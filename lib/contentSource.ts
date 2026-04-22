@@ -30,6 +30,13 @@ export interface ContentSource {
   readConfigYaml(slug: string): Promise<string | null>
   readShareYaml(slug: string): Promise<string | null>
   readChart(slug: string, chartId: string): Promise<unknown | null>
+
+  /** Write methods for the admin editor. Callers are responsible for auth. */
+  writeMarkdown(slug: string, raw: string): Promise<void>
+  writeConfigYaml(slug: string, raw: string | null): Promise<void>
+  writeShareYaml(slug: string, raw: string | null): Promise<void>
+  writeChart(slug: string, chartId: string, data: unknown): Promise<void>
+  listChartIds(slug: string): Promise<string[]>
 }
 
 // ---------------------------------------------------------------------------
@@ -76,6 +83,39 @@ const fsSource: ContentSource = {
     } catch {
       return null
     }
+  },
+  async writeMarkdown(slug, raw) {
+    fs.mkdirSync(STORIES_DIR, { recursive: true })
+    fs.writeFileSync(path.join(STORIES_DIR, `${slug}.md`), raw, 'utf8')
+  },
+  async writeConfigYaml(slug, raw) {
+    const p = path.join(STORIES_DIR, `${slug}.config.yaml`)
+    if (raw == null) {
+      if (fs.existsSync(p)) fs.unlinkSync(p)
+      return
+    }
+    fs.writeFileSync(p, raw, 'utf8')
+  },
+  async writeShareYaml(slug, raw) {
+    const p = path.join(STORIES_DIR, `${slug}.share.yaml`)
+    if (raw == null) {
+      if (fs.existsSync(p)) fs.unlinkSync(p)
+      return
+    }
+    fs.writeFileSync(p, raw, 'utf8')
+  },
+  async writeChart(slug, chartId, data) {
+    const dir = path.join(STORIES_DIR, slug, 'charts')
+    fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(path.join(dir, `${chartId}.json`), JSON.stringify(data, null, 2) + '\n', 'utf8')
+  },
+  async listChartIds(slug) {
+    const dir = path.join(STORIES_DIR, slug, 'charts')
+    if (!fs.existsSync(dir)) return []
+    return fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace(/\.json$/, ''))
   },
 }
 
@@ -131,6 +171,63 @@ const dbSource: ContentSource = {
       .maybeSingle()
     if (error) throw new Error(`readChart ${slug}/${chartId}: ${error.message}`)
     return data?.data ?? null
+  },
+  async writeMarkdown(slug, raw) {
+    // Parse frontmatter so the denormalized title/status/listed columns stay
+    // in sync with the body — the admin editor may edit frontmatter inline.
+    const { default: matter } = await import('gray-matter')
+    const { data } = matter(raw)
+    const title = (data.title as string | undefined) ?? slug
+    const status = ((data.status as string | undefined) ?? 'published') as StoryStatus
+    const listed = data.listed !== false
+    const sb = createServiceClient()
+    const { error } = await sb.from('stories').upsert(
+      {
+        slug,
+        title,
+        status,
+        listed,
+        markdown: raw,
+        updated_at: new Date().toISOString(),
+        published_at: status === 'published' ? new Date().toISOString() : null,
+      },
+      { onConflict: 'slug' }
+    )
+    if (error) throw new Error(`writeMarkdown ${slug}: ${error.message}`)
+  },
+  async writeConfigYaml(slug, raw) {
+    const sb = createServiceClient()
+    const { error } = await sb
+      .from('stories')
+      .update({ config_yaml: raw, updated_at: new Date().toISOString() })
+      .eq('slug', slug)
+    if (error) throw new Error(`writeConfigYaml ${slug}: ${error.message}`)
+  },
+  async writeShareYaml(slug, raw) {
+    const sb = createServiceClient()
+    const { error } = await sb
+      .from('stories')
+      .update({ share_yaml: raw, updated_at: new Date().toISOString() })
+      .eq('slug', slug)
+    if (error) throw new Error(`writeShareYaml ${slug}: ${error.message}`)
+  },
+  async writeChart(slug, chartId, data) {
+    const sb = createServiceClient()
+    const { error } = await sb
+      .from('chart_data')
+      .upsert({ slug, chart_id: chartId, data, updated_at: new Date().toISOString() }, {
+        onConflict: 'slug,chart_id',
+      })
+    if (error) throw new Error(`writeChart ${slug}/${chartId}: ${error.message}`)
+  },
+  async listChartIds(slug) {
+    const sb = createServiceClient()
+    const { data, error } = await sb
+      .from('chart_data')
+      .select('chart_id')
+      .eq('slug', slug)
+    if (error) throw new Error(`listChartIds ${slug}: ${error.message}`)
+    return (data ?? []).map((r) => r.chart_id as string)
   },
 }
 

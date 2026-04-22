@@ -165,6 +165,27 @@ export default function StoryMapShell({
   const activeSub = current?.subIndex ?? 0
   const currentChartId = current?.parentConfig.chart
 
+  // On portrait, a subsection split into multiple slices via `mobileParagraphs`
+  // produces consecutive units that share the same (parentIndex, subIndex).
+  // For those multi-slice groups we hide the chart on the first slice — the
+  // viewer sees only the map and the first paragraph, then the chart animates
+  // in on the second slice alongside the second paragraph.
+  const isFirstOfMultiSlice = (() => {
+    if (!isPortrait || !current) return false
+    const next = units[activeUnit + 1]
+    const prev = units[activeUnit - 1]
+    const sharesNext =
+      !!next &&
+      next.parentIndex === current.parentIndex &&
+      next.subIndex === current.subIndex
+    const sharesPrev =
+      !!prev &&
+      prev.parentIndex === current.parentIndex &&
+      prev.subIndex === current.subIndex
+    return sharesNext && !sharesPrev
+  })()
+  const showChart = !!currentChartId && !isFirstOfMultiSlice
+
   // Single IntersectionObserver across every unit element.
   useEffect(() => {
     const root = containerRef.current
@@ -220,7 +241,7 @@ export default function StoryMapShell({
           Portrait: top-pinned, ~42vh tall, full width.
           Landscape: pinned to the top-right 63% column, top half of viewport
           — text card stacks directly beneath in the bottom half. */}
-      {currentChartId && (
+      {showChart && (
         <div
           className="
             fixed pointer-events-none z-10
@@ -261,7 +282,7 @@ export default function StoryMapShell({
       >
         {units.map((unit, i) => (
           <MapStorySection
-            key={`${unit.parentIndex}-${unit.subIndex}`}
+            key={`${unit.parentIndex}-${unit.subIndex}-${i}`}
             unitIndex={i}
             unit={unit}
           />

@@ -1,9 +1,6 @@
-import fs from 'fs'
-import path from 'path'
 import matter from 'gray-matter'
 import { Frontmatter } from '@/types/story'
-
-const STORIES_DIR = path.join(process.cwd(), 'content/stories')
+import { getContentSource } from './contentSource'
 
 export interface ContentSection {
   heading: string
@@ -44,9 +41,10 @@ export function isListed(fm: Pick<Frontmatter, 'status' | 'listed'>): boolean {
  * Throws for drafts in production so the story route renders a 404 rather than
  * leaking unfinished work.
  */
-export function getStoryContent(slug: string): StoryContent {
-  const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
-  const { data, content } = matter(file)
+export async function getStoryContent(slug: string): Promise<StoryContent> {
+  const raw = await getContentSource().readMarkdown(slug)
+  if (raw == null) throw new Error(`Story "${slug}" not found`)
+  const { data, content } = matter(raw)
 
   const frontmatter = data as Frontmatter
   if (!isViewable(frontmatter)) {
@@ -156,38 +154,37 @@ export function parseBoldItems(body: string[]): { label: string; content: string
 }
 
 /**
- * Get all story slugs from the content directory.
+ * Get all story slugs, regardless of status. Most callers want
+ * getViewableStorySlugs() or getAllStories() instead.
  */
-export function getAllStorySlugs(): string[] {
-  return fs
-    .readdirSync(STORIES_DIR)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => f.replace(/\.md$/, ''))
+export async function getAllStorySlugs(): Promise<string[]> {
+  const stories = await getContentSource().listStories()
+  return stories.map((s) => s.slug)
 }
 
 /**
  * Get summary info for stories shown on the home grid. Filters out drafts,
  * archived stories, and anything explicitly marked `listed: false`.
  */
-export function getAllStories() {
-  return getAllStorySlugs()
-    .map((slug) => {
-      const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
-      const { data } = matter(file)
-      return { slug, frontmatter: data as Frontmatter }
+export async function getAllStories() {
+  const metas = await getContentSource().listStories()
+  const listed = metas.filter((m) => isListed({ status: m.status, listed: m.listed }))
+  const results = await Promise.all(
+    listed.map(async ({ slug }) => {
+      const raw = await getContentSource().readMarkdown(slug)
+      if (!raw) return null
+      const { data } = matter(raw)
+      return { slug, ...(data as Frontmatter) }
     })
-    .filter(({ frontmatter }) => isListed(frontmatter))
-    .map(({ slug, frontmatter }) => ({ slug, ...frontmatter }))
+  )
+  return results.filter((r): r is NonNullable<typeof r> => r !== null)
 }
 
 /**
  * Slugs whose story page should render (i.e. not a draft in production).
  * Used by generateStaticParams so drafts don't get pre-rendered on deploy.
  */
-export function getViewableStorySlugs(): string[] {
-  return getAllStorySlugs().filter((slug) => {
-    const file = fs.readFileSync(path.join(STORIES_DIR, `${slug}.md`), 'utf8')
-    const { data } = matter(file)
-    return isViewable(data as Frontmatter)
-  })
+export async function getViewableStorySlugs(): Promise<string[]> {
+  const metas = await getContentSource().listStories()
+  return metas.filter((m) => isViewable({ status: m.status })).map((m) => m.slug)
 }

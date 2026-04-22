@@ -9,6 +9,7 @@
     "lint": "eslint",
     "generate-audio": "npx tsx scripts/generate-audio.ts",
     "ingest": "npx tsx scripts/ingest-source.ts",
+    "migrate-content": "npx tsx scripts/migrate-content-to-db.ts",
     "epstein:crawl": "npx tsx scripts/epstein/crawl.ts",
     "epstein:ingest": "npx tsx scripts/epstein/ingest.ts",
     "epstein:ner": "npx tsx scripts/epstein/ner.ts",

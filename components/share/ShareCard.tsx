@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import { toPng } from 'html-to-image'
-import type { ResolvedUnit, MapPinConfig, ShareSectionOverride } from '@/lib/storyConfig.types'
+import type { ResolvedUnit, MapPinConfig, MapPalette, ShareSectionOverride } from '@/lib/storyConfig.types'
 import type { AspectRatio } from './AspectRatioToggle'
 import ShareTextCard from './ShareTextCard'
 import ShareStatCard from './ShareStatCard'
@@ -49,6 +49,10 @@ interface Props {
   variant?: CardVariant
   /** Per-section overrides from share config */
   shareOverride?: ShareSectionOverride
+  /** Story-wide map palette (forwarded to the share map background). */
+  palette?: MapPalette
+  /** Story-wide Mapbox fontstack. */
+  fontstack?: string[]
 }
 
 export interface ShareCardHandle {
@@ -67,7 +71,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, maxSubIndex, variant = 'auto', shareOverride },
+  { unit, index, ratio, slug, title, accessToken, maxSubIndex, variant = 'auto', shareOverride, palette, fontstack },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -229,6 +233,8 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
               regions={mapRegions}
               heatmap={mapHeatmap}
               onReady={handleMapReady}
+              palette={palette}
+              fontstack={fontstack}
             />
           )}
 

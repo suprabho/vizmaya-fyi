@@ -223,6 +223,8 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
               maxSubIndex={maxSubIndices.get(card.unit.parentIndex) ?? 0}
               variant={card.variant}
               shareOverride={card.unit.parentConfig.id ? shareOverrides?.[card.unit.parentConfig.id] : undefined}
+              palette={config.defaults.mapPalette}
+              fontstack={config.defaults.mapFontstack}
             />
           ))}
         </div>

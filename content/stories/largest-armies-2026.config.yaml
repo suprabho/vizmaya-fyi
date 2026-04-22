@@ -28,6 +28,14 @@ defaults:
   pinColor: "#c9302c"
   pinRadius: 12
   flySpeed: 1.2
+  # Demo palette — restyles the stock dark-v11 at runtime to match the story's
+  # tone. Every field is optional; unset fields keep the base Mapbox colors.
+  mapPalette:
+    land: "#0b0f14"
+    water: "#0f1a22"
+    border: "#4a2a2a"
+    labelText: "#d8cfc2"
+    labelHalo: "#0b0f14"
 
 sections:
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
+import { themeToMapPalette } from '@/lib/themeToMapPalette'
 import ThemeProvider from '@/components/story/ThemeProvider'
 import StoryMapShell from '@/components/story/StoryMapShell'
 import VizmayaLogo from '@/components/VizmayaLogo'
@@ -73,6 +74,12 @@ export default async function StoryPage({ params }: RouteParams) {
     config
   )
 
+  const defaults = {
+    ...config.defaults,
+    mapPalette:
+      config.defaults.mapPalette ?? themeToMapPalette(story.frontmatter.theme),
+  }
+
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
       <Link
@@ -86,7 +93,7 @@ export default async function StoryPage({ params }: RouteParams) {
         units={units}
         mobileUnits={hasMobileOverrides ? mobileUnits : undefined}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
-        defaults={config.defaults}
+        defaults={defaults}
         slug={slug}
       />
     </ThemeProvider>

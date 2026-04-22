@@ -70,9 +70,14 @@ function buildCardList(
     const hasChart = !!unit.parentConfig.chart
     const shareOverride = sectionId ? overrides?.[sectionId] : undefined
 
-    // 1. Map + Heading — one per parent section (dedup subsections)
-    if (!seenParentsForMap.has(unit.parentIndex)) {
-      seenParentsForMap.add(unit.parentIndex)
+    // 1. Map + Heading — emitted for the first unit of each parent (using
+    // the parent map view) AND for any subsequent subsection that defines
+    // its own `map` override (zoomed-in subsection view).
+    const subsectionConfig = unit.parentConfig.subsections?.[unit.subIndex]
+    const hasSubsectionMap = !!subsectionConfig?.map
+    const isFirstForParent = !seenParentsForMap.has(unit.parentIndex)
+    if (isFirstForParent || hasSubsectionMap) {
+      if (isFirstForParent) seenParentsForMap.add(unit.parentIndex)
       cards.push({ unit, variant: 'map-title', label: 'map-title' })
     }
 

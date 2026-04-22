@@ -100,20 +100,26 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   // Only show map bg on hero cards and map-title variant
   const showMap = !!parentConfig.map?.center && (kind === 'hero' || isMapTitle)
 
-  // Resolve map properties — share override > parent config
-  const mapCenter = shareOverride?.map?.center ?? parentConfig.map?.center
-  const mapZoom = shareOverride?.map?.zoom ?? parentConfig.map?.zoom
-  const mapPitch = shareOverride?.map?.pitch ?? parentConfig.map?.pitch
-  const mapBearing = shareOverride?.map?.bearing ?? parentConfig.map?.bearing
-  // Regions and heatmap aren't overridable per-section in share config yet,
-  // so just pull from the parent section's map config.
-  const mapRegions = parentConfig.map?.regions
-  const mapHeatmap = parentConfig.map?.heatmap
+  // Resolve map properties — share override > subsection override > parent config.
+  // The subsection override only applies when this card represents a specific
+  // subsection (i.e. the unit has a subIndex pointing at a configured subsection).
+  const subsectionMap = parentConfig.subsections?.[unit.subIndex]?.map
+  const mapCenter = shareOverride?.map?.center ?? subsectionMap?.center ?? parentConfig.map?.center
+  const mapZoom = shareOverride?.map?.zoom ?? subsectionMap?.zoom ?? parentConfig.map?.zoom
+  const mapPitch = shareOverride?.map?.pitch ?? subsectionMap?.pitch ?? parentConfig.map?.pitch
+  const mapBearing = shareOverride?.map?.bearing ?? subsectionMap?.bearing ?? parentConfig.map?.bearing
+  // Regions and heatmap: subsection replaces parent (if defined), else fall back.
+  const mapRegions = subsectionMap?.regions ?? parentConfig.map?.regions
+  const mapHeatmap = subsectionMap?.heatmap ?? parentConfig.map?.heatmap
 
-  // Collect all pins for this section: share override pins (if set, replaces all),
-  // otherwise parent pins + all subsection pins
+  // Collect pins for this card:
+  //   • share override pins (if set, replaces all)
+  //   • else if this is a subsection map card with its own pins, use just those
+  //     (the subsection is a zoomed-in scoped view)
+  //   • else union of parent pins + all subsection pins (the parent overview card)
   const allPins = useMemo(() => {
     if (shareOverride?.map?.pins) return shareOverride.map.pins
+    if (subsectionMap?.pins) return subsectionMap.pins
 
     const pins: MapPinConfig[] = []
     if (parentConfig.map?.pins) pins.push(...parentConfig.map.pins)
@@ -130,7 +136,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
       seen.add(key)
       return true
     })
-  }, [parentConfig, shareOverride])
+  }, [parentConfig, shareOverride, subsectionMap])
 
   const capture = useCallback(async (): Promise<string | null> => {
     const node = captureRef.current

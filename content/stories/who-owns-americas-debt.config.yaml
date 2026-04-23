@@ -25,21 +25,6 @@ defaults:
 sections:
 
   # ═══════════════════════════════════════════════
-  # HERO
-  # ═══════════════════════════════════════════════
-
-  - id: hero
-    kind: hero
-    text: "Who Owns America's $39 Trillion Debt?"
-    eyebrow: "Economics · April 2026"
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.35
-
-  # ═══════════════════════════════════════════════
   # OPENING STAT — $39T
   # ═══════════════════════════════════════════════
 
@@ -74,7 +59,6 @@ sections:
 
   - id: public-debt
     text: "The Domestic Majority"
-    chart: data:debt-breakdown
     mobileParagraphs:
       - [0, 2]
       - [2, 4]
@@ -92,7 +76,6 @@ sections:
   - id: pension-funds
     kind: stat
     text: "$6.6 Trillion"
-    chart: data:domestic-holders
     mobileParagraphs:
       - [0, 2]
       - [2, 3]
@@ -126,7 +109,6 @@ sections:
 
   - id: foreign-debt
     text: "$9.3 Trillion from Foreigners"
-    chart: data:foreign-holders
     mobileParagraphs:
       - [0, 1]
       - [1, 3]

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig, loadShareConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
+import { getFontImportUrl } from '@/lib/getFontImports'
 import ThemeProvider from '@/components/story/ThemeProvider'
 import ShareShell from '@/components/share/ShareShell'
 
@@ -34,9 +35,17 @@ export default async function SharePage({ params }: RouteParams) {
 
   const { units, shareUnits, hasShareOverrides } = resolveUnits(slug, story.sections, config)
   const shareConfig = await loadShareConfig(slug)
+  const fontImportUrl = getFontImportUrl(story.frontmatter.theme.fonts)
 
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
+      {fontImportUrl && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link href={fontImportUrl} rel="stylesheet" />
+        </>
+      )}
       <ShareShell
         slug={slug}
         units={hasShareOverrides ? shareUnits : units}

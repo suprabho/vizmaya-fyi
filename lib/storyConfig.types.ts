@@ -4,12 +4,26 @@
 import type { MapRegionLayer, HeatmapLayer } from '@/types/story'
 
 /**
+ * Per-category show/hide/recolor override.
+ *
+ *   undefined | false → hide the category (Mapbox `visibility: none`)
+ *   true              → show using the base style's own color
+ *   string            → show, overriding the color with this value
+ *
+ * Used for label and road categories that are hidden by default to keep the
+ * background map quiet underneath the story. A per-story config can opt
+ * specific categories back in.
+ */
+export type LayerOverride = boolean | string
+
+/**
  * Semantic color overrides applied on top of the base Mapbox style at runtime.
  * Each field maps to a group of layers in the style (by id pattern + type),
  * so you can restyle a stock Mapbox template to match the story's palette
  * without forking the style in Studio.
  *
- * Every field is optional — unset fields keep the base style's value.
+ * Color fields (land/water/etc) are optional — unset keeps the base style.
+ * Label and road category fields default to **hidden**; a value opts them in.
  * Colors must be concrete (hex, rgb, hsl) — Mapbox doesn't accept CSS vars.
  */
 export interface MapPalette {
@@ -19,14 +33,30 @@ export interface MapPalette {
   water?: string
   /** Country/state border line color — applies to `admin-*-boundary[-bg]` lines. */
   border?: string
-  /** Text fill for every symbol layer with a `text-field`. */
+  /** Text fill for every visible symbol layer with a `text-field`. */
   labelText?: string
-  /** Text halo (outline) for every symbol layer with a `text-field`. */
+  /** Text halo (outline) for every visible symbol layer with a `text-field`. */
   labelHalo?: string
-  /** Road line color — applies to `road-*`, `tunnel-*`, `bridge-*` (non-label) lines. */
-  road?: string
   /** 3D/2D building fill color. */
   building?: string
+
+  /** Country / state / settlement / place labels. Hidden by default. */
+  placeLabels?: LayerOverride
+  /** Road / street name labels. Hidden by default. */
+  roadLabels?: LayerOverride
+  /** Transit (bus / subway / rail) labels. Hidden by default. */
+  transitLabels?: LayerOverride
+  /** POI + airport labels. Hidden by default. */
+  poiLabels?: LayerOverride
+
+  /** Motorways / highways (road-motorway*, matching bridge/tunnel casings). Hidden by default. */
+  motorways?: LayerOverride
+  /** Trunk roads (road-trunk*). Hidden by default. */
+  trunkRoads?: LayerOverride
+  /** Other roads: primary/secondary/tertiary/minor/street/service. Hidden by default. */
+  minorRoads?: LayerOverride
+  /** Pedestrian paths, footways, steps. Hidden by default. */
+  pedestrianPaths?: LayerOverride
 }
 
 export interface StoryDefaults {

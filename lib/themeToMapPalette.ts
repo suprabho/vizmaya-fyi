@@ -13,8 +13,12 @@ import type { MapPalette } from './storyConfig.types'
  *   border     ← muted
  *   labelText  ← text
  *   labelHalo  ← water tone  (halos melt into the map, text carries contrast)
- *   road       ← muted
  *   building   ← surface
+ *
+ * Road line layers and label categories (place/road/transit/poi) are not
+ * populated here — `applyMapPalette` hides them by default so the base map
+ * stays quiet. Stories that need roads or labels back set the category
+ * overrides explicitly in their config.
  *
  * Picking land/water by relative luminance (rather than aliasing
  * `surface` → land blindly) keeps the convention intact on light themes,
@@ -33,7 +37,6 @@ export function themeToMapPalette(theme: Theme): MapPalette {
     border: muted,
     labelText: text,
     labelHalo: water,
-    road: muted,
     building: surface,
   }
 }

@@ -89,7 +89,7 @@ export default async function StoryPage({ params }: RouteParams) {
         className="fixed top-4 left-4 z-50 w-80 h-16 bg-white/2 rounded-full backdrop-blur-3xl cursor-pointer"
         aria-label="Home"
       >
-        <VizmayaLogo className="w-full h-full" textColor="#ffffff" />
+        <VizmayaLogo className="w-full h-full" textColor={story.frontmatter.theme.colors.text} />
       </Link>
       <StoryMapShell
         units={units}

@@ -1,51 +1,41 @@
 const GOOGLE_FONTS_URL = 'https://fonts.googleapis.com/css2'
 
-const fontConfigs: Record<string, { family: string; weights: number[] }> = {
-  'Merriweather': { family: 'Merriweather', weights: [400, 700] },
-  'Lora': { family: 'Lora', weights: [400, 700] },
-  'Playfair Display': { family: 'Playfair Display', weights: [400, 700] },
-  'Georgia': { family: 'Georgia', weights: [] },
-  'Inter': { family: 'Inter', weights: [400, 500, 600, 700] },
-  'Space Mono': { family: 'Space Mono', weights: [400, 700] },
-  'JetBrains Mono': { family: 'JetBrains Mono', weights: [400, 500, 600, 700] },
-  'IBM Plex Mono': { family: 'IBM Plex Mono', weights: [400, 600] },
-  'Courier New': { family: 'Courier New', weights: [] },
+// System fonts that don't need a Google Fonts request
+const SYSTEM_FONTS = new Set(['Georgia', 'Courier New', 'Times New Roman', 'Arial', 'Helvetica', 'monospace', 'serif', 'sans-serif'])
+
+// Known fonts with non-default weight sets; any other Google Font falls back to [400, 700]
+const KNOWN_WEIGHTS: Record<string, number[]> = {
+  'Inter': [400, 500, 600, 700],
+  'JetBrains Mono': [400, 500, 600, 700],
+  'IBM Plex Mono': [400, 600],
+  'Space Mono': [400, 700],
+  'Instrument Serif': [400, 600],
+}
+
+const DEFAULT_WEIGHTS = [400, 700]
+
+function resolveFont(name: string): { family: string; weights: number[] } | null {
+  if (SYSTEM_FONTS.has(name)) return null
+  return { family: name, weights: KNOWN_WEIGHTS[name] ?? DEFAULT_WEIGHTS }
 }
 
 export function getFontImportUrl(fonts: { serif?: string; sans?: string; mono?: string }): string | null {
-  const fontsToLoad: Array<{ family: string; weights: number[] }> = []
+  const seen = new Map<string, number[]>()
 
-  if (fonts.serif && fonts.serif in fontConfigs) {
-    fontsToLoad.push(fontConfigs[fonts.serif])
-  }
-  if (fonts.sans && fonts.sans in fontConfigs) {
-    fontsToLoad.push(fontConfigs[fonts.sans])
-  }
-  if (fonts.mono && fonts.mono in fontConfigs) {
-    fontsToLoad.push(fontConfigs[fonts.mono])
+  for (const name of [fonts.serif, fonts.sans, fonts.mono]) {
+    if (!name) continue
+    const resolved = resolveFont(name)
+    if (resolved && !seen.has(resolved.family)) {
+      seen.set(resolved.family, resolved.weights)
+    }
   }
 
-  if (fontsToLoad.length === 0) return null
+  if (seen.size === 0) return null
 
-  // Deduplicate fonts by family name
-  const uniqueFonts = Array.from(
-    new Map(fontsToLoad.map(f => [f.family, f])).values()
+  const families = Array.from(seen.entries()).map(
+    ([family, weights]) => `${family.replace(/ /g, '+')}:wght@${weights.join(';')}`
   )
 
-  // Build the family param with weights
-  const families = uniqueFonts
-    .filter(f => f.weights.length > 0) // Only include fonts with weights
-    .map(f => {
-      const weightStr = f.weights.join(';')
-      return `${f.family.replace(/ /g, '+')}:wght@${weightStr}`
-    })
-
-  if (families.length === 0) return null
-
-  const params = new URLSearchParams({
-    family: families.join('&family='),
-    display: 'swap',
-  })
-
+  const params = new URLSearchParams({ family: families.join('&family='), display: 'swap' })
   return `${GOOGLE_FONTS_URL}?${params.toString()}`
 }

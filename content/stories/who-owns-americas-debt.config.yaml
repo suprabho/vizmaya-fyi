@@ -1,13 +1,5 @@
 # Story config — who-owns-americas-debt
-#
-# Narrative beats tracing U.S. debt distribution from total debt through
-# domestic vs. foreign split, then breaking down domestic holders
-# (pension funds, Federal Reserve, banks, individuals) and foreign holders
-# (Japan, UK, China, other nations).
-#
-# The central visualization is a Sankey-style breakdown showing how the
-# $39T total splits into public debt ($31.4T) vs. intragovernmental ($7.6T),
-# then further splits into domestic holders and foreign creditors.
+# Minimal config for debugging
 
 defaults:
   mapStyle: mapbox://styles/mapbox/dark-v11
@@ -24,10 +16,6 @@ defaults:
 
 sections:
 
-  # ═══════════════════════════════════════════════
-  # OPENING STAT — $39T
-  # ═══════════════════════════════════════════════
-
   - id: total-debt
     kind: stat
     text: "$39 Trillion"
@@ -40,10 +28,6 @@ sections:
       pitch: 0
       bearing: 0
       opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # PUBLIC DEBT SPLIT
-  # ═══════════════════════════════════════════════
 
   - id: public-debt-split
     text: "$31.4 Trillion held by the public"
@@ -62,139 +46,6 @@ sections:
     mobileParagraphs:
       - [0, 2]
       - [2, 4]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # PENSION FUNDS STAT
-  # ═══════════════════════════════════════════════
-
-  - id: pension-funds
-    kind: stat
-    text: "$6.6 Trillion"
-    mobileParagraphs:
-      - [0, 2]
-      - [2, 3]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # FEDERAL RESERVE STAT
-  # ═══════════════════════════════════════════════
-
-  - id: fed-holdings
-    kind: stat
-    text: "The Federal Reserve's $4.4 Trillion"
-    mobileParagraphs:
-      - [0, 2]
-      - [2, 3]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # FOREIGN HOLDERS SECTION
-  # ═══════════════════════════════════════════════
-
-  - id: foreign-debt
-    text: "$9.3 Trillion from Foreigners"
-    mobileParagraphs:
-      - [0, 1]
-      - [1, 3]
-    map:
-      center: [10.0, 30.0]
-      zoom: 2.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.45
-
-  # ═══════════════════════════════════════════════
-  # CHINA HOLDINGS
-  # ═══════════════════════════════════════════════
-
-  - id: china-holdings
-    text: "The China Question"
-    mobileParagraphs:
-      - [0, 2]
-      - [2, 3]
-    map:
-      center: [104.0, 35.0]
-      zoom: 3.0
-      pitch: 0
-      bearing: 0
-      opacity: 0.45
-      pins:
-        - coordinates: [104.0, 35.0]
-          label: "China: $0.7T in Treasury holdings"
-          color: "#4a9eff"
-
-  # ═══════════════════════════════════════════════
-  # INTRAGOVERNMENTAL DEBT
-  # ═══════════════════════════════════════════════
-
-  - id: intragovernmental
-    text: "$7.6 Trillion: The Government Owes Itself"
-    mobileParagraphs:
-      - [0, 1]
-      - [1, 3]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # IMPLICATIONS SECTION
-  # ═══════════════════════════════════════════════
-
-  - id: implications
-    text: "What High Debt Means"
-    mobileParagraphs:
-      - [0, 2]
-      - [2, 4]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # IMPLICATIONS IMPLICATIONS
-  # ═══════════════════════════════════════════════
-
-  - id: implications-2
-    text: "Why This Matters Now"
-    mobileParagraphs:
-      - [0, 2]
-      - [2, 3]
-    map:
-      center: [-95.0, 40.0]
-      zoom: 3.5
-      pitch: 0
-      bearing: 0
-      opacity: 0.4
-
-  # ═══════════════════════════════════════════════
-  # METHODOLOGY
-  # ═══════════════════════════════════════════════
-
-  - id: methodology
-    text: "Methodology & sources"
-    mobileParagraphs:
-      - [0, 2]
     map:
       center: [-95.0, 40.0]
       zoom: 3.5

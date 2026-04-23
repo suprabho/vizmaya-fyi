@@ -36,6 +36,6 @@ export function getFontImportUrl(fonts: { serif?: string; sans?: string; mono?: 
     ([family, weights]) => `${family.replace(/ /g, '+')}:wght@${weights.join(';')}`
   )
 
-  const params = new URLSearchParams({ family: families.join('&family='), display: 'swap' })
-  return `${GOOGLE_FONTS_URL}?${params.toString()}`
+  const query = families.map(f => `family=${f}`).join('&') + '&display=swap'
+  return `${GOOGLE_FONTS_URL}?${query}`
 }

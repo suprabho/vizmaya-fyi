@@ -7,6 +7,7 @@ import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
 import { themeToMapPalette } from '@/lib/themeToMapPalette'
+import { getFontImportUrl } from '@/lib/getFontImports'
 import ThemeProvider from '@/components/story/ThemeProvider'
 import StoryMapShell from '@/components/story/StoryMapShell'
 import VizmayaLogo from '@/components/VizmayaLogo'
@@ -82,8 +83,17 @@ export default async function StoryPage({ params }: RouteParams) {
       config.defaults.mapPalette ?? themeToMapPalette(story.frontmatter.theme),
   }
 
+  const fontImportUrl = getFontImportUrl(story.frontmatter.theme.fonts)
+
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
+      {fontImportUrl && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link href={fontImportUrl} rel="stylesheet" />
+        </>
+      )}
       <Link
         href="/"
         className="fixed top-4 left-4 z-50 w-80 h-16 bg-white/2 rounded-full backdrop-blur-3xl cursor-pointer"

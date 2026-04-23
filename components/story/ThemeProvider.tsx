@@ -58,6 +58,7 @@ export default function ThemeProvider({
           ...vars,
           background: theme.colors.background,
           color: theme.colors.text,
+          fontFamily: vars['--font-sans'],
           minHeight: '100vh',
         } as React.CSSProperties}
       >

@@ -37,7 +37,7 @@ export default function ThemeProvider({
     '--color-line': chartColors.line,
     // Panel chrome for cards sitting on top of maps / media. Stored as an
     // RGB triple so consumers can compose alpha via `rgb(var(--color-panel-rgb) / 0.x)`.
-    '--color-panel-rgb': '10 14 20',
+    '--color-panel-rgb': hexToRgbTriple(theme.colors.surface),
     '--color-chrome-bg': chartColors.chromeBg,
     '--color-chrome-text': chartColors.chromeText,
     '--color-chrome-text-dim': chartColors.chromeTextDim,

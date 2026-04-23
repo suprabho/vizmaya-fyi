@@ -62,14 +62,19 @@ const DEFAULT_MAP: MapState = {
   fontstack: [],
 }
 
-/** Palette roles the editor exposes as color swatches. Order matters for the UI. */
-const PALETTE_FIELDS: Array<{ key: keyof MapPalette; label: string }> = [
+/**
+ * Palette color-swatch roles exposed by the editor. The other MapPalette
+ * fields (placeLabels / roadLabels / ... / motorways / ...) are show/hide
+ * toggles rather than plain color strings — they're edited in yaml directly
+ * for now, not through this swatch UI.
+ */
+type PaletteColorKey = 'land' | 'water' | 'border' | 'labelText' | 'labelHalo' | 'building'
+const PALETTE_FIELDS: Array<{ key: PaletteColorKey; label: string }> = [
   { key: 'land', label: 'Land' },
   { key: 'water', label: 'Water' },
   { key: 'border', label: 'Borders' },
   { key: 'labelText', label: 'Label text' },
   { key: 'labelHalo', label: 'Label halo' },
-  { key: 'road', label: 'Roads' },
   { key: 'building', label: 'Buildings' },
 ]
 
@@ -229,14 +234,17 @@ function PaletteEditor({
   fontstack: string[]
   onFontstackChange: (fontstack: string[]) => void
 }) {
-  const setField = (key: keyof MapPalette, value: string) => {
+  const setField = (key: PaletteColorKey, value: string) => {
     const next = { ...palette }
     if (value.trim() === '') delete next[key]
     else next[key] = value
     onChange(next)
   }
 
-  const anySet = PALETTE_FIELDS.some(({ key }) => typeof palette[key] === 'string' && palette[key]!.length > 0)
+  const anySet = PALETTE_FIELDS.some(({ key }) => {
+    const v = palette[key]
+    return typeof v === 'string' && v.length > 0
+  })
 
   return (
     <div className="space-y-2">

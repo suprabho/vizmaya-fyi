@@ -1,3 +1,5 @@
+export const revalidate = 60
+
 import { notFound } from 'next/navigation'
 import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig, loadShareConfig } from '@/lib/storyConfig'

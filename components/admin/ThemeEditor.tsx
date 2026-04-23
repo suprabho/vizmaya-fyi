@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import type { Theme } from '@/types/story'
+import { getFontImportUrl } from '@/lib/getFontImports'
 
 interface Props {
   theme: Partial<Theme> | undefined
@@ -54,8 +55,45 @@ function mergeTheme(partial: Partial<Theme> | undefined): Theme {
   }
 }
 
+type FontStatus = 'loading' | 'loaded' | 'error'
+
 export default function ThemeEditor({ theme, onChange }: Props) {
   const t = useMemo(() => mergeTheme(theme), [theme])
+  const [fontStatus, setFontStatus] = useState<Record<string, FontStatus>>({})
+
+  // Inject Google Fonts link for admin preview
+  useEffect(() => {
+    const url = getFontImportUrl(t.fonts)
+    const existing = document.getElementById('admin-theme-fonts')
+    if (existing) existing.remove()
+    if (!url) return
+    const link = document.createElement('link')
+    link.id = 'admin-theme-fonts'
+    link.rel = 'stylesheet'
+    link.href = url
+    document.head.appendChild(link)
+    return () => { link.remove() }
+  }, [t.fonts.serif, t.fonts.sans, t.fonts.mono])
+
+  // Check load status for each font — use check() as final verdict since load()
+  // returns [] for system fonts even though they're available
+  useEffect(() => {
+    setFontStatus({ serif: 'loading', sans: 'loading', mono: 'loading' })
+    ;(['serif', 'sans', 'mono'] as const).forEach(async (k) => {
+      const name = t.fonts[k]
+      if (!name) return
+      try {
+        if (document.fonts.check(`16px "${name}"`)) {
+          setFontStatus(s => ({ ...s, [k]: 'loaded' }))
+          return
+        }
+        await document.fonts.load(`16px "${name}"`)
+        setFontStatus(s => ({ ...s, [k]: document.fonts.check(`16px "${name}"`) ? 'loaded' : 'error' }))
+      } catch {
+        setFontStatus(s => ({ ...s, [k]: 'error' }))
+      }
+    })
+  }, [t.fonts.serif, t.fonts.sans, t.fonts.mono])
 
   function setColor(key: keyof Theme['colors'], value: string) {
     onChange({ ...t, colors: { ...t.colors, [key]: value } })
@@ -98,6 +136,7 @@ export default function ThemeEditor({ theme, onChange }: Props) {
                 label={k}
                 value={t.fonts[k]}
                 presets={FONT_PRESETS[k]}
+                status={fontStatus[k]}
                 onChange={(v) => setFont(k, v)}
               />
             ))}
@@ -184,19 +223,31 @@ function FontField({
   label,
   value,
   presets,
+  status,
   onChange,
 }: {
   label: string
   value: string
   presets: string[]
+  status?: FontStatus
   onChange: (v: string) => void
 }) {
   return (
     <label className="block bg-white/[0.03] border border-white/10 rounded-xl p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium capitalize">{label}</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-sm font-medium capitalize shrink-0">{label}</span>
+          {status === 'error' && (
+            <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 rounded px-1.5 py-0.5 shrink-0">
+              not loaded
+            </span>
+          )}
+          {status === 'loading' && (
+            <span className="text-[10px] text-neutral-500 shrink-0">…</span>
+          )}
+        </div>
         <span
-          className="text-[11px] text-neutral-400 truncate max-w-[60%]"
+          className="text-[11px] text-neutral-400 truncate max-w-[55%]"
           style={{ fontFamily: `"${value}", ${label}` }}
         >
           AaBb 123

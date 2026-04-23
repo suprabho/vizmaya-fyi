@@ -10,7 +10,13 @@ export interface SyncResult {
   slug: string
   ok: boolean
   charts: number
+  skipped?: boolean
   error?: string
+}
+
+export interface SyncOptions {
+  /** When true, skip stories whose slug already exists in the DB. */
+  skipIfExists?: boolean
 }
 
 function readIfExists(p: string): string | null {
@@ -34,10 +40,22 @@ export function listFsSlugs(): string[] {
     .map((f) => f.replace(/\.md$/, ''))
 }
 
-export async function syncStory(slug: string): Promise<SyncResult> {
+export async function syncStory(slug: string, opts: SyncOptions = {}): Promise<SyncResult> {
   const mdPath = path.join(STORIES_DIR, `${slug}.md`)
   const markdown = readIfExists(mdPath)
   if (!markdown) throw new Error(`missing ${mdPath}`)
+
+  const sb = createServiceClient()
+
+  if (opts.skipIfExists) {
+    const { data: existing, error: selErr } = await sb
+      .from('stories')
+      .select('slug')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (selErr) throw new Error(`stories select: ${selErr.message}`)
+    if (existing) return { slug, ok: true, charts: 0, skipped: true }
+  }
 
   const { data } = matter(markdown)
   const fm = data as Frontmatter
@@ -63,8 +81,6 @@ export async function syncStory(slug: string): Promise<SyncResult> {
     updated_at: new Date().toISOString(),
   }))
 
-  const sb = createServiceClient()
-
   const { error: storyErr } = await sb.from('stories').upsert(row, { onConflict: 'slug' })
   if (storyErr) throw new Error(`stories upsert: ${storyErr.message}`)
 
@@ -78,11 +94,11 @@ export async function syncStory(slug: string): Promise<SyncResult> {
   return { slug, ok: true, charts: charts.length }
 }
 
-export async function syncAll(): Promise<SyncResult[]> {
+export async function syncAll(opts: SyncOptions = {}): Promise<SyncResult[]> {
   const results: SyncResult[] = []
   for (const slug of listFsSlugs()) {
     try {
-      results.push(await syncStory(slug))
+      results.push(await syncStory(slug, opts))
     } catch (err) {
       results.push({ slug, ok: false, charts: 0, error: err instanceof Error ? err.message : String(err) })
     }

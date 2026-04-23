@@ -88,14 +88,7 @@ function buildCardList(
       cards.push({ unit, variant: 'graph', label: 'graph' })
     }
 
-    // 3. Content cards — hero/stat kinds render a single card (their content
-    // is shaped by the variant itself). Text-kind sections split one card
-    // per paragraph, respecting existing overrides.
-    if (kind !== 'text') {
-      cards.push({ unit, variant: 'auto', label: kind })
-      continue
-    }
-
+    // 3. Content cards.
     // Per-subsection overrides take precedence over section-level overrides —
     // needed when a parent has multiple subsections and only one is rewritten.
     const subOverride = shareOverride?.subsections?.[unit.subIndex]
@@ -103,12 +96,28 @@ function buildCardList(
       subOverride?.paragraphsOverride ?? shareOverride?.paragraphsOverride
     const shareParagraphs =
       subOverride?.shareParagraphs ?? shareOverride?.shareParagraphs
+    const hasSplitOverride =
+      (paragraphsOverride && paragraphsOverride.length > 0) ||
+      (shareParagraphs && shareParagraphs.length > 0)
+
+    // Hero/stat render as a single card by default — the variant itself
+    // shapes their content. A share override may still split them.
+    if (kind !== 'text' && !hasSplitOverride) {
+      cards.push({ unit, variant: 'auto', label: kind })
+      continue
+    }
+
+    // Stat/hero split cards keep their heading (big number / title) on every
+    // card so each one renders with the same variant treatment and stands
+    // alone on social. Text cards drop the heading after the first card so
+    // subsequent cards read as paragraph continuations.
+    const keepHeadingOnAll = kind !== 'text'
 
     if (paragraphsOverride && paragraphsOverride.length > 0) {
       paragraphsOverride.forEach((entry, sliceIdx) => {
         const expandedUnit: ResolvedUnit = {
           ...unit,
-          heading: sliceIdx === 0 ? unit.heading : undefined,
+          heading: keepHeadingOnAll || sliceIdx === 0 ? unit.heading : undefined,
           paragraphs: normalizeOverrideEntry(entry),
         }
         cards.push({ unit: expandedUnit, variant: 'auto', label: kind })
@@ -117,7 +126,7 @@ function buildCardList(
       shareParagraphs.forEach((spec, sliceIdx) => {
         const expandedUnit: ResolvedUnit = {
           ...unit,
-          heading: sliceIdx === 0 ? unit.heading : undefined,
+          heading: keepHeadingOnAll || sliceIdx === 0 ? unit.heading : undefined,
           paragraphs: sliceShareParagraphs(unit.paragraphs, spec),
         }
         cards.push({ unit: expandedUnit, variant: 'auto', label: kind })

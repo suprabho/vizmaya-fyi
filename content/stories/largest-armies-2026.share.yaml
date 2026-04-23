@@ -1,1 +1,5 @@
-sections: {}
+sections:
+  bangladesh-paramilitary:
+    shareParagraphs:
+      - [0, 1]
+      - [1, 2]

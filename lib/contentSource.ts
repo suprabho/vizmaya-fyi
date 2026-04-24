@@ -141,9 +141,20 @@ const fsSource: ContentSource = {
 const dbSource: ContentSource = {
   async listStories() {
     const sb = createServiceClient()
-    const { data, error } = await sb
+    // Try to select with order column; fall back to without if column doesn't exist yet
+    let { data, error } = await sb
       .from('stories')
       .select('slug, status, listed, order')
+
+    if (error?.message?.includes('order')) {
+      // order column doesn't exist yet (migration not applied), query without it
+      const fallback = await sb
+        .from('stories')
+        .select('slug, status, listed')
+      data = fallback.data
+      error = fallback.error
+    }
+
     if (error) throw new Error(`listStories: ${error.message}`)
     return (data ?? []).map((row: any) => ({
       slug: row.slug,

@@ -7,7 +7,7 @@ import YamlCardsView from './YamlCardsView'
 import { parseFrontmatter, serializeFrontmatter } from '@/lib/frontmatter'
 import type { Theme } from '@/types/story'
 
-type Tab = 'theme' | 'markdown' | 'config' | 'share' | 'charts'
+type Tab = 'theme' | 'markdown' | 'config' | 'share' | 'charts' | 'settings'
 
 interface InitialState {
   markdown: string
@@ -22,6 +22,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'config', label: 'Config' },
   { id: 'share', label: 'Share' },
   { id: 'charts', label: 'Charts' },
+  { id: 'settings', label: 'Settings' },
 ]
 
 export default function EditorClient({ slug, initial }: { slug: string; initial: InitialState }) {
@@ -30,15 +31,18 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
   const [config, setConfig] = useState(initial.config_yaml)
   const [share, setShare] = useState(initial.share_yaml)
   const [saving, start] = useTransition()
-  const [status, setStatus] = useState<{ type: 'idle' | 'ok' | 'err' | 'warn'; msg?: string }>({ type: 'idle' })
+  const [apiStatus, setApiStatus] = useState<{ type: 'idle' | 'ok' | 'err' | 'warn'; msg?: string }>({ type: 'idle' })
 
-  // Theme is stored inside markdown frontmatter. Parse on demand so the
-  // Markdown tab and Theme tab share a single source of truth.
   const parsed = useMemo(() => parseFrontmatter(markdown), [markdown])
   const theme = (parsed.data.theme ?? undefined) as Partial<Theme> | undefined
 
   function updateTheme(next: Theme) {
     const nextData = { ...parsed.data, theme: next }
+    setMarkdown(serializeFrontmatter(nextData, parsed.body))
+  }
+
+  function updateMetadata(meta: Partial<{ status: string; listed: boolean; order: number }>) {
+    const nextData = { ...parsed.data, ...meta }
     setMarkdown(serializeFrontmatter(nextData, parsed.body))
   }
 
@@ -76,11 +80,14 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
 
   function save() {
     start(async () => {
-      setStatus({ type: 'idle' })
-      const payload: Record<string, string | null> = {}
+      setApiStatus({ type: 'idle' })
+      const payload: Record<string, any> = {}
       if (markdown !== initial.markdown) payload.markdown = markdown
       if (config !== initial.config_yaml) payload.config_yaml = config.length === 0 ? null : config
       if (share !== initial.share_yaml) payload.share_yaml = share.length === 0 ? null : share
+      if (parsed.data.status) payload.status = parsed.data.status
+      if (parsed.data.listed !== undefined) payload.listed = parsed.data.listed
+      if (typeof parsed.data.order === 'number') payload.order = parsed.data.order
       const res = await fetch(`/api/admin/stories/${slug}`, {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
@@ -88,13 +95,13 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
       })
       const body = await res.json().catch(() => null)
       if (!res.ok) {
-        setStatus({ type: 'err', msg: body?.error ?? `HTTP ${res.status}` })
+        setApiStatus({ type: 'err', msg: body?.error ?? `HTTP ${res.status}` })
         return
       }
       if (body?.warning) {
-        setStatus({ type: 'warn', msg: body.error ?? body.warning })
+        setApiStatus({ type: 'warn', msg: body.error ?? body.warning })
       } else {
-        setStatus({ type: 'ok', msg: 'Saved' })
+        setApiStatus({ type: 'ok', msg: 'Saved' })
       }
       // Update baseline so dirty goes false.
       initial.markdown = markdown
@@ -162,12 +169,20 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
           />
         )}
         {tab === 'charts' && <ChartsList slug={slug} charts={initial.charts} />}
+        {tab === 'settings' && (
+          <SettingsPanel
+            status={(parsed.data.status as string) ?? 'published'}
+            listed={parsed.data.listed !== false}
+            order={typeof parsed.data.order === 'number' ? parsed.data.order : Infinity}
+            onChange={updateMetadata}
+          />
+        )}
       </div>
 
       <div
         className="sticky bottom-0 border-t border-white/10 bg-neutral-950/95 backdrop-blur flex items-center gap-3 px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]"
       >
-        <StatusBadge status={status} dirty={dirty} />
+        <StatusBadge status={apiStatus} dirty={dirty} />
         <button
           type="button"
           disabled={!dirty || saving}
@@ -248,5 +263,64 @@ function StatusBadge({
     <span className="text-sm text-neutral-500">
       {dirty ? 'Unsaved changes' : 'No changes'}
     </span>
+  )
+}
+
+function SettingsPanel({
+  status,
+  listed,
+  order,
+  onChange,
+}: {
+  status: string
+  listed: boolean
+  order: number
+  onChange: (meta: Partial<{ status: string; listed: boolean; order: number }>) => void
+}) {
+  return (
+    <div className="flex-1 flex flex-col min-h-0 p-4 overflow-y-auto">
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium mb-2">Publishing Status</label>
+          <select
+            value={status}
+            onChange={(e) => onChange({ status: e.target.value })}
+            className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="listed"
+            checked={listed}
+            onChange={(e) => onChange({ listed: e.target.checked })}
+            className="w-4 h-4 rounded"
+          />
+          <label htmlFor="listed" className="text-sm font-medium">
+            Show on home page
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Order on home page</label>
+          <input
+            type="number"
+            value={order === Infinity ? '' : order}
+            onChange={(e) => {
+              const val = e.target.value === '' ? Infinity : parseInt(e.target.value, 10)
+              onChange({ order: val })
+            }}
+            placeholder="Leave empty for unordered"
+            className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+          />
+          <p className="text-xs text-neutral-500 mt-1">Lower numbers appear first (0-indexed)</p>
+        </div>
+      </div>
+    </div>
   )
 }

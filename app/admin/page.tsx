@@ -1,44 +1,97 @@
+'use client'
+
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { isAuthed } from '@/lib/adminAuth'
-import { getContentSource } from '@/lib/contentSource'
+import { useEffect, useState } from 'react'
 
-export const dynamic = 'force-dynamic'
+export default function AdminHome() {
+  const [stories, setStories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState<string | null>(null)
 
-export default async function AdminHome() {
-  if (!(await isAuthed())) redirect('/admin/login?next=/admin')
-  const src = getContentSource()
-  const stories = await src.listStories()
+  useEffect(() => {
+    fetch('/api/admin/stories')
+      .then((r) => r.json())
+      .then((data) => {
+        const sorted = data.sort((a: any, b: any) => a.title.localeCompare(b.title))
+        setStories(sorted)
+        setLoading(false)
+      })
+  }, [])
 
-  const withTitles = await Promise.all(
-    stories.map(async (s) => {
-      const md = await src.readMarkdown(s.slug)
-      const titleMatch = md?.match(/^title:\s*(?:"([^"]+)"|'([^']+)'|([^\n]+))/m)
-      const title = (titleMatch?.[1] ?? titleMatch?.[2] ?? titleMatch?.[3] ?? s.slug).trim()
-      return { ...s, title }
+  async function updateMeta(slug: string, meta: Partial<{ status: string; listed: boolean; order: number }>) {
+    setUpdating(slug)
+    const res = await fetch(`/api/admin/stories/${slug}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(meta),
     })
-  )
-  const sorted = withTitles.sort((a, b) => a.title.localeCompare(b.title))
+    if (res.ok) {
+      setStories((prev) =>
+        prev.map((s) => (s.slug === slug ? { ...s, ...meta } : s))
+      )
+    }
+    setUpdating(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-neutral-400">
+        Loading stories…
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-4 py-5 border-b border-white/5">
         <h1 className="text-lg font-semibold">Stories</h1>
-        <p className="text-sm text-neutral-400 mt-0.5">{sorted.length} total</p>
+        <p className="text-sm text-neutral-400 mt-0.5">{stories.length} total</p>
       </div>
       <ul className="divide-y divide-white/5">
-        {sorted.map((s) => (
+        {stories.map((s) => (
           <li key={s.slug}>
-            <Link
-              href={`/admin/${s.slug}`}
-              className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors"
-            >
-              <div className="min-w-0">
+            <div className="flex items-center justify-between gap-3 px-4 py-4 hover:bg-white/2.5 transition-colors">
+              <Link
+                href={`/admin/${s.slug}`}
+                className="flex-1 min-w-0 flex flex-col active:bg-white/5"
+              >
                 <div className="font-medium truncate">{s.title}</div>
                 <div className="text-xs text-neutral-500 truncate mt-0.5">{s.slug}</div>
+              </Link>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-1">
+                  <select
+                    value={s.status}
+                    onChange={(e) => updateMeta(s.slug, { status: e.target.value })}
+                    disabled={updating === s.slug}
+                    className="text-xs bg-neutral-900 border border-white/10 rounded px-2 py-1 text-neutral-300 cursor-pointer disabled:opacity-50"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={s.listed}
+                  onChange={(e) => updateMeta(s.slug, { listed: e.target.checked })}
+                  disabled={updating === s.slug}
+                  className="w-4 h-4 cursor-pointer disabled:opacity-50"
+                  title="Show on home page"
+                />
+                <input
+                  type="number"
+                  value={s.order === Infinity ? '' : s.order}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? Infinity : parseInt(e.target.value, 10)
+                    updateMeta(s.slug, { order: val })
+                  }}
+                  disabled={updating === s.slug}
+                  className="w-12 text-xs bg-neutral-900 border border-white/10 rounded px-2 py-1 text-neutral-300 cursor-pointer disabled:opacity-50"
+                  title="Order (0-indexed, lower first)"
+                />
               </div>
-              <StatusPill status={s.status} listed={s.listed} />
-            </Link>
+            </div>
           </li>
         ))}
       </ul>
@@ -46,19 +99,3 @@ export default async function AdminHome() {
   )
 }
 
-function StatusPill({ status, listed }: { status: string; listed: boolean }) {
-  const tone =
-    status === 'published' && listed
-      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20'
-      : status === 'draft'
-        ? 'bg-amber-500/15 text-amber-300 border-amber-500/20'
-        : 'bg-white/5 text-neutral-400 border-white/10'
-  const label = status === 'published' && !listed ? 'unlisted' : status
-  return (
-    <span
-      className={`shrink-0 text-[11px] uppercase tracking-wider border rounded-full px-2 py-0.5 ${tone}`}
-    >
-      {label}
-    </span>
-  )
-}

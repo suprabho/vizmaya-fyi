@@ -21,6 +21,7 @@ export interface StoryMeta {
   slug: string
   status: StoryStatus
   listed: boolean
+  order: number
 }
 
 export interface ContentSource {
@@ -36,6 +37,7 @@ export interface ContentSource {
   writeConfigYaml(slug: string, raw: string | null): Promise<void>
   writeShareYaml(slug: string, raw: string | null): Promise<void>
   writeChart(slug: string, chartId: string, data: unknown): Promise<void>
+  updateMetadata(slug: string, meta: Partial<Pick<StoryMeta, 'status' | 'listed' | 'order'>>): Promise<void>
   listChartIds(slug: string): Promise<string[]>
 }
 
@@ -51,7 +53,7 @@ function fsReadIfExists(filePath: string): string | null {
 const fsSource: ContentSource = {
   async listStories(): Promise<StoryMeta[]> {
     if (!fs.existsSync(STORIES_DIR)) return []
-    // Parse each markdown's frontmatter to surface status/listed. Fast for 8
+    // Parse each markdown's frontmatter to surface status/listed/order. Fast for 8
     // stories; if the story count grows we can cache at process boot.
     const { default: matter } = await import('gray-matter')
     const slugs = fs
@@ -63,7 +65,8 @@ const fsSource: ContentSource = {
       const { data } = matter(file)
       const status = (data.status ?? 'published') as StoryStatus
       const listed = data.listed !== false
-      return { slug, status, listed }
+      const order = typeof data.order === 'number' ? data.order : Infinity
+      return { slug, status, listed, order }
     })
   },
   async readMarkdown(slug) {
@@ -117,6 +120,19 @@ const fsSource: ContentSource = {
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.replace(/\.json$/, ''))
   },
+  async updateMetadata(slug, meta) {
+    const { default: matter } = await import('gray-matter')
+    const { stringify } = await import('yaml')
+    const mdPath = path.join(STORIES_DIR, `${slug}.md`)
+    const raw = fs.readFileSync(mdPath, 'utf8')
+    const { data, content } = matter(raw)
+    if (meta.status !== undefined) data.status = meta.status
+    if (meta.listed !== undefined) data.listed = meta.listed
+    if (meta.order !== undefined) data.order = meta.order
+    const yaml = stringify(data)
+    const updated = `---\n${yaml}---\n${content}`
+    fs.writeFileSync(mdPath, updated, 'utf8')
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -127,9 +143,14 @@ const dbSource: ContentSource = {
     const sb = createServiceClient()
     const { data, error } = await sb
       .from('stories')
-      .select('slug, status, listed')
+      .select('slug, status, listed, order')
     if (error) throw new Error(`listStories: ${error.message}`)
-    return (data ?? []) as StoryMeta[]
+    return (data ?? []).map((row: any) => ({
+      slug: row.slug,
+      status: row.status,
+      listed: row.listed,
+      order: typeof row.order === 'number' ? row.order : Infinity,
+    }))
   },
   async readMarkdown(slug) {
     const sb = createServiceClient()
@@ -228,6 +249,18 @@ const dbSource: ContentSource = {
       .eq('slug', slug)
     if (error) throw new Error(`listChartIds ${slug}: ${error.message}`)
     return (data ?? []).map((r) => r.chart_id as string)
+  },
+  async updateMetadata(slug, meta) {
+    const sb = createServiceClient()
+    const updates: Record<string, any> = { updated_at: new Date().toISOString() }
+    if (meta.status !== undefined) updates.status = meta.status
+    if (meta.listed !== undefined) updates.listed = meta.listed
+    if (meta.order !== undefined) updates.order = meta.order
+    const { error } = await sb
+      .from('stories')
+      .update(updates)
+      .eq('slug', slug)
+    if (error) throw new Error(`updateMetadata ${slug}: ${error.message}`)
   },
 }
 

@@ -12,6 +12,9 @@ interface UpdateBody {
   markdown?: string
   config_yaml?: string | null
   share_yaml?: string | null
+  status?: string
+  listed?: boolean
+  order?: number
 }
 
 /** Validate payloads before writing so the save action doesn't corrupt a
@@ -84,6 +87,13 @@ export async function PUT(
     if (typeof body.markdown === 'string') await src.writeMarkdown(slug, body.markdown)
     if (body.config_yaml !== undefined) await src.writeConfigYaml(slug, body.config_yaml)
     if (body.share_yaml !== undefined) await src.writeShareYaml(slug, body.share_yaml)
+    if (body.status !== undefined || body.listed !== undefined || body.order !== undefined) {
+      await src.updateMetadata(slug, {
+        status: body.status as any,
+        listed: body.listed,
+        order: body.order,
+      })
+    }
 
     // Structural validation on the config AFTER writing so errors from
     // loadStoryConfig (required sections, map.center, etc.) bubble up as 400s.

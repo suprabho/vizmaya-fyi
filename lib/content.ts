@@ -169,8 +169,9 @@ export async function getAllStorySlugs(): Promise<string[]> {
 export async function getAllStories() {
   const metas = await getContentSource().listStories()
   const listed = metas.filter((m) => isListed({ status: m.status, listed: m.listed }))
+  const sorted = listed.sort((a, b) => a.order - b.order)
   const results = await Promise.all(
-    listed.map(async ({ slug }) => {
+    sorted.map(async ({ slug }) => {
       const raw = await getContentSource().readMarkdown(slug)
       if (!raw) return null
       const { data } = matter(raw)

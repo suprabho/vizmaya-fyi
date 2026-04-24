@@ -151,7 +151,7 @@ const dbSource: ContentSource = {
       const fallback = await sb
         .from('stories')
         .select('slug, status, listed')
-      data = fallback.data
+      data = (fallback.data as any)
       error = fallback.error
     }
 

@@ -47,6 +47,14 @@ export default function AdminHome() {
         <h1 className="text-lg font-semibold">Stories</h1>
         <p className="text-sm text-neutral-400 mt-0.5">{stories.length} total</p>
       </div>
+      <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-white/5 text-xs uppercase tracking-wider text-neutral-500">
+        <div className="flex-1">Title</div>
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-[104px] text-right">Status</div>
+          <div className="w-4 text-center" title="Listed on home">L</div>
+          <div className="w-16 text-right">Order</div>
+        </div>
+      </div>
       <ul className="divide-y divide-white/5">
         {stories.map((s) => (
           <li key={s.slug}>
@@ -81,13 +89,14 @@ export default function AdminHome() {
                 />
                 <input
                   type="number"
-                  value={s.displayOrder ? String(s.displayOrder) : ''}
+                  value={s.displayOrder != null ? String(s.displayOrder) : ''}
+                  placeholder="#"
                   onChange={(e) => {
                     const val = e.target.value === '' ? null : parseInt(e.target.value, 10)
                     updateMeta(s.slug, { displayOrder: val })
                   }}
                   disabled={updating === s.slug}
-                  className="w-12 text-xs bg-neutral-900 border border-white/10 rounded px-2 py-1 text-neutral-300 cursor-pointer disabled:opacity-50"
+                  className="w-16 text-sm bg-neutral-900 border border-white/20 rounded px-2 py-1 text-white cursor-pointer disabled:opacity-50 placeholder:text-neutral-600"
                   title="Display order (0-indexed, lower first)"
                 />
               </div>

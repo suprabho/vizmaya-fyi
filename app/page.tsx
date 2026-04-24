@@ -1,6 +1,8 @@
 import { getAllStories } from '@/lib/content'
 import HomeClient, { type HomeStory } from '@/components/HomeClient'
 
+export const revalidate = 0
+
 export default async function HomePage() {
   const stories = await getAllStories()
   const homeStories: HomeStory[] = stories.map((s) => ({

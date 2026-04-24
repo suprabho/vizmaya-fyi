@@ -7,7 +7,15 @@
  * No-ops silently when CONTENT_SOURCE !== 'db' (local dev on fs) or when
  * Supabase credentials are absent so CI builds without a DB connection don't
  * fail hard.
+ *
+ * Loads env via @next/env so this script sees the same CONTENT_SOURCE,
+ * NEXT_PUBLIC_SUPABASE_URL, etc. that the `next build` process will see.
+ * Without this, `npx tsx` sees no .env/.env.local and defaults to fs mode,
+ * which would skip the sync even when the build itself is reading from DB.
  */
+
+import { loadEnvConfig } from '@next/env'
+loadEnvConfig(process.cwd())
 
 import { syncAll } from '../lib/syncToDb'
 

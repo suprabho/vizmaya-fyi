@@ -11,6 +11,9 @@
  * Files stay on disk as backup (plan § phase 2).
  */
 
+import { loadEnvConfig } from '@next/env'
+loadEnvConfig(process.cwd())
+
 import { syncStory, syncAll, listFsSlugs } from '../lib/syncToDb'
 
 type Args = { slug?: string; dryRun: boolean }

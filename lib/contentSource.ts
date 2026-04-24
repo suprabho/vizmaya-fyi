@@ -21,7 +21,7 @@ export interface StoryMeta {
   slug: string
   status: StoryStatus
   listed: boolean
-  order: number
+  displayOrder: number | null
 }
 
 export interface ContentSource {
@@ -37,7 +37,7 @@ export interface ContentSource {
   writeConfigYaml(slug: string, raw: string | null): Promise<void>
   writeShareYaml(slug: string, raw: string | null): Promise<void>
   writeChart(slug: string, chartId: string, data: unknown): Promise<void>
-  updateMetadata(slug: string, meta: Partial<Pick<StoryMeta, 'status' | 'listed' | 'order'>>): Promise<void>
+  updateMetadata(slug: string, meta: Partial<Pick<StoryMeta, 'status' | 'listed' | 'displayOrder'>>): Promise<void>
   listChartIds(slug: string): Promise<string[]>
 }
 
@@ -65,8 +65,8 @@ const fsSource: ContentSource = {
       const { data } = matter(file)
       const status = (data.status ?? 'published') as StoryStatus
       const listed = data.listed !== false
-      const order = typeof data.order === 'number' ? data.order : Infinity
-      return { slug, status, listed, order }
+      const displayOrder = typeof data.displayOrder === 'number' ? data.displayOrder : null
+      return { slug, status, listed, displayOrder }
     })
   },
   async readMarkdown(slug) {
@@ -128,7 +128,7 @@ const fsSource: ContentSource = {
     const { data, content } = matter(raw)
     if (meta.status !== undefined) data.status = meta.status
     if (meta.listed !== undefined) data.listed = meta.listed
-    if (meta.order !== undefined) data.order = meta.order
+    if (meta.displayOrder !== undefined) data.displayOrder = meta.displayOrder
     const yaml = stringify(data)
     const updated = `---\n${yaml}---\n${content}`
     fs.writeFileSync(mdPath, updated, 'utf8')
@@ -141,13 +141,13 @@ const fsSource: ContentSource = {
 const dbSource: ContentSource = {
   async listStories() {
     const sb = createServiceClient()
-    // Try to select with order column; fall back to without if column doesn't exist yet
+    // Try to select with display_order column; fall back to without if column doesn't exist yet
     let { data, error } = await sb
       .from('stories')
-      .select('slug, status, listed, order')
+      .select('slug, status, listed, display_order')
 
-    if (error?.message?.includes('order')) {
-      // order column doesn't exist yet (migration not applied), query without it
+    if (error?.message?.includes('display_order')) {
+      // display_order column doesn't exist yet (migration not applied), query without it
       const fallback = await sb
         .from('stories')
         .select('slug, status, listed')
@@ -160,7 +160,7 @@ const dbSource: ContentSource = {
       slug: row.slug,
       status: row.status,
       listed: row.listed,
-      order: typeof row.order === 'number' ? row.order : Infinity,
+      displayOrder: typeof row.display_order === 'number' ? row.display_order : null,
     }))
   },
   async readMarkdown(slug) {
@@ -266,7 +266,7 @@ const dbSource: ContentSource = {
     const updates: Record<string, any> = { updated_at: new Date().toISOString() }
     if (meta.status !== undefined) updates.status = meta.status
     if (meta.listed !== undefined) updates.listed = meta.listed
-    if (meta.order !== undefined) updates.order = meta.order
+    if (meta.displayOrder !== undefined) updates.display_order = meta.displayOrder
     const { error } = await sb
       .from('stories')
       .update(updates)

@@ -18,7 +18,7 @@ export default function AdminHome() {
       })
   }, [])
 
-  async function updateMeta(slug: string, meta: Partial<{ status: string; listed: boolean; order: number }>) {
+  async function updateMeta(slug: string, meta: Partial<{ status: string; listed: boolean; displayOrder: number | null }>) {
     setUpdating(slug)
     const res = await fetch(`/api/admin/stories/${slug}`, {
       method: 'PUT',
@@ -81,14 +81,14 @@ export default function AdminHome() {
                 />
                 <input
                   type="number"
-                  value={s.order === Infinity ? '' : s.order}
+                  value={s.displayOrder ? String(s.displayOrder) : ''}
                   onChange={(e) => {
-                    const val = e.target.value === '' ? Infinity : parseInt(e.target.value, 10)
-                    updateMeta(s.slug, { order: val })
+                    const val = e.target.value === '' ? null : parseInt(e.target.value, 10)
+                    updateMeta(s.slug, { displayOrder: val })
                   }}
                   disabled={updating === s.slug}
                   className="w-12 text-xs bg-neutral-900 border border-white/10 rounded px-2 py-1 text-neutral-300 cursor-pointer disabled:opacity-50"
-                  title="Order (0-indexed, lower first)"
+                  title="Display order (0-indexed, lower first)"
                 />
               </div>
             </div>

@@ -87,7 +87,7 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
       if (share !== initial.share_yaml) payload.share_yaml = share.length === 0 ? null : share
       if (parsed.data.status) payload.status = parsed.data.status
       if (parsed.data.listed !== undefined) payload.listed = parsed.data.listed
-      if (typeof parsed.data.order === 'number') payload.order = parsed.data.order
+      if (parsed.data.displayOrder !== undefined) payload.displayOrder = parsed.data.displayOrder
       const res = await fetch(`/api/admin/stories/${slug}`, {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
@@ -173,7 +173,7 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
           <SettingsPanel
             status={(parsed.data.status as string) ?? 'published'}
             listed={parsed.data.listed !== false}
-            order={typeof parsed.data.order === 'number' ? parsed.data.order : Infinity}
+            displayOrder={typeof parsed.data.displayOrder === 'number' ? parsed.data.displayOrder : null}
             onChange={updateMetadata}
           />
         )}
@@ -269,13 +269,13 @@ function StatusBadge({
 function SettingsPanel({
   status,
   listed,
-  order,
+  displayOrder,
   onChange,
 }: {
   status: string
   listed: boolean
-  order: number
-  onChange: (meta: Partial<{ status: string; listed: boolean; order: number }>) => void
+  displayOrder: number | null
+  onChange: (meta: Partial<{ status: string; listed: boolean; displayOrder: number | null }>) => void
 }) {
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 overflow-y-auto">
@@ -307,18 +307,18 @@ function SettingsPanel({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Order on home page</label>
+          <label className="block text-sm font-medium mb-2">Display order on home page</label>
           <input
             type="number"
-            value={order === Infinity ? '' : order}
+            value={displayOrder ? String(displayOrder) : ''}
             onChange={(e) => {
-              const val = e.target.value === '' ? Infinity : parseInt(e.target.value, 10)
-              onChange({ order: val })
+              const val = e.target.value === '' ? null : parseInt(e.target.value, 10)
+              onChange({ displayOrder: val })
             }}
             placeholder="Leave empty for unordered"
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
           />
-          <p className="text-xs text-neutral-500 mt-1">Lower numbers appear first (0-indexed)</p>
+          <p className="text-xs text-neutral-500 mt-1">Lower numbers appear first (0-indexed). Leave empty to not display.</p>
         </div>
       </div>
     </div>

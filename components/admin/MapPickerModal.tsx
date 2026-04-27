@@ -1,15 +1,31 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { extractMapView, applyMapView, type MapView } from '@/lib/yamlMapPatch'
+import {
+  extractMapView,
+  extractMobileMapView,
+  applyMapView,
+  applyMobileMapView,
+  removeMobileMapView,
+  type MapView,
+} from '@/lib/yamlMapPatch'
 
 /**
  * Section-scoped visual map editor. Reads center/zoom/pitch/bearing from the
  * section's raw YAML, opens a full-screen Mapbox canvas, lets the user drag /
  * zoom / pitch / rotate, then splices the new values back into the YAML
  * (preserving comments and all other map keys — pins, regions, heatmap).
+ *
+ * Two targets:
+ *   - desktop → patches `map.{center,zoom,pitch,bearing}` (the section default)
+ *   - mobile  → patches `map.mobile.{center,zoom,pitch,bearing}` (portrait override)
+ *
+ * Switching targets jumps the camera to that target's saved values; when the
+ * mobile override doesn't yet exist, the mobile target starts at the desktop
+ * values so the user has a sensible starting point. Apply writes back only the
+ * targets that the user actually changed.
  *
  * Intentionally narrower than /map-edit: we don't touch pins, palette, or
  * fontstack here. The broader editor still owns those.
@@ -23,6 +39,8 @@ interface Props {
   onClose: () => void
 }
 
+type Target = 'desktop' | 'mobile'
+
 const DEFAULT_STYLE = 'mapbox://styles/mapbox/dark-v11'
 
 export default function MapPickerModal({
@@ -34,8 +52,29 @@ export default function MapPickerModal({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
-  const [view, setView] = useState<MapView>(() => extractMapView(sectionRaw) ?? fallbackView())
+
+  const initialDesktop = useMemo(
+    () => extractMapView(sectionRaw) ?? fallbackView(),
+    [sectionRaw]
+  )
+  const initialMobile = useMemo(() => extractMobileMapView(sectionRaw), [sectionRaw])
+  const hadMobileOverride = initialMobile !== null
+
+  const [target, setTarget] = useState<Target>('desktop')
+  const [desktopView, setDesktopView] = useState<MapView>(initialDesktop)
+  const [mobileView, setMobileView] = useState<MapView>(initialMobile ?? initialDesktop)
+  const [desktopDirty, setDesktopDirty] = useState(false)
+  const [mobileDirty, setMobileDirty] = useState(false)
   const [noMapBlock] = useState(() => extractMapView(sectionRaw) === null)
+
+  // Read target inside the moveend listener via ref — the listener captures
+  // its closure once at mount, so a state read would always return 'desktop'.
+  const targetRef = useRef<Target>('desktop')
+  useEffect(() => {
+    targetRef.current = target
+  }, [target])
+
+  const view = target === 'desktop' ? desktopView : mobileView
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -46,22 +85,29 @@ export default function MapPickerModal({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: style ?? DEFAULT_STYLE,
-      center: view.center,
-      zoom: view.zoom,
-      pitch: view.pitch,
-      bearing: view.bearing,
+      center: initialDesktop.center,
+      zoom: initialDesktop.zoom,
+      pitch: initialDesktop.pitch,
+      bearing: initialDesktop.bearing,
       attributionControl: false,
     })
     mapRef.current = map
 
     const update = () => {
       const c = map.getCenter()
-      setView({
+      const next: MapView = {
         center: [c.lng, c.lat],
         zoom: map.getZoom(),
         pitch: map.getPitch(),
         bearing: map.getBearing(),
-      })
+      }
+      if (targetRef.current === 'desktop') {
+        setDesktopView(next)
+        setDesktopDirty(true)
+      } else {
+        setMobileView(next)
+        setMobileDirty(true)
+      }
     }
     map.on('moveend', update)
     map.on('zoomend', update)
@@ -92,14 +138,37 @@ export default function MapPickerModal({
     }
   }, [])
 
+  function switchTarget(next: Target) {
+    if (next === target) return
+    setTarget(next)
+    const v = next === 'desktop' ? desktopView : mobileView
+    mapRef.current?.jumpTo({
+      center: v.center,
+      zoom: v.zoom,
+      pitch: v.pitch,
+      bearing: v.bearing,
+    })
+  }
+
   function apply() {
-    const next = extractMapView(sectionRaw)
-      ? applyMapView(sectionRaw, view)
-      : applyMapView(ensureMapBlock(sectionRaw), view)
+    let next = sectionRaw
+    if (extractMapView(next) === null) next = ensureMapBlock(next)
+    if (desktopDirty) next = applyMapView(next, desktopView)
+    if (mobileDirty) next = applyMobileMapView(next, mobileView)
+    onApply(next)
+  }
+
+  function clearMobile() {
+    let next = sectionRaw
+    if (extractMapView(next) === null) next = ensureMapBlock(next)
+    if (desktopDirty) next = applyMapView(next, desktopView)
+    next = removeMobileMapView(next)
     onApply(next)
   }
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+  const dirty = desktopDirty || mobileDirty
+  const showClearMobile = target === 'mobile' && (hadMobileOverride || mobileDirty)
 
   return (
     <div className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col">
@@ -121,15 +190,44 @@ export default function MapPickerModal({
         <button
           type="button"
           onClick={apply}
-          className="bg-white text-neutral-950 rounded-lg px-4 py-2 text-sm font-medium active:bg-neutral-200"
+          disabled={!dirty}
+          className="bg-white text-neutral-950 rounded-lg px-4 py-2 text-sm font-medium active:bg-neutral-200 disabled:opacity-40 disabled:pointer-events-none"
         >
           Apply
+          {dirty && (
+            <span className="ml-1 text-[11px] font-normal text-neutral-500">
+              ({applyTargetLabel(desktopDirty, mobileDirty)})
+            </span>
+          )}
         </button>
       </header>
 
-      <div className="relative flex-1 min-h-0">
+      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-white/10 bg-black/30">
+        <TargetToggle target={target} onChange={switchTarget} />
+        {showClearMobile && (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Remove the mobile-only map override for this section?')) clearMobile()
+            }}
+            className="text-[11px] text-neutral-400 hover:text-red-300 underline-offset-2 hover:underline"
+          >
+            Clear mobile override
+          </button>
+        )}
+      </div>
+
+      <div className="relative flex-1 min-h-0 bg-neutral-950 flex items-center justify-center">
         {token ? (
-          <div ref={containerRef} className="w-full h-full" />
+          target === 'mobile' ? (
+            <div
+              ref={containerRef}
+              className="h-full"
+              style={{ aspectRatio: '9 / 19.5', maxWidth: '100%' }}
+            />
+          ) : (
+            <div ref={containerRef} className="w-full h-full" />
+          )
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-neutral-400">
             Missing <code className="bg-white/10 px-1 rounded ml-1 mr-1">NEXT_PUBLIC_MAPBOX_TOKEN</code>.
@@ -138,6 +236,11 @@ export default function MapPickerModal({
         {noMapBlock && (
           <div className="absolute top-3 left-3 right-3 text-xs bg-amber-500/15 border border-amber-500/30 text-amber-200 rounded-lg px-3 py-2">
             This section has no <code>map:</code> block. Apply will insert one.
+          </div>
+        )}
+        {target === 'mobile' && !hadMobileOverride && !mobileDirty && (
+          <div className="absolute top-3 left-3 right-3 text-xs bg-sky-500/10 border border-sky-500/30 text-sky-200 rounded-lg px-3 py-2 pointer-events-none">
+            No mobile override yet — drag/zoom to set one. Desktop values shown as a starting point.
           </div>
         )}
       </div>
@@ -150,6 +253,37 @@ export default function MapPickerModal({
       </footer>
     </div>
   )
+}
+
+function TargetToggle({
+  target,
+  onChange,
+}: {
+  target: Target
+  onChange: (t: Target) => void
+}) {
+  return (
+    <div className="flex bg-white/5 rounded-lg p-0.5 text-xs">
+      {(['desktop', 'mobile'] as const).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => onChange(t)}
+          className={`px-3 py-1 rounded-md transition-colors capitalize ${
+            target === t ? 'bg-white/15 text-white' : 'text-neutral-400 hover:text-white'
+          }`}
+        >
+          {t}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function applyTargetLabel(desktopDirty: boolean, mobileDirty: boolean): string {
+  if (desktopDirty && mobileDirty) return 'both'
+  if (mobileDirty) return 'mobile'
+  return 'desktop'
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

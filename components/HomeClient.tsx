@@ -307,7 +307,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           </div>
           <div className="who-grid">
             <div className="bio rv" data-d="1">
-              <h3>Shashank Mehta</h3>
+              <h3>Shashank A. Pandey</h3>
               <div className="role">Data storytelling · Visual journalism</div>
               <p>
                 Data storyteller and visual journalist based in Jaipur. Previously wrote 40+

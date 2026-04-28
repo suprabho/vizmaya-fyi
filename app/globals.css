@@ -20,6 +20,13 @@
   color: #fff;
 }
 
+.admin-root ::selection,
+.admin-root textarea::selection,
+.admin-root input::selection {
+  background: #fde047;
+  color: #0a0a0a;
+}
+
 body {
   background: var(--color-bg, #0a0e14);
   color: var(--color-text, #e0ddd5);

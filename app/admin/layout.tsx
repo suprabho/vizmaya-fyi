@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const authed = await isAuthed()
 
   return (
-    <div className="min-h-[100svh] bg-neutral-950 text-neutral-100 flex flex-col">
+    <div className="admin-root min-h-[100svh] bg-neutral-950 text-neutral-100 flex flex-col">
       <header
         className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/10 bg-neutral-950/90 backdrop-blur px-4 py-3 pt-[max(env(safe-area-inset-top),0.75rem)]"
       >

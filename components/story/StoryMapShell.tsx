@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState, type ComponentType } from 're
 import MapStorySection from './MapStorySection'
 import ChartPanel from './ChartPanel'
 import { useIsMobile } from '@/lib/chartTheme'
+import {
+  STORY_LANDSCAPE_FOCUS_AREA,
+  STORY_PORTRAIT_FOCUS_AREA,
+} from '@/lib/storyFocusArea'
 import type {
   ResolvedUnit,
   StoryDefaults,
@@ -231,8 +235,8 @@ export default function StoryMapShell({
           highlightColor={defaults.highlightColor}
           palette={defaults.mapPalette}
           fontstack={defaults.mapFontstack}
-          landscapeFocusArea={{ top: 0.4, left: 0, width: 0.37, height: 0.6 }}
-          portraitFocusArea={{ top: 0.05, left: 0, width: 1.0, height: 0.45 }}
+          landscapeFocusArea={STORY_LANDSCAPE_FOCUS_AREA}
+          portraitFocusArea={STORY_PORTRAIT_FOCUS_AREA}
         />
       </div>
 

@@ -16,6 +16,7 @@ interface Props {
   title: string
   accessToken: string
   shareOverrides: Record<string, ShareSectionOverride> | null
+  logo?: string
 }
 
 interface CardEntry {
@@ -135,7 +136,7 @@ function buildCardList(
   return cards
 }
 
-export default function ShareShell({ slug, units, config, title, accessToken, shareOverrides }: Props) {
+export default function ShareShell({ slug, units, config, title, accessToken, shareOverrides, logo }: Props) {
   const [ratio, setRatio] = useState<AspectRatio>('3:4')
   const [downloading, setDownloading] = useState(false)
   const cardRefs = useRef<(ShareCardHandle | null)[]>([])
@@ -345,6 +346,7 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
                   shareOverride={sectionId ? draftOverrides[sectionId] : undefined}
                   palette={config.defaults.mapPalette}
                   fontstack={config.defaults.mapFontstack}
+                  logo={logo}
                   disableDownload={editMode}
                 />
               </div>

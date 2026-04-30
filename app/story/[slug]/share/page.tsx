@@ -5,6 +5,7 @@ import { getStoryContent, getViewableStorySlugs } from '@/lib/content'
 import { loadStoryConfig, hasStoryConfig, loadShareConfig } from '@/lib/storyConfig'
 import { resolveUnits } from '@/lib/resolveUnits'
 import { getFontImportUrl } from '@/lib/getFontImports'
+import { themedLogoDataUrl } from '@/lib/themeLogo'
 import ThemeProvider from '@/components/story/ThemeProvider'
 import ShareShell from '@/components/share/ShareShell'
 
@@ -36,6 +37,7 @@ export default async function SharePage({ params }: RouteParams) {
   const { units, shareUnits, hasShareOverrides } = resolveUnits(slug, story.sections, config)
   const shareConfig = await loadShareConfig(slug)
   const fontImportUrl = getFontImportUrl(story.frontmatter.theme.fonts)
+  const logo = await themedLogoDataUrl(shareConfig?.logo, story.frontmatter.theme)
 
   return (
     <ThemeProvider theme={story.frontmatter.theme}>
@@ -53,6 +55,7 @@ export default async function SharePage({ params }: RouteParams) {
         title={story.frontmatter.title}
         accessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''}
         shareOverrides={shareConfig?.sections ?? null}
+        logo={logo}
       />
     </ThemeProvider>
   )

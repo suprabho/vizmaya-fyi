@@ -51,6 +51,8 @@ interface Props {
   palette?: MapPalette
   /** Story-wide Mapbox fontstack. */
   fontstack?: string[]
+  /** Optional per-story logo path shown in the branding header. */
+  logo?: string
   /** When true, hide the per-card hover Download button (used by edit mode). */
   disableDownload?: boolean
 }
@@ -71,7 +73,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, disableDownload = false },
+  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, logo, disableDownload = false },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -345,7 +347,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
           </div>
 
           {/* Branding header */}
-          <BrandingHeader title={title} />
+          <BrandingHeader title={title} logo={logo} />
         </div>
 
       {/* Download button overlay — hidden during capture and in edit mode */}

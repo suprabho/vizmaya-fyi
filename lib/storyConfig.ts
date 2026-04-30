@@ -162,6 +162,7 @@ export async function loadShareConfig(slug: string): Promise<ShareConfig | null>
   const raw = parseYaml(file) as Partial<ShareConfig> | null
   if (!raw || typeof raw !== 'object') return null
   return {
+    logo: typeof raw.logo === 'string' ? raw.logo : undefined,
     sections: raw.sections ?? {},
   }
 }

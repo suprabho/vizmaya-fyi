@@ -323,6 +323,12 @@ export interface ShareSectionOverride {
 }
 
 export interface ShareConfig {
+  /**
+   * Story-wide logo shown in the top-right of every share card. Path under
+   * `/public` (e.g. `/vizmaya-logo-04.svg`) or an absolute URL. Falls back
+   * to the default Vizmaya logo when omitted.
+   */
+  logo?: string
   sections: Record<string, ShareSectionOverride>
 }
 

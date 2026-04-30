@@ -16,19 +16,6 @@ interface Props {
   shareOverrides: Record<string, ShareSectionOverride> | null
 }
 
-/**
- * Compute the maximum subIndex for each parentIndex, used to set
- * the chart's final activeStep for the most complete data view.
- */
-function computeMaxSubIndices(units: ResolvedUnit[]): Map<number, number> {
-  const map = new Map<number, number>()
-  for (const u of units) {
-    const current = map.get(u.parentIndex) ?? 0
-    if (u.subIndex > current) map.set(u.parentIndex, u.subIndex)
-  }
-  return map
-}
-
 interface CardEntry {
   unit: ResolvedUnit
   variant: CardVariant
@@ -61,7 +48,6 @@ function buildCardList(
 ): CardEntry[] {
   const cards: CardEntry[] = []
   const seenParentsForMap = new Set<number>()
-  const seenParentsForGraph = new Set<number>()
   for (const unit of units) {
     const sectionId = unit.parentConfig.id
     if (sectionId && overrides?.[sectionId]?.hide) continue
@@ -81,10 +67,10 @@ function buildCardList(
       cards.push({ unit, variant: 'map-title', label: 'map-title' })
     }
 
-    // 2. Graph — one per parent section when a chart is configured.
-    // Renders with activeStep=maxSubIndex for the most complete data view.
-    if (hasChart && !seenParentsForGraph.has(unit.parentIndex)) {
-      seenParentsForGraph.add(unit.parentIndex)
+    // 2. Graph — one per subsection when a chart is configured, so each
+    // chart step (driven by subIndex) gets its own share card. Sections
+    // without subsections still emit exactly one graph card.
+    if (hasChart) {
       cards.push({ unit, variant: 'graph', label: 'graph' })
     }
 
@@ -151,7 +137,6 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
   const [ratio, setRatio] = useState<AspectRatio>('3:4')
   const [downloading, setDownloading] = useState(false)
   const cardRefs = useRef<(ShareCardHandle | null)[]>([])
-  const maxSubIndices = computeMaxSubIndices(units)
   const cards = useMemo(() => buildCardList(units, shareOverrides), [units, shareOverrides])
 
   const handleDownloadAll = useCallback(async () => {
@@ -229,7 +214,6 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
               slug={slug}
               title={title}
               accessToken={accessToken}
-              maxSubIndex={maxSubIndices.get(card.unit.parentIndex) ?? 0}
               variant={card.variant}
               shareOverride={card.unit.parentConfig.id ? shareOverrides?.[card.unit.parentConfig.id] : undefined}
               palette={config.defaults.mapPalette}

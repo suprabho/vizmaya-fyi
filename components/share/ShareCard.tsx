@@ -43,8 +43,6 @@ interface Props {
   slug: string
   title: string
   accessToken: string
-  /** Maximum subsection index for this parent (for chart final step) */
-  maxSubIndex: number
   /** Card variant — 'auto' picks by section kind, 'map-title' forces map + title overlay */
   variant?: CardVariant
   /** Per-section overrides from share config */
@@ -71,7 +69,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, maxSubIndex, variant = 'auto', shareOverride, palette, fontstack },
+  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -276,11 +274,13 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                 })()}
               </div>
             ) : isGraph && hasChart ? (
-              /* Chart-only card — renders final data view via maxSubIndex */
+              /* Chart-only card — one per subsection, with activeStep
+                 driven by the unit's subIndex so each chart step renders
+                 in its own share card. */
               <div className="h-full min-h-0">
                 <ShareChartCard
                   chartId={parentConfig.chart!}
-                  activeStep={maxSubIndex}
+                  activeStep={unit.subIndex}
                   slug={slug}
                 />
               </div>

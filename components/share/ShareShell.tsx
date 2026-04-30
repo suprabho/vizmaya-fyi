@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+import { stringify as stringifyYaml } from 'yaml'
 import type { ResolvedUnit, StoryConfig, ShareSectionOverride } from '@/lib/storyConfig.types'
 import AspectRatioToggle, { type AspectRatio } from './AspectRatioToggle'
 import ShareCard, { type ShareCardHandle, type CardVariant } from './ShareCard'
+import ShareEditDrawer, { type SelectedCard } from './ShareEditDrawer'
 
 interface Props {
   slug: string
@@ -137,7 +139,69 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
   const [ratio, setRatio] = useState<AspectRatio>('3:4')
   const [downloading, setDownloading] = useState(false)
   const cardRefs = useRef<(ShareCardHandle | null)[]>([])
-  const cards = useMemo(() => buildCardList(units, shareOverrides), [units, shareOverrides])
+
+  // Edit mode: holds an in-memory copy of the share overrides that drives
+  // the live preview. `initialOverrides` is the saved baseline used to
+  // detect dirty state. Click "Edit" to enter edit mode, then click any
+  // card to open the drawer.
+  const initialOverrides = useMemo<Record<string, ShareSectionOverride>>(
+    () => structuredClone(shareOverrides ?? {}),
+    [shareOverrides]
+  )
+  const [editMode, setEditMode] = useState(false)
+  const [draftOverrides, setDraftOverrides] = useState<Record<string, ShareSectionOverride>>(initialOverrides)
+  const [selected, setSelected] = useState<SelectedCard | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const dirty = useMemo(
+    () => JSON.stringify(draftOverrides) !== JSON.stringify(initialOverrides),
+    [draftOverrides, initialOverrides]
+  )
+
+  // Reset draft when the saved baseline changes (e.g. after a successful save).
+  useEffect(() => {
+    setDraftOverrides(initialOverrides)
+  }, [initialOverrides])
+
+  // Warn before unloading if there are unsaved edits.
+  useEffect(() => {
+    if (!dirty) return
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [dirty])
+
+  const cards = useMemo(() => buildCardList(units, draftOverrides), [units, draftOverrides])
+
+  const handleSave = useCallback(async () => {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      // Empty overrides → empty share file (server treats absent body as no-op,
+      // so write '' explicitly).
+      const share_yaml = Object.keys(draftOverrides).length === 0
+        ? ''
+        : stringifyYaml({ sections: draftOverrides })
+      const res = await fetch(`/api/admin/stories/${slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ share_yaml }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? `HTTP ${res.status}`)
+      }
+      // Reload so the SSG page re-renders with the freshly saved data.
+      window.location.reload()
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed')
+      setSaving(false)
+    }
+  }, [draftOverrides, slug])
 
   const handleDownloadAll = useCallback(async () => {
     setDownloading(true)
@@ -185,43 +249,118 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <AspectRatioToggle value={ratio} onChange={setRatio} />
-            <button
-              onClick={handleDownloadAll}
-              disabled={downloading}
-              className="px-4 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-wider transition-opacity disabled:opacity-50"
-              style={{
-                background: 'var(--color-accent)',
-                color: 'var(--color-bg)',
-              }}
-            >
-              {downloading ? 'Exporting...' : 'Download All'}
-            </button>
+            {!editMode && <AspectRatioToggle value={ratio} onChange={setRatio} />}
+            {editMode ? (
+              <>
+                {saveError && (
+                  <span className="text-[0.7rem]" style={{ color: 'var(--color-warn, #ff6b6b)' }}>
+                    {saveError}
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    if (dirty && !confirm('Discard unsaved edits?')) return
+                    setDraftOverrides(initialOverrides)
+                    setSelected(null)
+                    setEditMode(false)
+                  }}
+                  className="px-3 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-wider"
+                  style={{ color: 'var(--color-text)', opacity: 0.7 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!dirty || saving}
+                  className="px-4 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-wider transition-opacity disabled:opacity-40"
+                  style={{
+                    background: 'var(--color-accent)',
+                    color: 'var(--color-bg)',
+                  }}
+                >
+                  {saving ? 'Saving...' : dirty ? 'Save' : 'Saved'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="px-3 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.7rem] uppercase tracking-wider border"
+                  style={{
+                    color: 'var(--color-text)',
+                    borderColor: 'var(--color-surface)',
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDownloadAll}
+                  disabled={downloading}
+                  className="px-4 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-wider transition-opacity disabled:opacity-50"
+                  style={{
+                    background: 'var(--color-accent)',
+                    color: 'var(--color-bg)',
+                  }}
+                >
+                  {downloading ? 'Exporting...' : 'Download All'}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Card grid */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div
+        className="max-w-7xl mx-auto px-6 py-8"
+        style={{ paddingRight: editMode && selected ? 'calc(1.5rem + 360px)' : undefined }}
+      >
         <div className="flex flex-wrap gap-6 justify-center">
-          {cards.map((card, i) => (
-            <ShareCard
-              key={`${i}-${card.variant}-${ratio}`}
-              ref={(el) => { cardRefs.current[i] = el }}
-              unit={card.unit}
-              index={i}
-              ratio={ratio}
-              slug={slug}
-              title={title}
-              accessToken={accessToken}
-              variant={card.variant}
-              shareOverride={card.unit.parentConfig.id ? shareOverrides?.[card.unit.parentConfig.id] : undefined}
-              palette={config.defaults.mapPalette}
-              fontstack={config.defaults.mapFontstack}
-            />
-          ))}
+          {cards.map((card, i) => {
+            const sectionId = card.unit.parentConfig.id
+            const isSelected =
+              editMode && selected !== null && selected.index === i
+            return (
+              <div
+                key={`${i}-${card.variant}-${ratio}`}
+                onClick={editMode ? () => setSelected({ index: i, unit: card.unit, variant: card.variant }) : undefined}
+                className={editMode ? 'cursor-pointer rounded-lg transition-shadow' : ''}
+                style={{
+                  boxShadow: isSelected
+                    ? '0 0 0 3px var(--color-accent)'
+                    : editMode
+                    ? '0 0 0 1px var(--color-surface)'
+                    : undefined,
+                }}
+              >
+                <ShareCard
+                  ref={(el) => { cardRefs.current[i] = el }}
+                  unit={card.unit}
+                  index={i}
+                  ratio={ratio}
+                  slug={slug}
+                  title={title}
+                  accessToken={accessToken}
+                  variant={card.variant}
+                  shareOverride={sectionId ? draftOverrides[sectionId] : undefined}
+                  palette={config.defaults.mapPalette}
+                  fontstack={config.defaults.mapFontstack}
+                  disableDownload={editMode}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
+
+      {editMode && (
+        <ShareEditDrawer
+          selected={selected}
+          overrides={draftOverrides}
+          onChange={setDraftOverrides}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   )
 }

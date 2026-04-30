@@ -228,6 +228,27 @@ export interface StoryConfig {
  * to rewrite one without touching the others (e.g. shortening only the
  * "Oil: 70%" subsection's copy for a share card).
  */
+/**
+ * Per-card visibility toggles for map data layers. `undefined` means inherit
+ * from the resolved layer set; `false` suppresses that layer on this card;
+ * `true` is equivalent to `undefined` and is accepted for symmetry.
+ */
+export interface ShareLayerVisibility {
+  pins?: boolean
+  regions?: boolean
+  heatmap?: boolean
+}
+
+/**
+ * Per-chart-card text overrides. Lives in its own slot so chart cards can
+ * carry a heading and subheading without colliding with the map-title or
+ * content cards that share the same section/subsection scope.
+ */
+export interface ShareChartOverride {
+  heading?: string
+  subheading?: string
+}
+
 export interface ShareSubsectionOverride {
   /**
    * Literal replacement paragraphs for this subsection's share card(s).
@@ -239,13 +260,37 @@ export interface ShareSubsectionOverride {
   paragraphsOverride?: Array<string | string[]>
   /** Same `shareParagraphs` semantics as the parent override, scoped to this subsection. */
   shareParagraphs?: Array<number | [number, number]>
+  /** Override the heading shown on this subsection's cards. */
+  heading?: string
+  /** Override the subheading (stat label / map-title sublabel). */
+  subheading?: string
+  /** Per-card layer toggles. Falsy entries suppress that layer. */
+  layers?: ShareLayerVisibility
+  /** Heading/subheading shown on the chart card for this subsection. */
+  chart?: ShareChartOverride
+  /** Map override for this subsection's share cards (full set, including regions/heatmap). */
+  map?: {
+    center?: [number, number]
+    zoom?: number
+    pitch?: number
+    bearing?: number
+    pins?: MapPinConfig[]
+    regions?: MapRegionLayer
+    heatmap?: HeatmapLayer
+  }
 }
 
 export interface ShareSectionOverride {
   /** Override the heading shown on the map-title card. */
   heading?: string
+  /** Override the subheading shown beneath the heading. */
+  subheading?: string
   /** Hide this section from share mode entirely. */
   hide?: boolean
+  /** Per-card layer toggles. Falsy entries suppress that layer. */
+  layers?: ShareLayerVisibility
+  /** Heading/subheading shown on this section's chart card(s). Falls back to per-subsection `chart` override. */
+  chart?: ShareChartOverride
   /**
    * Override paragraph slices for share mode. When present, a single section
    * expands into multiple share cards — one per entry. Each entry follows
@@ -272,6 +317,8 @@ export interface ShareSectionOverride {
     pitch?: number
     bearing?: number
     pins?: MapPinConfig[]
+    regions?: MapRegionLayer
+    heatmap?: HeatmapLayer
   }
 }
 

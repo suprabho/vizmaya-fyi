@@ -28,5 +28,10 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: [
+    '/admin',
+    '/admin/:path*',
+    '/story/:slug/share',
+    '/story/:slug/autoplay',
+  ],
 }

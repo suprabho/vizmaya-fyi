@@ -9,6 +9,7 @@ function stripMarkdown(text: string): string {
 
 interface Props {
   heading?: string
+  subheading?: string
   paragraphs: string[]
 }
 
@@ -17,15 +18,23 @@ const BODY_LINE_HEIGHT = 27
 /** Card inner width: 390px base - 80px horizontal padding */
 const TEXT_WIDTH = 310
 
-export default function ShareTextCard({ heading, paragraphs }: Props) {
+export default function ShareTextCard({ heading, subheading, paragraphs }: Props) {
   return (
     <div className="flex flex-col justify-center h-full px-10 pt-12 pb-8 overflow-hidden min-h-0">
       {heading && (
         <div
-          className="font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-[0.15em] mb-4"
+          className="font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-[0.15em] mb-2"
           style={{ color: 'var(--color-accent)' }}
         >
           {heading}
+        </div>
+      )}
+      {subheading && (
+        <div
+          className="font-serif text-[0.95rem] leading-[1.3] mb-4"
+          style={{ color: 'var(--color-muted)' }}
+        >
+          {subheading}
         </div>
       )}
       {paragraphs.map((p, i) => (

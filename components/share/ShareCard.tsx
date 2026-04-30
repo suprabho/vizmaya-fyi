@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import { toPng } from 'html-to-image'
-import type { ResolvedUnit, MapPinConfig, MapPalette, ShareSectionOverride } from '@/lib/storyConfig.types'
+import type { ResolvedUnit, MapPinConfig, MapPalette, ShareSectionOverride, ShareLayerVisibility } from '@/lib/storyConfig.types'
 import type { AspectRatio } from './AspectRatioToggle'
 import ShareTextCard from './ShareTextCard'
 import ShareStatCard from './ShareStatCard'
@@ -51,6 +51,8 @@ interface Props {
   palette?: MapPalette
   /** Story-wide Mapbox fontstack. */
   fontstack?: string[]
+  /** When true, hide the per-card hover Download button (used by edit mode). */
+  disableDownload?: boolean
 }
 
 export interface ShareCardHandle {
@@ -69,7 +71,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack },
+  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, disableDownload = false },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -93,8 +95,14 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   const { w, h } = RENDER_SIZE[ratio]
   const output = OUTPUT_SIZE[ratio]
   const pixelRatio = output.w / w
-  const { parentConfig, paragraphs, subheading } = unit
-  const heading = shareOverride?.heading ?? unit.heading
+  const { parentConfig, paragraphs } = unit
+  // Per-subsection share override — sits between the section-level share
+  // override and the story config in the cascade.
+  const shareSubOverride = shareOverride?.subsections?.[unit.subIndex]
+  const heading =
+    shareSubOverride?.heading ?? shareOverride?.heading ?? unit.heading
+  const subheading =
+    shareSubOverride?.subheading ?? shareOverride?.subheading ?? unit.subheading
   const kind = parentConfig.kind ?? 'text'
   const hasChart = !!parentConfig.chart
   const isMapTitle = variant === 'map-title'
@@ -102,24 +110,50 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
   // Only show map bg on hero cards and map-title variant
   const showMap = !!parentConfig.map?.center && (kind === 'hero' || isMapTitle)
 
-  // Resolve map properties — share override > subsection override > parent config.
-  // The subsection override only applies when this card represents a specific
-  // subsection (i.e. the unit has a subIndex pointing at a configured subsection).
+  // Resolve layer visibility (share-subsection > share-section). A `false`
+  // value at any level suppresses the layer; otherwise it's shown.
+  const layers: ShareLayerVisibility = {
+    pins: shareSubOverride?.layers?.pins ?? shareOverride?.layers?.pins,
+    regions: shareSubOverride?.layers?.regions ?? shareOverride?.layers?.regions,
+    heatmap: shareSubOverride?.layers?.heatmap ?? shareOverride?.layers?.heatmap,
+  }
+
+  // Chart-card-specific text override (lives in its own slot so chart cards
+  // can have a heading/subheading that doesn't collide with the map-title or
+  // content cards in the same scope).
+  const chartHeading = shareSubOverride?.chart?.heading ?? shareOverride?.chart?.heading
+  const chartSubheading = shareSubOverride?.chart?.subheading ?? shareOverride?.chart?.subheading
+
+  // Resolve map properties. Cascade: share-subsection > share-section >
+  // story-subsection > parent. The story-subsection override only applies
+  // when this card represents a specific subsection.
   const subsectionMap = parentConfig.subsections?.[unit.subIndex]?.map
-  const mapCenter = shareOverride?.map?.center ?? subsectionMap?.center ?? parentConfig.map?.center
-  const mapZoom = shareOverride?.map?.zoom ?? subsectionMap?.zoom ?? parentConfig.map?.zoom
-  const mapPitch = shareOverride?.map?.pitch ?? subsectionMap?.pitch ?? parentConfig.map?.pitch
-  const mapBearing = shareOverride?.map?.bearing ?? subsectionMap?.bearing ?? parentConfig.map?.bearing
-  // Regions and heatmap: subsection replaces parent (if defined), else fall back.
-  const mapRegions = subsectionMap?.regions ?? parentConfig.map?.regions
-  const mapHeatmap = subsectionMap?.heatmap ?? parentConfig.map?.heatmap
+  const mapCenter =
+    shareSubOverride?.map?.center ?? shareOverride?.map?.center ?? subsectionMap?.center ?? parentConfig.map?.center
+  const mapZoom =
+    shareSubOverride?.map?.zoom ?? shareOverride?.map?.zoom ?? subsectionMap?.zoom ?? parentConfig.map?.zoom
+  const mapPitch =
+    shareSubOverride?.map?.pitch ?? shareOverride?.map?.pitch ?? subsectionMap?.pitch ?? parentConfig.map?.pitch
+  const mapBearing =
+    shareSubOverride?.map?.bearing ?? shareOverride?.map?.bearing ?? subsectionMap?.bearing ?? parentConfig.map?.bearing
+  // Regions / heatmap: share override layers can override either, with full
+  // cascade. `layers.{regions,heatmap} === false` suppresses entirely below.
+  const resolvedRegions =
+    shareSubOverride?.map?.regions ?? shareOverride?.map?.regions ?? subsectionMap?.regions ?? parentConfig.map?.regions
+  const resolvedHeatmap =
+    shareSubOverride?.map?.heatmap ?? shareOverride?.map?.heatmap ?? subsectionMap?.heatmap ?? parentConfig.map?.heatmap
+  const mapRegions = layers.regions === false ? undefined : resolvedRegions
+  const mapHeatmap = layers.heatmap === false ? undefined : resolvedHeatmap
 
   // Collect pins for this card:
-  //   • share override pins (if set, replaces all)
+  //   • share-subsection pins (if set, replaces all)
+  //   • share-section pins (if set, replaces all)
   //   • else if this is a subsection map card with its own pins, use just those
-  //     (the subsection is a zoomed-in scoped view)
   //   • else union of parent pins + all subsection pins (the parent overview card)
-  const allPins = useMemo(() => {
+  // Then suppressed entirely if layers.pins === false.
+  const allPins = useMemo<MapPinConfig[]>(() => {
+    if (layers.pins === false) return []
+    if (shareSubOverride?.map?.pins) return shareSubOverride.map.pins
     if (shareOverride?.map?.pins) return shareOverride.map.pins
     if (subsectionMap?.pins) return subsectionMap.pins
 
@@ -138,7 +172,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
       seen.add(key)
       return true
     })
-  }, [parentConfig, shareOverride, subsectionMap])
+  }, [parentConfig, shareOverride, shareSubOverride, subsectionMap, layers.pins])
 
   const capture = useCallback(async (): Promise<string | null> => {
     const node = captureRef.current
@@ -257,6 +291,14 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                 >
                   {heading || title}
                 </h2>
+                {subheading && (
+                  <p
+                    className="text-[0.85rem] leading-[1.4] mt-2"
+                    style={{ color: 'var(--color-muted)' }}
+                  >
+                    {subheading}
+                  </p>
+                )}
                 {kind === 'hero' && (() => {
                   const { dek, byline } = extractHeroBits(paragraphs)
                   return (
@@ -282,6 +324,8 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                   chartId={parentConfig.chart!}
                   activeStep={unit.subIndex}
                   slug={slug}
+                  heading={chartHeading}
+                  subheading={chartSubheading}
                 />
               </div>
             ) : kind === 'hero' && heading ? (
@@ -296,7 +340,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
                 description={paragraphs.join(' ')}
               />
             ) : (
-              <ShareTextCard heading={heading} paragraphs={paragraphs} />
+              <ShareTextCard heading={heading} subheading={subheading} paragraphs={paragraphs} />
             )}
           </div>
 
@@ -304,23 +348,25 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
           <BrandingHeader title={title} />
         </div>
 
-      {/* Download button overlay — hidden during capture */}
-      <button
-        data-share-ui="true"
-        onClick={handleDownload}
-        className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-        style={{ background: 'rgba(0,0,0,0.4)' }}
-      >
-        <div
-          className="rounded-lg px-4 py-2 font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-wider"
-          style={{
-            background: 'var(--color-accent)',
-            color: 'var(--color-bg)',
-          }}
+      {/* Download button overlay — hidden during capture and in edit mode */}
+      {!disableDownload && (
+        <button
+          data-share-ui="true"
+          onClick={handleDownload}
+          className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
         >
-          Download PNG
-        </div>
-      </button>
+          <div
+            className="rounded-lg px-4 py-2 font-[family-name:var(--font-mono)] text-[0.75rem] uppercase tracking-wider"
+            style={{
+              background: 'var(--color-accent)',
+              color: 'var(--color-bg)',
+            }}
+          >
+            Download PNG
+          </div>
+        </button>
+      )}
     </div>
   )
 })

@@ -18,6 +18,16 @@ interface Props {
   onReady?: () => void
   palette?: MapPalette
   fontstack?: string[]
+  /** Story `defaults.highlightCountry` — ISO alpha-2 (e.g. "KR"). */
+  highlightCountry?: string
+  /** Story `defaults.highlightColor` — falls back to pinColor in MapboxBackground. */
+  highlightColor?: string
+  /** Story `defaults.mapOpacity`. */
+  defaultOpacity?: number
+  /** Story `defaults.pinColor`. */
+  defaultPinColor?: string
+  /** Story `defaults.pinRadius`. */
+  defaultPinRadius?: number
 }
 
 /**
@@ -47,6 +57,11 @@ export default function ShareMapBg({
   onReady,
   palette,
   fontstack,
+  highlightCountry,
+  highlightColor,
+  defaultOpacity,
+  defaultPinColor,
+  defaultPinRadius,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const [mounted, setMounted] = useState(false)
@@ -94,6 +109,18 @@ export default function ShareMapBg({
     [center, zoom, pitch, bearing, scaledPins, regions, heatmap]
   )
 
+  // Match the story page's camera framing so the share card shows the same
+  // visible region. The story applies a focus area via `map.setPadding` so the
+  // YAML `center` lands inside the visible card region (not the canvas
+  // centroid) — story configs pick coordinates assuming that shift. Without
+  // these here, share cards render the same `center` at dead-center, which
+  // generally pushes the subject behind the bottom title-overlay gradient.
+  //
+  // Share cards put the title overlay at the bottom (gradient transparent →
+  // 70% black). We want the geographic center to land in the upper half so
+  // the subject sits clear of the overlay regardless of aspect ratio.
+  const focusArea = { top: 0.05, left: 0, width: 1.0, height: 0.45 }
+
   return (
     <div ref={hostRef} className="absolute inset-0" style={{ opacity: 0.9 }}>
       {mounted && (
@@ -107,6 +134,14 @@ export default function ShareMapBg({
           onReady={onReady}
           palette={palette}
           fontstack={fontstack}
+          hideAllLabels
+          highlightCountry={highlightCountry}
+          highlightColor={highlightColor}
+          defaultOpacity={defaultOpacity}
+          defaultPinColor={defaultPinColor}
+          defaultPinRadius={defaultPinRadius}
+          landscapeFocusArea={focusArea}
+          portraitFocusArea={focusArea}
         />
       )}
     </div>

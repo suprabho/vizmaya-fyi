@@ -74,6 +74,14 @@ interface MapboxBackgroundProps {
   palette?: MapPalette
   /** Optional fontstack applied to every text layer (must exist on the style's glyphs). */
   fontstack?: string[]
+  /**
+   * When true, hide every basemap symbol layer that has a `text-field` on
+   * load — kills place/road/transit/poi labels plus water/nature/airport
+   * labels that aren't covered by the `MapPalette` categories. Pin labels
+   * (added as Marker DOM elements, not symbol layers) are unaffected.
+   * Used by share-card maps where labels crowd the small frame.
+   */
+  hideAllLabels?: boolean
 }
 
 const DEFAULT_STYLE = 'mapbox://styles/mapbox/dark-v11'
@@ -449,6 +457,7 @@ export default function MapboxBackground({
   onReady,
   palette,
   fontstack,
+  hideAllLabels = false,
 }: MapboxBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -498,6 +507,19 @@ export default function MapboxBackground({
       // block so the highlight fill color wins on top of any new label color.
       if (palette) applyMapPalette(map, palette)
       if (fontstack && fontstack.length > 0) applyMapFontstack(map, fontstack)
+
+      // Strip every basemap text label (covers categories that MapPalette
+      // doesn't classify, like water/nature labels). Pin labels live on
+      // marker DOM, not style layers, so they survive.
+      if (hideAllLabels) {
+        const labelLayers = map.getStyle()?.layers ?? []
+        for (const layer of labelLayers) {
+          if (layer.type !== 'symbol') continue
+          const layout = (layer.layout ?? {}) as { 'text-field'?: unknown }
+          if (layout['text-field'] == null) continue
+          map.setLayoutProperty(layer.id, 'visibility', 'none')
+        }
+      }
 
       // Highlight a single country (e.g. South Korea) using Mapbox's
       // country-boundaries-v1 vector tileset. Inserted beneath the first

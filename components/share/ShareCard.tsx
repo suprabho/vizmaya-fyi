@@ -51,6 +51,16 @@ interface Props {
   palette?: MapPalette
   /** Story-wide Mapbox fontstack. */
   fontstack?: string[]
+  /** Story `defaults.highlightCountry` — ISO alpha-2 (e.g. "KR"). */
+  highlightCountry?: string
+  /** Story `defaults.highlightColor`. */
+  highlightColor?: string
+  /** Story `defaults.mapOpacity`. */
+  mapOpacity?: number
+  /** Story `defaults.pinColor`. */
+  defaultPinColor?: string
+  /** Story `defaults.pinRadius`. */
+  defaultPinRadius?: number
   /** Optional per-story logo path shown in the branding header. */
   logo?: string
   /** When true, hide the per-card hover Download button (used by edit mode). */
@@ -73,7 +83,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, logo, disableDownload = false },
+  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, highlightCountry, highlightColor, mapOpacity, defaultPinColor, defaultPinRadius, logo, disableDownload = false },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -269,6 +279,11 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
               onReady={handleMapReady}
               palette={palette}
               fontstack={fontstack}
+              highlightCountry={highlightCountry}
+              highlightColor={highlightColor}
+              defaultOpacity={mapOpacity}
+              defaultPinColor={defaultPinColor}
+              defaultPinRadius={defaultPinRadius}
             />
           )}
 

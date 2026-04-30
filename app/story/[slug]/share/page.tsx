@@ -48,6 +48,7 @@ export default async function SharePage({ params }: RouteParams) {
           <link href={fontImportUrl} rel="stylesheet" />
         </>
       )}
+      <style>{`.mapboxgl-ctrl-logo{transform:scale(0.6);transform-origin:bottom left}`}</style>
       <ShareShell
         slug={slug}
         units={hasShareOverrides ? shareUnits : units}

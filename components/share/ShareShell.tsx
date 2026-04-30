@@ -346,6 +346,11 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
                   shareOverride={sectionId ? draftOverrides[sectionId] : undefined}
                   palette={config.defaults.mapPalette}
                   fontstack={config.defaults.mapFontstack}
+                  highlightCountry={config.defaults.highlightCountry}
+                  highlightColor={config.defaults.highlightColor}
+                  mapOpacity={config.defaults.mapOpacity}
+                  defaultPinColor={config.defaults.pinColor}
+                  defaultPinRadius={config.defaults.pinRadius}
                   logo={logo}
                   disableDownload={editMode}
                 />

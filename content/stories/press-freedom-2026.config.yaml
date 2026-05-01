@@ -832,6 +832,115 @@ sections:
           - { code: "KR", value: 69.12 }
 
   # ═══════════════════════════════════════════════
+  # ACT VII — THE INDIAN SUBCONTINENT
+  # ═══════════════════════════════════════════════
+
+  - id: indian-subcontinent-intro
+    text: "The Indian subcontinent"
+    mobileParagraphs:
+      - [0, 1]
+      - [1, 2]
+    map:
+      center: [82.0, 20.0]
+      zoom: 2.8
+      pitch: 0
+      bearing: 0
+      opacity: 0.55
+      regions:
+        level: country
+        ramp: [20, 35, 55]
+        colors: ["$red", "$amber", "$accent2"]
+        items:
+          - { code: "NP", value: 54.80 }   # Nepal — the regional outlier
+          - { code: "MV", value: 49.23 }
+          - { code: "LK", value: 40.77 }
+          - { code: "BT", value: 33.50 }
+          - { code: "BD", value: 33.05 }
+          - { code: "PK", value: 32.61 }
+          - { code: "IN", value: 31.96 }
+          - { code: "AF", value: 19.51 }
+
+  - id: indian-subcontinent
+    chart: data:south-asia
+    map:
+      center: [82.0, 20.0]
+      zoom: 2.8
+      pitch: 0
+      bearing: 0
+      opacity: 0.50
+      regions:
+        level: country
+        ramp: [20, 35, 55]
+        colors: ["$red", "$amber", "$accent2"]
+        items:
+          - { code: "NP", value: 54.80 }
+          - { code: "MV", value: 49.23 }
+          - { code: "LK", value: 40.77 }
+          - { code: "BT", value: 33.50 }
+          - { code: "BD", value: 33.05 }
+          - { code: "PK", value: 32.61 }
+          - { code: "IN", value: 31.96 }
+          - { code: "AF", value: 19.51 }
+    subsections:
+      - text: "India, the world's largest exception"
+        mobileParagraphs:
+          - [0, 1]
+          - [1, 2]
+        map:
+          center: [80.0, 22.0]
+          zoom: 3.8
+          pitch: 20
+          opacity: 0.65
+          pins:
+            - coordinates: [77.2090, 28.6139]
+              label: "New Delhi — 32.0 (rank 157, −6)"
+              color: "#bf4f3a"
+
+      - text: "Nepal, the regional outlier"
+        mobileParagraphs:
+          - [0, 1]
+          - [1, 2]
+        map:
+          center: [85.0, 28.0]
+          zoom: 5.2
+          pitch: 25
+          opacity: 0.65
+          pins:
+            - coordinates: [85.3240, 27.7172]
+              label: "Kathmandu — 54.8 (rank 87, +3)"
+              color: "#3d8d6e"
+
+      - text: "Pakistan, Bangladesh, and the islands"
+        mobileParagraphs:
+          - [0, 1]
+          - [1, 2]
+        map:
+          center: [82.0, 18.0]
+          zoom: 3.0
+          pitch: 10
+          opacity: 0.55
+          pins:
+            - coordinates: [73.0479, 33.6844]
+              label: "Islamabad — 32.6 (rank 153, +5)"
+              color: "#d4a04a"
+            - coordinates: [90.4125, 23.8103]
+              label: "Dhaka — 33.1 (rank 152, −3)"
+              color: "#d4a04a"
+              labelAnchor: right
+            - coordinates: [79.8612, 6.9271]
+              label: "Colombo — 40.8 (rank 134, +5)"
+              color: "#d4a04a"
+              labelAnchor: bottom
+            - coordinates: [73.5093, 4.1755]
+              label: "Malé — 49.2 (rank 108, −4)"
+              color: "#d4a04a"
+              labelAnchor: left
+            - coordinates: [89.6362, 27.4728]
+              label: "Thimphu — 33.5 (rank 150, +2)"
+              color: "#d4a04a"
+              labelAnchor: top
+
+  # ═══════════════════════════════════════════════
   # CLOSING — full world view, full choropleth
   # ═══════════════════════════════════════════════
 

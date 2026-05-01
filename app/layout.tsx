@@ -14,11 +14,27 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
 })
 
+const siteTitle = 'vizmaya — Visual Stories'
+const siteDescription =
+  'Data-driven narratives on geopolitics, technology, and the asymmetries that reshape markets.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vizmaya.fyi'),
-  title: 'vizmaya — Visual Stories',
-  description:
-    'Data-driven narratives on geopolitics, technology, and the asymmetries that reshape markets.',
+  title: siteTitle,
+  description: siteDescription,
+  openGraph: {
+    type: 'website',
+    siteName: 'vizmaya',
+    locale: 'en_US',
+    title: siteTitle,
+    description: siteDescription,
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+  },
 }
 
 export default function RootLayout({

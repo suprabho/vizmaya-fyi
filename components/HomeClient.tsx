@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import VizmayaLogo from '@/components/VizmayaLogo'
+import type { Theme } from '@/types/story'
 
 export interface HomeStory {
   slug: string
@@ -10,6 +11,40 @@ export interface HomeStory {
   subtitle: string
   date: string
   byline: string
+  aura?: string
+  theme?: Theme
+}
+
+function AuraBackground({ slug }: { slug: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShow(true)
+          obs.disconnect()
+        }
+      },
+      { rootMargin: '300px' }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+  return (
+    <div ref={ref} className="bn-aura" aria-hidden>
+      {show && (
+        <iframe
+          title=""
+          src={`https://aura.promad.design/embed/${slug}?hideText=true&hideIcons=true&input=off&theme=light`}
+          loading="lazy"
+          tabIndex={-1}
+        />
+      )}
+    </div>
+  )
 }
 
 const css = `
@@ -82,7 +117,18 @@ const css = `
 
 /* Work / bento ------------------------------------------- */
 .vz .bento{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(170px,auto);gap:14px;max-width:1200px;margin:0 auto;text-align:left}
-.vz .bn{position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;color:var(--ink);overflow:hidden}
+.vz .bn{position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;color:var(--ink);overflow:hidden;isolation:isolate}
+.vz .bn > *{position:relative;z-index:1}
+.vz .bn-aura{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.vz .bn-aura iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent}
+.vz .bn-aura::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,rgba(0,0,0,.18) 55%,rgba(0,0,0,0) 100%)}
+.vz .bn.has-aura,.vz .bn.has-aura.feature,.vz .bn.has-aura.accent-pink,.vz .bn.has-aura.accent-blue{background:var(--bn-bg,#0c0c10);border-color:color-mix(in srgb,var(--bn-text,#fff) 12%,transparent);color:var(--bn-text,#fff)}
+.vz .bn.has-aura .bn-aura::after{background:linear-gradient(to top,color-mix(in srgb,var(--bn-bg,#000) 70%,transparent) 0%,color-mix(in srgb,var(--bn-bg,#000) 22%,transparent) 55%,transparent 100%)}
+.vz .bn.has-aura h3,.vz .bn.has-aura.feature h3{color:var(--bn-text,#fff)}
+.vz .bn.has-aura p,.vz .bn.has-aura.feature p,.vz .bn.has-aura .bn-k,.vz .bn.has-aura.feature .bn-k{color:color-mix(in srgb,var(--bn-muted,var(--bn-text,#fff)) 92%,transparent)}
+.vz .bn.has-aura .bn-n{color:var(--bn-accent,var(--bn-text,#fff))}
+.vz .bn.has-aura .bn-a{color:var(--bn-accent,var(--bn-text,#fff));opacity:.7}
+.vz .bn.has-aura:hover .bn-a{opacity:1}
 .vz .bn:hover{transform:translateY(-2px);box-shadow:0 12px 32px -18px rgba(12,12,16,.22);border-color:rgba(12,12,16,.18);opacity:1}
 .vz .bn-k{font-family:var(--ff-m);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .vz .bn-n{color:var(--teal)}
@@ -198,15 +244,13 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       {/* MASTHEAD — hero + work grid as one block */}
       <section id="hero" className="masthead">
         <div className="hero">
-          <div className="hero-kick kicker">Data journalism · Visual intelligence</div>
+          <div className="hero-kick kicker">Data journalism · Geopolitical storytelling</div>
           <h1 className="hero-h1">
-            We turn data into stories<br />
-            <em>people remember.</em>
+            We turn complex data into stories<br />
+            <em>impossible to ignore.</em>
           </h1>
           <p className="hero-deck">
-            A studio sitting at the border between what is true and what is understood —
-            building visual essays on geopolitics, technology, and the slow variables
-            that shape the present.
+           We build scrollytelling pieces and visual essays that hold the rigour and the explanation together, where the map does the argument and the prose does the meaning.
           </p>
         </div>
 
@@ -214,8 +258,18 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           {stories.map((s, i) => {
             const mod = i % 5
             const tileClass = i === 0 ? 'feature' : mod === 1 ? 'wide' : mod === 2 ? 'wide' : mod === 3 ? 'tall accent-pink' : 'wide accent-blue'
+            const auraClass = s.aura ? ' has-aura' : ''
+            const themeStyle: CSSProperties | undefined = s.aura && s.theme
+              ? {
+                  ['--bn-bg' as string]: s.theme.colors.background,
+                  ['--bn-text' as string]: s.theme.colors.text,
+                  ['--bn-muted' as string]: s.theme.colors.muted,
+                  ['--bn-accent' as string]: s.theme.colors.accent,
+                }
+              : undefined
             return (
-              <Link key={s.slug} href={`/story/${s.slug}`} className={`bn ${tileClass}`}>
+              <Link key={s.slug} href={`/story/${s.slug}`} className={`bn ${tileClass}${auraClass}`} style={themeStyle}>
+                {s.aura && <AuraBackground slug={s.aura} />}
                 <div>
                   <div className="bn-k">
                     <span className="bn-n">#{String(i + 1).padStart(2, '0')}</span>
@@ -234,9 +288,9 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       {/* TRIAD — three worlds, three mysteries */}
       <section className="triad">
         <div className="triad-head">
-          <div className="rv kicker">Three worlds</div>
+          <div className="rv kicker">Process</div>
           <h2 className="rv" data-d="1">
-            Every story lives across three worlds — each one incomplete without the other two.
+            Three things. In order. Every time.
           </h2>
         </div>
 
@@ -244,17 +298,17 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           <div className="triad-col data rv" data-d="1">
             <div className="node">01 — Data</div>
             <h3>Pattern</h3>
-            <p>The structure that exists in the world whether or not anyone is looking. We find it, and we refuse to distort it.</p>
+            <p>TWe start with the dataset, not the story. The pattern has to exist before we decide what it means. We find it, and we refuse to distort it.</p>
           </div>
           <div className="triad-col narrative rv" data-d="2">
             <div className="node">02 — Narrative</div>
             <h3>Meaning</h3>
-            <p>The sense a mind makes of the pattern. The question it answers. The thing you can carry away and repeat.</p>
+            <p>We find the question the data answers. The thing a reader can carry away, repeat, and use to see the world differently.</p>
           </div>
           <div className="triad-col design rv" data-d="3">
             <div className="node">03 — Design</div>
             <h3>Form</h3>
-            <p>The artefact that carries meaning into the world. The chart, the essay, the frame. The thing that makes it travel.</p>
+            <p>We find the format the insight actually needs. Sometimes a fifteen-section scrollytelling piece. Sometimes a single annotated map and four sentences. The form serves the story, never the other way around.</p>
           </div>
         </div>
 
@@ -303,19 +357,15 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         <div className="who-inner">
           <div className="who-head">
             <div className="rv kicker">Who we are</div>
-            <h2 className="rv" data-d="1">A two-person studio, Jaipur &amp; Bengaluru.</h2>
+            <h2 className="rv" data-d="1">A two-person studio</h2>
           </div>
           <div className="who-grid">
             <div className="bio rv" data-d="1">
-              <h3>Shashank Mehta</h3>
+              <h3>Shashank A. Pandey</h3>
               <div className="role">Data storytelling · Visual journalism</div>
               <p>
-                Data storyteller and visual journalist based in Jaipur. Previously wrote 40+
-                articles at Analytics India Magazine, drove 50% user growth at Waxwing AI, and
-                spent eight months building a data visualization practice that accumulated
-                roughly 2 million views — including an a16z Chart of the Week feature. Thinks
-                about AI infrastructure economics, geopolitics, and the gap between what is
-                true and what is understood. Publishes <em>The Asymmetry Letter</em>.
+                He started as a journalist who couldn't stop designing, and a designer who couldn't stop researching. Nobody hired that combination, so he taught himself. Not out of strategy. Because the obsession left no choice.
+                He believes clarity is an act of generosity. That every number is someone's lived reality compressed into a digit, and most of the time that life gets flattened into a chart no one reads. He exists to give it back its shape: to sit at the border between what is true and what is understood, and to refuse to let the distance between them be someone else's problem.
               </p>
             </div>
             <div className="bio rv" data-d="2">
@@ -342,8 +392,8 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           Have data that deserves a better story?
         </h2>
         <p className="rv" data-d="2">
-          We work with organisations and research teams who believe data should be seen,
-          not just stored.
+        We work with B2B data companies, research institutions, and think tanks who have findings worth publishing but need the storytelling and design layer to make them travel.
+        A typical engagement starts with a data brief and an editorial call. We produce scrollytelling pieces, map-led visual essays, standalone infographics, and data reels. Turnaround is two to four weeks depending on scope.
         </p>
         <div className="rv" data-d="3">
           <a className="btn teal" href="mailto:hello@vizmayalabs.com">Get in touch &nbsp;→</a>
@@ -353,7 +403,6 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
       <footer>
         <div>
           <span className="mark">Vizmaya Labs</span>
-          <span className="loc">Jaipur · Bengaluru</span>
         </div>
         <div className="links">
           <a href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Newsletter</a>

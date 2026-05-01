@@ -31,6 +31,8 @@ export interface Frontmatter {
   status?: StoryStatus
   /** Whether the story appears on the home grid. Missing = true. */
   listed?: boolean
+  /** Aura embed slug (https://aura.promad.design/embed/<slug>) used as the home tile background. */
+  aura?: string
 }
 
 export type BlockType =

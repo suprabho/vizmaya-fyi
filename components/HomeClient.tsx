@@ -408,7 +408,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         A typical engagement starts with a data brief and an editorial call. We produce scrollytelling pieces, map-led visual essays, standalone infographics, and data reels. Turnaround is two to four weeks depending on scope.
         </p>
         <div className="rv" data-d="3">
-          <a className="btn teal" href="mailto:hello@vizmaya.fyi">Get in touch &nbsp;→</a>
+          <a className="btn teal" href="mailto:vizmaya@promad.design">Get in touch &nbsp;→</a>
         </div>
       </section>
 

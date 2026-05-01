@@ -247,6 +247,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         </button>
         <div className="nav-r">
           <a className="nav-link" href="#work">Work</a>
+          <Link className="nav-link" href="/stories">Archive</Link>
           <a className="nav-link" href="#about">About</a>
           <a className="nav-cta" href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Subscribe</a>
         </div>

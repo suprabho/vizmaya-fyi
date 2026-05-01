@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ThemeEditor from './ThemeEditor'
 import YamlCardsView from './YamlCardsView'
 import { parseFrontmatter, serializeFrontmatter } from '@/lib/frontmatter'
+import { useTabIndent } from '@/lib/useTabIndent'
 import type { Theme } from '@/types/story'
 
 type Tab = 'theme' | 'markdown' | 'config' | 'share' | 'charts' | 'settings'
@@ -205,10 +206,12 @@ function CodeArea({
   onChange: (v: string) => void
   placeholder?: string
 }) {
+  const onKeyDown = useTabIndent()
   return (
     <textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
       placeholder={placeholder}
       spellCheck={false}
       autoCapitalize="none"

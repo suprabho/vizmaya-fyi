@@ -8,9 +8,19 @@ import {
   useViewModelInstanceColor,
 } from '@rive-app/react-canvas'
 
+export interface VizmayaLogoPalette {
+  text?: string
+  teal?: string
+  accent?: string
+  accent2?: string
+  surface?: string
+  muted?: string
+  line?: string
+}
+
 interface VizmayaLogoProps {
   className?: string
-  textColor?: string
+  palette?: VizmayaLogoPalette
 }
 
 function parseHex(hex: string): { r: number; g: number; b: number } | null {
@@ -22,7 +32,7 @@ function parseHex(hex: string): { r: number; g: number; b: number } | null {
   return { r: (n >> 16) & 0xff, g: (n >> 8) & 0xff, b: n & 0xff }
 }
 
-export default function VizmayaLogo({ className, textColor }: VizmayaLogoProps) {
+export default function VizmayaLogo({ className, palette }: VizmayaLogoProps) {
   const { rive, RiveComponent } = useRive({
     src: '/vizmaya-logo.riv',
     autoplay: true,
@@ -30,14 +40,33 @@ export default function VizmayaLogo({ className, textColor }: VizmayaLogoProps) 
 
   const viewModel = useViewModel(rive, { useDefault: true })
   const instance = useViewModelInstance(viewModel, { rive })
-  const color = useViewModelInstanceColor('textColor', instance)
+  const text = useViewModelInstanceColor('textColor', instance)
+  const teal = useViewModelInstanceColor('tealColor', instance)
+  const accent = useViewModelInstanceColor('accentColor', instance)
+  const accent2 = useViewModelInstanceColor('accent2Color', instance)
+  const surface = useViewModelInstanceColor('surfaceColor', instance)
+  const muted = useViewModelInstanceColor('mutedColor', instance)
+  const line = useViewModelInstanceColor('lineColor', instance)
 
   useEffect(() => {
-    if (!textColor || !color?.setRgb) return
-    const rgb = parseHex(textColor)
-    if (!rgb) return
-    color.setRgb(rgb.r, rgb.g, rgb.b)
-  }, [textColor, color])
+    if (!palette) return
+    const apply = (
+      hex: string | undefined,
+      target: { setRgba?: (r: number, g: number, b: number, a: number) => void } | null,
+    ) => {
+      if (!hex || !target?.setRgba) return
+      const rgb = parseHex(hex)
+      if (!rgb) return
+      target.setRgba(rgb.r, rgb.g, rgb.b, 255)
+    }
+    apply(palette.text, text)
+    apply(palette.teal, teal)
+    apply(palette.accent, accent)
+    apply(palette.accent2, accent2)
+    apply(palette.surface, surface)
+    apply(palette.muted, muted)
+    apply(palette.line, line)
+  }, [palette, text, teal, accent, accent2, surface, muted, line])
 
   return (
     <div className={className}>

@@ -1,15 +1,24 @@
 /**
  * Build-time audio generation script.
  *
- * Reads each story's content + config, resolves units, converts unit text
- * to narration, calls Gemini TTS, and uploads .wav files to Supabase Storage.
- * Metadata (slug, unit_index, content_hash, public_url) is tracked in the
- * `story_audio` Postgres table so unchanged sections are skipped on re-runs.
+ * Reads each story's content + config, resolves units, packs consecutive
+ * units into chunks (~3 min of audio each) and calls Gemini TTS once per
+ * chunk — not once per unit. This keeps daily request volume well under
+ * Gemini's quota. Per-unit playback cues are stored alongside the chunk
+ * audio so the autoplay player can drive `activeUnit` from currentTime.
+ *
+ * Tables written:
+ *   - story_audio_chunks (one row per chunk)
+ *   - story_audio_cues   (one row per mobile unit, with start_ms/end_ms)
+ *
+ * Cue timings here are proportional (allocate chunk duration by character
+ * count). Forced alignment is a follow-up.
  *
  * Usage:
  *   npx tsx scripts/generate-audio.ts                       # all stories
  *   npx tsx scripts/generate-audio.ts south-korea-gpu-hour  # one story
  *   npx tsx scripts/generate-audio.ts --force               # regenerate all
+ *   CHUNK_WORD_TARGET=500 npx tsx scripts/generate-audio.ts # tune chunk size
  */
 
 import fs from 'fs'
@@ -238,6 +247,16 @@ function wrapPcmInWav(pcmData: Buffer): Buffer {
   return Buffer.concat([header, pcmData])
 }
 
+/**
+ * Duration in ms of a WAV produced by `wrapPcmInWav` (mono / 24kHz / 16-bit).
+ * Reads the standard 44-byte header off the front and divides by the byte rate.
+ */
+function wavDurationMs(wav: Buffer): number {
+  const pcmBytes = Math.max(0, wav.length - 44)
+  const samples = pcmBytes / 2
+  return Math.round((samples / 24000) * 1000)
+}
+
 /* ─── Gemini TTS ───────────────────────────────────────────────────── */
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
@@ -372,11 +391,11 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 const BUCKET = 'story-audio'
 
-/** Fetch existing audio records for a story from the DB. */
-async function getExistingRecords(slug: string): Promise<Map<number, string>> {
+/** Fetch existing chunk hashes for a story. */
+async function getExistingChunkHashes(slug: string): Promise<Map<number, string>> {
   const { data, error } = await supabase
-    .from('story_audio')
-    .select('unit_index, content_hash')
+    .from('story_audio_chunks')
+    .select('chunk_index, chunk_hash')
     .eq('slug', slug)
 
   if (error) {
@@ -386,21 +405,32 @@ async function getExistingRecords(slug: string): Promise<Map<number, string>> {
 
   const map = new Map<number, string>()
   for (const row of data ?? []) {
-    map.set(row.unit_index, row.content_hash)
+    map.set(row.chunk_index, row.chunk_hash)
   }
   return map
 }
 
-/** Upload a WAV buffer to Supabase Storage and upsert metadata into DB. */
-async function uploadAudio(
-  slug: string,
-  unitIndex: number,
-  contentHash: string,
-  wavBuffer: Buffer
-): Promise<string | null> {
-  const storagePath = `${slug}/unit-${unitIndex}.wav`
+interface CueRow {
+  unit_index: number
+  start_ms: number
+  end_ms: number
+}
 
-  // Upload to storage (upsert to overwrite if exists)
+/**
+ * Upload a chunk's WAV, upsert the chunk row, then replace its cue rows.
+ * Cues are deleted+inserted (rather than upserted) so removing a unit from
+ * a chunk's text doesn't leave a stale cue behind.
+ */
+async function uploadChunk(
+  slug: string,
+  chunkIndex: number,
+  chunkHash: string,
+  wavBuffer: Buffer,
+  durationMs: number,
+  cues: CueRow[]
+): Promise<string | null> {
+  const storagePath = `${slug}/chunk-${chunkIndex}.wav`
+
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
     .upload(storagePath, wavBuffer, {
@@ -413,30 +443,169 @@ async function uploadAudio(
     return null
   }
 
-  // Get public URL
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
   const publicUrl = urlData.publicUrl
 
-  // Upsert metadata into DB
-  const { error: dbError } = await supabase
-    .from('story_audio')
+  const { error: chunkErr } = await supabase
+    .from('story_audio_chunks')
     .upsert(
       {
         slug,
-        unit_index: unitIndex,
-        content_hash: contentHash,
+        chunk_index: chunkIndex,
+        chunk_hash: chunkHash,
         storage_path: storagePath,
         public_url: publicUrl,
+        duration_ms: durationMs,
       },
-      { onConflict: 'slug,unit_index' }
+      { onConflict: 'slug,chunk_index' }
     )
 
-  if (dbError) {
-    console.error(`  DB upsert error: ${dbError.message}`)
+  if (chunkErr) {
+    console.error(`  DB upsert error (chunk): ${chunkErr.message}`)
     return null
   }
 
+  // Replace cue rows for the units this chunk covers
+  const unitIndices = cues.map((c) => c.unit_index)
+  if (unitIndices.length > 0) {
+    const { error: delErr } = await supabase
+      .from('story_audio_cues')
+      .delete()
+      .eq('slug', slug)
+      .in('unit_index', unitIndices)
+    if (delErr) {
+      console.error(`  DB delete error (cues): ${delErr.message}`)
+      return null
+    }
+  }
+
+  if (cues.length > 0) {
+    const { error: insErr } = await supabase.from('story_audio_cues').insert(
+      cues.map((c) => ({
+        slug,
+        unit_index: c.unit_index,
+        chunk_index: chunkIndex,
+        start_ms: c.start_ms,
+        end_ms: c.end_ms,
+      }))
+    )
+    if (insErr) {
+      console.error(`  DB insert error (cues): ${insErr.message}`)
+      return null
+    }
+  }
+
   return publicUrl
+}
+
+/**
+ * Trim chunk rows whose index is >= keepCount. Lets a story shrink (e.g.
+ * after editing the markdown) without leaving orphan rows pointing at WAVs
+ * that no longer correspond to anything in the source.
+ */
+async function pruneChunks(slug: string, keepCount: number): Promise<void> {
+  const { error } = await supabase
+    .from('story_audio_chunks')
+    .delete()
+    .eq('slug', slug)
+    .gte('chunk_index', keepCount)
+  if (error) console.error(`  DB prune error (chunks): ${error.message}`)
+}
+
+/**
+ * Drop cue rows whose unit_index is past the end of the resolved unit list.
+ * Mirrors `pruneChunks` for the cue table.
+ */
+async function pruneCues(slug: string, keepUnitCount: number): Promise<void> {
+  const { error } = await supabase
+    .from('story_audio_cues')
+    .delete()
+    .eq('slug', slug)
+    .gte('unit_index', keepUnitCount)
+  if (error) console.error(`  DB prune error (cues): ${error.message}`)
+}
+
+/* ─── Chunk packing ────────────────────────────────────────────────── */
+
+/**
+ * One TTS request's worth of units. `texts[i]` is the narration string for
+ * `unitIndices[i]`; the prompt sent to Gemini is `texts.join(SEPARATOR)`.
+ *
+ * Cue offsets fall out of `texts.length` ratios at upload time — we only
+ * need to remember the per-unit narration here.
+ */
+interface AudioChunk {
+  unitIndices: number[]
+  texts: string[]
+}
+
+const CHUNK_SEPARATOR = '. '
+/**
+ * Target words per chunk. Gemini 2.5 flash TTS quality drifts past ~5 min
+ * of audio, so we aim for ~3 min at ~180 wpm. Override with the env var
+ * if a story has unusually short or long sections.
+ */
+const CHUNK_WORD_TARGET = Number(process.env.CHUNK_WORD_TARGET ?? 500)
+
+function wordCount(s: string): number {
+  return s.trim().split(/\s+/).filter(Boolean).length
+}
+
+/**
+ * Pack consecutive units into chunks no larger than CHUNK_WORD_TARGET words.
+ * A unit always lives entirely in one chunk — we never split a unit across
+ * a request boundary, since cue timings are derived per-unit. Units with
+ * empty/very-short narration text are still included so they get a (zero-
+ * duration) cue and remain addressable from the player.
+ */
+function packUnitsIntoChunks(units: UnitInfo[]): AudioChunk[] {
+  const chunks: AudioChunk[] = []
+  let current: AudioChunk = { unitIndices: [], texts: [] }
+  let currentWords = 0
+
+  for (let i = 0; i < units.length; i++) {
+    const text = unitToNarrationText(units[i])
+    const words = wordCount(text)
+
+    if (currentWords > 0 && currentWords + words > CHUNK_WORD_TARGET) {
+      chunks.push(current)
+      current = { unitIndices: [], texts: [] }
+      currentWords = 0
+    }
+
+    current.unitIndices.push(i)
+    current.texts.push(text)
+    currentWords += words
+  }
+
+  if (current.unitIndices.length > 0) chunks.push(current)
+  return chunks
+}
+
+/**
+ * Allocate a chunk's audio duration to its units in proportion to each
+ * unit's narration length (characters). Exact only if Gemini speaks at a
+ * uniform rate — close enough for animation cues over a 2–4 unit chunk,
+ * and replaceable later with forced alignment.
+ */
+function computeProportionalCues(
+  chunk: AudioChunk,
+  durationMs: number
+): CueRow[] {
+  const lengths = chunk.texts.map((t) => Math.max(1, t.length))
+  const total = lengths.reduce((a, b) => a + b, 0)
+  let cursor = 0
+  const cues: CueRow[] = []
+  for (let i = 0; i < chunk.unitIndices.length; i++) {
+    const startMs = Math.round((cursor / total) * durationMs)
+    cursor += lengths[i]
+    const endMs =
+      i === chunk.unitIndices.length - 1
+        ? durationMs
+        : Math.round((cursor / total) * durationMs)
+    cues.push({ unit_index: chunk.unitIndices[i], start_ms: startMs, end_ms: endMs })
+  }
+  return cues
 }
 
 /* ─── Main ─────────────────────────────────────────────────────────── */
@@ -444,55 +613,72 @@ async function uploadAudio(
 async function processStory(slug: string, force: boolean) {
   console.log(`\n━━━ ${slug} ━━━`)
 
-  // Generate per mobile unit — the smallest grain. Desktop autoplay
-  // concatenates these segments back-to-back.
   const units = resolveMobileUnitsFlat(slug)
   if (units.length === 0) {
     console.log('  No units found, skipping.')
     return
   }
 
-  // Fetch existing hashes from DB
-  const existingHashes = await getExistingRecords(slug)
+  const chunks = packUnitsIntoChunks(units)
+  console.log(
+    `  ${units.length} units → ${chunks.length} chunks (target ${CHUNK_WORD_TARGET} words/chunk)`
+  )
+
+  const existingHashes = await getExistingChunkHashes(slug)
 
   let generated = 0
   let skipped = 0
   let failed = 0
 
-  for (let i = 0; i < units.length; i++) {
-    const text = unitToNarrationText(units[i])
-    const hash = hashText(text)
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i]
+    const transcript = chunk.texts.join(CHUNK_SEPARATOR)
+    const hash = hashText(transcript)
 
-    // Skip if hash unchanged in DB
     if (!force && existingHashes.get(i) === hash) {
-      console.log(`  [${i + 1}/${units.length}] ✓ unchanged, skipping`)
+      console.log(
+        `  [${i + 1}/${chunks.length}] ✓ unchanged (${chunk.unitIndices.length} units, ${wordCount(transcript)}w), skipping`
+      )
       skipped++
       continue
     }
 
-    if (text.length < 5) {
-      console.log(`  [${i + 1}/${units.length}] ⊘ text too short, skipping`)
+    if (transcript.trim().length < 5) {
+      console.log(`  [${i + 1}/${chunks.length}] ⊘ transcript too short, skipping`)
       skipped++
       continue
     }
 
-    process.stdout.write(`  [${i + 1}/${units.length}] generating... `)
+    process.stdout.write(
+      `  [${i + 1}/${chunks.length}] generating (${chunk.unitIndices.length} units, ${wordCount(transcript)}w)... `
+    )
 
-    const audioBuffer = await generateSpeech(text)
-    if (audioBuffer) {
-      const publicUrl = await uploadAudio(slug, i, hash, audioBuffer)
-      if (publicUrl) {
-        console.log(`✓ ${(audioBuffer.length / 1024).toFixed(0)}KB → Supabase`)
-        generated++
-      } else {
-        console.log('✗ upload failed')
-        failed++
-      }
-    } else {
+    const audioBuffer = await generateSpeech(transcript)
+    if (!audioBuffer) {
       console.log('✗ TTS failed')
+      failed++
+      continue
+    }
+
+    const durationMs = wavDurationMs(audioBuffer)
+    const cues = computeProportionalCues(chunk, durationMs)
+    const publicUrl = await uploadChunk(slug, i, hash, audioBuffer, durationMs, cues)
+
+    if (publicUrl) {
+      console.log(
+        `✓ ${(audioBuffer.length / 1024).toFixed(0)}KB / ${(durationMs / 1000).toFixed(1)}s → Supabase`
+      )
+      generated++
+    } else {
+      console.log('✗ upload failed')
       failed++
     }
   }
+
+  // Drop any rows from a previous run that no longer correspond to chunks
+  // or units in the current source.
+  await pruneChunks(slug, chunks.length)
+  await pruneCues(slug, units.length)
 
   console.log(`  Done: ${generated} generated, ${skipped} skipped, ${failed} failed`)
 }

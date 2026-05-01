@@ -12,11 +12,19 @@ import { createBrowserClient } from '@/lib/supabase'
 import type { ResolvedUnit, StoryDefaults } from '@/lib/storyConfig.types'
 import AutoplayAspectToggle, { type AutoplayRatio } from './AutoplayAspectToggle'
 
-/* ─── Audio record from Supabase ───────────────────────────────────── */
+/* ─── DB row shapes ────────────────────────────────────────────────── */
 
-interface AudioRecord {
-  unit_index: number
+interface ChunkRecord {
+  chunk_index: number
   public_url: string
+  duration_ms: number
+}
+
+interface CueRecord {
+  unit_index: number
+  chunk_index: number
+  start_ms: number
+  end_ms: number
 }
 
 /* ─── Props ────────────────────────────────────────────────────────── */
@@ -28,8 +36,9 @@ interface Props {
   mobileUnits?: ResolvedUnit[]
   /**
    * For each desktop unit (index = position in `units`), the array of mobile
-   * unit indices it expands into. Audio is generated per mobile unit; for
-   * desktop playback we queue these segments back-to-back.
+   * unit indices it expands into. Audio is generated per chunk; cues are
+   * keyed by mobile-unit index, so this mapping is what lets a single visible
+   * desktop unit cover multiple cues / span a chunk boundary.
    */
   desktopToMobile: number[][]
   accessToken: string
@@ -68,8 +77,8 @@ export default function AutoplayShell({
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const stageRef = useRef<HTMLDivElement | null>(null)
 
-  // Map of unit_index → public_url for available audio
-  const [audioMap, setAudioMap] = useState<Map<number, string>>(new Map())
+  const [chunks, setChunks] = useState<ChunkRecord[]>([])
+  const [cues, setCues] = useState<CueRecord[]>([])
 
   // Use mobileUnits for 9:16 (vertical), desktop for 16:9
   const isVertical = ratio === '9:16'
@@ -79,16 +88,13 @@ export default function AutoplayShell({
   )
 
   /**
-   * For the current display orientation, the list of mobile-unit audio indices
+   * For the current display orientation, the list of mobile-unit cue indices
    * that back each visible unit. In 9:16 mode each visible unit IS a mobile
-   * unit, so the mapping is identity. In 16:9 (desktop) mode each visible unit
-   * may map to multiple mobile audio segments which play back-to-back.
+   * unit, so the mapping is identity. In 16:9 mode each visible unit may
+   * cover multiple mobile units — and may therefore span a chunk boundary.
    */
   const audioIndicesPerUnit = useMemo<number[][]>(() => {
-    if (isVertical) {
-      // Identity: each mobile unit's audio key = its own index
-      return units.map((_, i) => [i])
-    }
+    if (isVertical) return units.map((_, i) => [i])
     return desktopToMobile
   }, [isVertical, units, desktopToMobile])
 
@@ -121,28 +127,103 @@ export default function AutoplayShell({
     }
   }, [dims.width, dims.height])
 
-  /* ─── Load audio records from Supabase ───────────────────────── */
+  /* ─── Load chunks + cues from Supabase ───────────────────────── */
 
   useEffect(() => {
     const supabase = createBrowserClient()
-    supabase
-      .from('story_audio')
-      .select('unit_index, public_url')
-      .eq('slug', slug)
-      .then((res: { data: AudioRecord[] | null; error: { message: string } | null }) => {
-        const { data, error } = res
-        if (error || !data) {
-          console.error('[Autoplay] Failed to load audio records:', error?.message)
-          setAudioMap(new Map())
-          return
+    Promise.all([
+      supabase
+        .from('story_audio_chunks')
+        .select('chunk_index, public_url, duration_ms')
+        .eq('slug', slug)
+        .order('chunk_index'),
+      supabase
+        .from('story_audio_cues')
+        .select('unit_index, chunk_index, start_ms, end_ms')
+        .eq('slug', slug)
+        .order('unit_index'),
+    ]).then(
+      ([chunksRes, cuesRes]: [
+        { data: ChunkRecord[] | null; error: { message: string } | null },
+        { data: CueRecord[] | null; error: { message: string } | null }
+      ]) => {
+        if (chunksRes.error) {
+          console.error('[Autoplay] Failed to load chunks:', chunksRes.error.message)
+          setChunks([])
+        } else {
+          setChunks(chunksRes.data ?? [])
         }
-        const map = new Map<number, string>()
-        for (const row of data) {
-          map.set(row.unit_index, row.public_url)
+        if (cuesRes.error) {
+          console.error('[Autoplay] Failed to load cues:', cuesRes.error.message)
+          setCues([])
+        } else {
+          setCues(cuesRes.data ?? [])
         }
-        setAudioMap(map)
-      })
+      }
+    )
   }, [slug])
+
+  /* ─── Cue / chunk lookup helpers ──────────────────────────────── */
+
+  const cueByUnit = useMemo(() => {
+    const m = new Map<number, CueRecord>()
+    for (const c of cues) m.set(c.unit_index, c)
+    return m
+  }, [cues])
+
+  /**
+   * Cues bucketed by chunk_index, sorted by start_ms — used by the
+   * timeupdate handler to find the active cue without rescanning every cue.
+   */
+  const cuesByChunk = useMemo(() => {
+    const m = new Map<number, CueRecord[]>()
+    for (const c of cues) {
+      const arr = m.get(c.chunk_index) ?? []
+      arr.push(c)
+      m.set(c.chunk_index, arr)
+    }
+    for (const arr of m.values()) arr.sort((a, b) => a.start_ms - b.start_ms)
+    return m
+  }, [cues])
+
+  const chunkByIndex = useMemo(() => {
+    const m = new Map<number, ChunkRecord>()
+    for (const c of chunks) m.set(c.chunk_index, c)
+    return m
+  }, [chunks])
+
+  /**
+   * Reverse mapping mobile-unit index → visible unit index. In 9:16 mode the
+   * mapping is identity; in 16:9 mode it walks `desktopToMobile`. Memoized
+   * once per ratio change.
+   */
+  const visibleForMobile = useMemo<Map<number, number>>(() => {
+    const m = new Map<number, number>()
+    if (isVertical) {
+      for (let i = 0; i < units.length; i++) m.set(i, i)
+    } else {
+      for (let i = 0; i < desktopToMobile.length; i++) {
+        for (const mi of desktopToMobile[i]) m.set(mi, i)
+      }
+    }
+    return m
+  }, [isVertical, units.length, desktopToMobile])
+
+  /**
+   * The first cue that backs a visible unit. Used to seek into the right
+   * chunk + offset when the user presses Play on a particular dot.
+   */
+  const firstCueForVisible = useCallback(
+    (visibleUnit: number): CueRecord | undefined => {
+      const indices = audioIndicesPerUnit[visibleUnit] ?? []
+      for (const mi of indices) {
+        const c = cueByUnit.get(mi)
+        if (c) return c
+      }
+      return undefined
+    },
+    [audioIndicesPerUnit, cueByUnit]
+  )
 
   /* ─── Iframe scroll control ──────────────────────────────────── */
 
@@ -182,6 +263,16 @@ export default function AutoplayShell({
     scrollIframeToUnit(activeUnit)
   }, [activeUnit, iframeReady, scrollIframeToUnit])
 
+  /* ─── Audio playback ─────────────────────────────────────────── */
+
+  const stopPlayback = useCallback(() => {
+    setIsPlaying(false)
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+  }, [])
+
   // When ratio changes, the iframe reloads (different key) — reset state.
   useEffect(() => {
     setActiveUnit(0)
@@ -193,110 +284,104 @@ export default function AutoplayShell({
     setIsPlaying(false)
   }, [ratio])
 
-  /* ─── Audio playback ─────────────────────────────────────────── */
-
-  const stopPlayback = useCallback(() => {
-    setIsPlaying(false)
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
-  }, [])
-
   /**
-   * Play one mobile-audio segment, then call `onComplete` so the caller can
-   * decide whether to chain to the next segment within the same unit, advance
-   * to the next unit, or stop. Returns nothing — control flows through
-   * `onComplete` so cancellation (via stopPlayback) is straightforward.
+   * Play the chunk that contains `startCue`, seeking to its `start_ms`. When
+   * the chunk ends, automatically chain into the next chunk. activeUnit is
+   * driven by the timeupdate handler, so the visible UI tracks the audio
+   * position even mid-chunk.
    */
-  const playSegment = useCallback(
-    (audioIndex: number, onComplete: () => void, onSkip: () => void) => {
+  const playFromCue = useCallback(
+    (startCue: CueRecord) => {
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current = null
       }
 
-      const audioUrl = audioMap.get(audioIndex)
-      if (!audioUrl) {
-        // No audio for this segment — wait briefly then skip
-        setTimeout(onSkip, 2000)
+      const chunk = chunkByIndex.get(startCue.chunk_index)
+      if (!chunk) {
+        setIsPlaying(false)
         return
       }
 
       setAudioLoading(true)
-      const audio = new Audio(audioUrl)
+      const audio = new Audio(chunk.public_url)
       audioRef.current = audio
 
-      audio.oncanplaythrough = () => setAudioLoading(false)
-      audio.onended = onComplete
-      audio.onerror = () => {
-        setAudioLoading(false)
-        onSkip()
-      }
-      audio.play().catch(() => {
-        setAudioLoading(false)
-        onSkip()
+      audio.addEventListener('loadedmetadata', () => {
+        // Seek before play so we don't briefly hear chunk-start audio
+        audio.currentTime = startCue.start_ms / 1000
       })
-    },
-    [audioMap]
-  )
 
-  /**
-   * Play a desktop unit by queueing each of its mobile-audio segments
-   * back-to-back. When all segments finish, advance to the next unit (unless
-   * stopped). Each segment gets a small inter-segment pause; each unit gets a
-   * slightly longer pause before moving on.
-   */
-  const playUnit = useCallback(
-    (unitIndex: number) => {
-      setActiveUnit(unitIndex)
+      audio.addEventListener('canplay', () => setAudioLoading(false))
 
-      const audioIndices = audioIndicesPerUnit[unitIndex] ?? []
-
-      const advanceToNextUnit = () => {
-        if (unitIndex < units.length - 1) {
-          setTimeout(() => playUnit(unitIndex + 1), 800)
-        } else {
-          setIsPlaying(false)
+      audio.addEventListener('timeupdate', () => {
+        if (audioRef.current !== audio) return
+        const tMs = audio.currentTime * 1000
+        const list = cuesByChunk.get(chunk.chunk_index)
+        if (!list) return
+        // Linear scan — chunks hold a handful of cues at most.
+        let active: CueRecord | undefined
+        for (const c of list) {
+          if (tMs >= c.start_ms && tMs < c.end_ms) {
+            active = c
+            break
+          }
         }
-      }
+        if (!active) return
+        const visible = visibleForMobile.get(active.unit_index)
+        if (visible !== undefined) {
+          setActiveUnit((prev) => (prev === visible ? prev : visible))
+        }
+      })
 
-      // No audio segments at all — wait and advance
-      if (audioIndices.length === 0) {
-        setTimeout(advanceToNextUnit, 4000)
-        return
-      }
-
-      let segmentPos = 0
-      const playNextSegment = () => {
-        if (segmentPos >= audioIndices.length) {
-          advanceToNextUnit()
+      audio.addEventListener('ended', () => {
+        if (audioRef.current !== audio) return
+        const nextChunk = chunkByIndex.get(chunk.chunk_index + 1)
+        if (!nextChunk) {
+          setIsPlaying(false)
+          audioRef.current = null
           return
         }
-        const currentAudioIndex = audioIndices[segmentPos]
-        segmentPos++
-        playSegment(
-          currentAudioIndex,
-          // onComplete: small pause, then next segment within same unit
-          () => setTimeout(playNextSegment, 250),
-          // onSkip: also try next segment
-          playNextSegment
-        )
-      }
+        const nextCues = cuesByChunk.get(nextChunk.chunk_index)
+        const first = nextCues?.[0]
+        if (!first) {
+          setIsPlaying(false)
+          audioRef.current = null
+          return
+        }
+        playFromCue(first)
+      })
 
-      playNextSegment()
+      audio.addEventListener('error', () => {
+        if (audioRef.current !== audio) return
+        setAudioLoading(false)
+        setIsPlaying(false)
+        audioRef.current = null
+      })
+
+      audio.play().catch(() => {
+        if (audioRef.current !== audio) return
+        setAudioLoading(false)
+        setIsPlaying(false)
+        audioRef.current = null
+      })
     },
-    [audioIndicesPerUnit, playSegment, units.length]
+    [chunkByIndex, cuesByChunk, visibleForMobile]
   )
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
       stopPlayback()
-    } else {
-      setIsPlaying(true)
-      playUnit(activeUnit)
+      return
     }
-  }, [isPlaying, stopPlayback, playUnit, activeUnit])
+    const cue = firstCueForVisible(activeUnit)
+    if (!cue) {
+      // No audio for this visible unit — nothing to play.
+      return
+    }
+    setIsPlaying(true)
+    playFromCue(cue)
+  }, [isPlaying, stopPlayback, firstCueForVisible, activeUnit, playFromCue])
 
   const handlePrev = useCallback(() => {
     stopPlayback()
@@ -320,13 +405,8 @@ export default function AutoplayShell({
 
   /* ─── Render ───────────────────────────────────────────────────── */
 
-  // Total = mobile-grain segments stored in DB
-  const totalAudioCount = audioMap.size
-  // For the current visible unit, "ready" means at least one of its
-  // backing mobile audio segments is in the cache.
-  const hasAudioForCurrent = (audioIndicesPerUnit[activeUnit] ?? []).some((i) =>
-    audioMap.has(i)
-  )
+  const hasAudioForCurrent = firstCueForVisible(activeUnit) !== undefined
+  const totalDurationMs = chunks.reduce((sum, c) => sum + c.duration_ms, 0)
 
   return (
     <div
@@ -363,8 +443,8 @@ export default function AutoplayShell({
               className="px-3 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.65rem] tracking-wider"
               style={{ color: 'var(--color-muted)' }}
             >
-              {totalAudioCount > 0
-                ? `${totalAudioCount} audio segments`
+              {chunks.length > 0
+                ? `${chunks.length} chunks · ${(totalDurationMs / 1000).toFixed(0)}s`
                 : 'no audio generated'}
             </div>
           </div>

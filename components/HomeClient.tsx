@@ -249,7 +249,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           <a className="nav-link" href="#work">Work</a>
           <Link className="nav-link" href="/stories">Archive</Link>
           <a className="nav-link" href="#about">About</a>
-          <a className="nav-cta" href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Subscribe</a>
+          <a className="nav-cta" href="ttps://www.youtube.com/@Vizmayaa" target="_blank" rel="noreferrer">Subscribe</a>
         </div>
       </nav>
 
@@ -408,7 +408,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
         A typical engagement starts with a data brief and an editorial call. We produce scrollytelling pieces, map-led visual essays, standalone infographics, and data reels. Turnaround is two to four weeks depending on scope.
         </p>
         <div className="rv" data-d="3">
-          <a className="btn teal" href="mailto:hello@vizmayalabs.com">Get in touch &nbsp;→</a>
+          <a className="btn teal" href="mailto:hello@vizmaya.fyi">Get in touch &nbsp;→</a>
         </div>
       </section>
 
@@ -417,9 +417,9 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           <span className="mark">Vizmaya Labs</span>
         </div>
         <div className="links">
-          <a href="https://theasymmetryletter.substack.com" target="_blank" rel="noreferrer">Newsletter</a>
-          <a href="https://linkedin.com/company/vizmaya-labs" target="_blank" rel="noreferrer">LinkedIn</a>
-          <a href="https://instagram.com/vizzmaya" target="_blank" rel="noreferrer">Instagram</a>
+          <a href="https://www.youtube.com/@Vizmayaa" target="_blank" rel="noreferrer">Youtube</a>
+          <a href="https://www.linkedin.com/company/vizmaya/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a href="https://x.com/VizmayaFyi" target="_blank" rel="noreferrer">X</a>
         </div>
       </footer>
     </div>

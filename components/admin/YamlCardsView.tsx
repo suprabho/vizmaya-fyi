@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import {
   buildYamlModel,
   deleteSection,
@@ -9,6 +9,7 @@ import {
   replaceSection,
   type SectionBlock,
 } from '@/lib/yamlSections'
+import { useTabIndent } from '@/lib/useTabIndent'
 import MapPickerModal from './MapPickerModal'
 
 interface Props {
@@ -21,10 +22,11 @@ type Mode = 'cards' | 'raw'
 
 export default function YamlCardsView({ value, onChange, placeholder }: Props) {
   const [mode, setMode] = useState<Mode>('cards')
-  const model = useMemo(() => buildYamlModel(value), [value])
+  const deferredValue = useDeferredValue(value)
+  const model = useMemo(() => buildYamlModel(deferredValue), [deferredValue])
 
   // No sections yet — empty config.
-  const hasContent = value.trim().length > 0
+  const hasContent = deferredValue.trim().length > 0
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -75,10 +77,12 @@ function RawArea({
   onChange: (v: string) => void
   placeholder?: string
 }) {
+  const onKeyDown = useTabIndent()
   return (
     <textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
       placeholder={placeholder}
       spellCheck={false}
       autoCapitalize="none"
@@ -160,6 +164,7 @@ function CardsList({
 
 function DefaultsCard({ raw, onChange }: { raw: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false)
+  const onKeyDown = useTabIndent()
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
       <button
@@ -177,6 +182,7 @@ function DefaultsCard({ raw, onChange }: { raw: string; onChange: (v: string) =>
         <textarea
           value={raw}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
           spellCheck={false}
           autoCapitalize="none"
           autoCorrect="off"
@@ -213,6 +219,7 @@ function SectionCard({
 }) {
   const [draft, setDraft] = useState<string>(section.raw)
   const [mapOpen, setMapOpen] = useState(false)
+  const onKeyDown = useTabIndent()
   const dirty = draft !== section.raw
 
   // Structural ops (move/duplicate/delete) re-key this component position with
@@ -252,6 +259,7 @@ function SectionCard({
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={onKeyDown}
             spellCheck={false}
             autoCapitalize="none"
             autoCorrect="off"

@@ -249,7 +249,7 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           <a className="nav-link" href="#work">Work</a>
           <Link className="nav-link" href="/stories">Archive</Link>
           <a className="nav-link" href="#about">About</a>
-          <a className="nav-cta" href="ttps://www.youtube.com/@Vizmayaa" target="_blank" rel="noreferrer">Subscribe</a>
+          <a className="nav-cta" href="https://www.youtube.com/@Vizmayaa" target="_blank" rel="noreferrer">Subscribe</a>
         </div>
       </nav>
 

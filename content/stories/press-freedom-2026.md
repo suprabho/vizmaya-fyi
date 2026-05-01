@@ -220,6 +220,38 @@ The patterns are different — Botswana's reflects post-election reforms, Mongol
 
 ---
 
+## The Indian subcontinent
+
+The 2026 index reads South Asia as a single block more clearly than any other region. Eight countries; one of them is in the upper half of the chart and seven of them are in the bottom third.
+
+The size of the block matters. Together the eight countries hold close to two billion people — about a quarter of the world's population, and a larger share of the world's working journalists than any other contiguous region.
+
+---
+
+## India, the world's largest exception
+
+India sits at #157 with a score of 31.96, six places lower than 2025. Its political pillar — the conditions independent journalists work under — is 21.16, the third-lowest of any G20 economy. Its safety pillar is 32.77.
+
+The country is the only large parliamentary democracy in the bottom quarter of the index. Its peers in the 31-to-33-point band are Bangladesh, Pakistan, and Bhutan — smaller states with markedly different political histories. India is alone in its row.
+
+---
+
+## Nepal, the regional outlier
+
+Nepal sits at #87 with a score of 54.8 — six points above the next-best South Asian country and the only one in the upper half of the index. Its legal pillar, 68.19, is among the strongest in low-and-middle-income Asia.
+
+The 2008 transition from constitutional monarchy to federal republic is the structural story behind the number. The pluralism of regional-language and politically affiliated outlets — Maoist, Madhesi, Muslim, mainstream Nepali — has produced a press environment more contested than constrained.
+
+---
+
+## Pakistan, Bangladesh, and the islands
+
+Pakistan (#153, 32.61) and Bangladesh (#152, 33.05) sit within a point of each other. The pillar profiles differ: Pakistan's political score is 25.05, the lower of the two; Bangladesh's is 31.09, but its safety, 30.51, is the lower of the two on that dimension.
+
+Sri Lanka at #134 (40.77) is the regional middle, slowly recovering from the 2022 economic-and-press crisis. The Maldives at #108 (49.23) is the regional second-best after Nepal. Bhutan at #150 (33.5) carries the index's most distinctive profile: a safety pillar of 70.76 — among the highest in the bottom half — paired with a legal pillar of 19.44, one of the lowest. The press is physically safe; it is not legally free.
+
+---
+
 ## The map remains
 
 A press-freedom index is a still picture of a moving environment. The 2026 picture is dominated by movement: Syria's recovery, Niger's collapse, the steady erosion of the Western middle, the unchanging floor.

@@ -11,6 +11,12 @@ import {
   removeMobileMapView,
   type MapView,
 } from '@/lib/yamlMapPatch'
+import {
+  STORY_LANDSCAPE_FOCUS_AREA,
+  STORY_PORTRAIT_FOCUS_AREA,
+  computeStoryFocusPadding,
+  type StoryFocusArea,
+} from '@/lib/storyFocusArea'
 
 /**
  * Section-scoped visual map editor. Reads center/zoom/pitch/bearing from the
@@ -74,6 +80,17 @@ export default function MapPickerModal({
     targetRef.current = target
   }, [target])
 
+  // Latest views, mirrored into refs so the ResizeObserver callback (captured
+  // at mount) can re-project to whichever target is active without going stale.
+  const desktopViewRef = useRef(desktopView)
+  const mobileViewRef = useRef(mobileView)
+  useEffect(() => {
+    desktopViewRef.current = desktopView
+  }, [desktopView])
+  useEffect(() => {
+    mobileViewRef.current = mobileView
+  }, [mobileView])
+
   const view = target === 'desktop' ? desktopView : mobileView
 
   useEffect(() => {
@@ -117,9 +134,29 @@ export default function MapPickerModal({
     // The modal flexbox needs a frame to settle its final size. Without this
     // resize, Mapbox locks in the container's initial (too-small) dimensions
     // and the canvas renders as a narrow strip.
-    const ro = new ResizeObserver(() => map.resize())
+    //
+    // Also re-applies the story's focal padding so the picker is WYSIWYG with
+    // the live story render, and re-projects to the active target's view —
+    // padding alone does not re-center the camera, so a jumpTo is required.
+    function applyFocusLayout() {
+      const m = mapRef.current
+      const c = containerRef.current
+      if (!m || !c) return
+      m.resize()
+      m.setPadding(
+        computeStoryFocusPadding(c, STORY_LANDSCAPE_FOCUS_AREA, STORY_PORTRAIT_FOCUS_AREA)
+      )
+      const v = targetRef.current === 'desktop' ? desktopViewRef.current : mobileViewRef.current
+      m.jumpTo({
+        center: v.center,
+        zoom: v.zoom,
+        pitch: v.pitch,
+        bearing: v.bearing,
+      })
+    }
+    const ro = new ResizeObserver(() => applyFocusLayout())
     ro.observe(containerRef.current)
-    requestAnimationFrame(() => map.resize())
+    requestAnimationFrame(() => applyFocusLayout())
 
     return () => {
       ro.disconnect()
@@ -140,13 +177,27 @@ export default function MapPickerModal({
 
   function switchTarget(next: Target) {
     if (next === target) return
+    // Sync the ref before scheduling the camera update so the rAF (and any
+    // ResizeObserver firing as the container resizes) sees the new target.
+    targetRef.current = next
     setTarget(next)
-    const v = next === 'desktop' ? desktopView : mobileView
-    mapRef.current?.jumpTo({
-      center: v.center,
-      zoom: v.zoom,
-      pitch: v.pitch,
-      bearing: v.bearing,
+    // Defer the camera reproject until after React commits the new container
+    // aspect ratio — otherwise setPadding/jumpTo run against the old layout.
+    requestAnimationFrame(() => {
+      const map = mapRef.current
+      const c = containerRef.current
+      if (!map || !c) return
+      map.resize()
+      map.setPadding(
+        computeStoryFocusPadding(c, STORY_LANDSCAPE_FOCUS_AREA, STORY_PORTRAIT_FOCUS_AREA)
+      )
+      const v = next === 'desktop' ? desktopView : mobileView
+      map.jumpTo({
+        center: v.center,
+        zoom: v.zoom,
+        pitch: v.pitch,
+        bearing: v.bearing,
+      })
     })
   }
 
@@ -219,15 +270,23 @@ export default function MapPickerModal({
 
       <div className="relative flex-1 min-h-0 bg-neutral-950 flex items-center justify-center">
         {token ? (
-          target === 'mobile' ? (
-            <div
-              ref={containerRef}
-              className="h-full"
-              style={{ aspectRatio: '9 / 19.5', maxWidth: '100%' }}
+          <div
+            className={
+              target === 'mobile'
+                ? 'relative h-full overflow-hidden'
+                : 'relative w-full h-full overflow-hidden'
+            }
+            style={
+              target === 'mobile'
+                ? { aspectRatio: '9 / 19.5', maxWidth: '100%' }
+                : undefined
+            }
+          >
+            <div ref={containerRef} className="absolute inset-0" />
+            <FocusAreaOverlay
+              area={target === 'mobile' ? STORY_PORTRAIT_FOCUS_AREA : STORY_LANDSCAPE_FOCUS_AREA}
             />
-          ) : (
-            <div ref={containerRef} className="w-full h-full" />
-          )
+          </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-neutral-400">
             Missing <code className="bg-white/10 px-1 rounded ml-1 mr-1">NEXT_PUBLIC_MAPBOX_TOKEN</code>.
@@ -302,6 +361,33 @@ function fmt(n: number, places: number): string {
 
 function fallbackView(): MapView {
   return { center: [0, 20], zoom: 2, pitch: 0, bearing: 0 }
+}
+
+/** Dashed rectangle overlay marking where the camera focal point is anchored
+ *  in the live story — i.e. where the map content sits while overlay text/
+ *  charts cover the rest. Clamped to the container so an over-spec'd area
+ *  (top + height > 1) doesn't render outside its bounds; Mapbox's setPadding
+ *  also clamps to non-negative px, so the visible result already matches.  */
+function FocusAreaOverlay({ area }: { area: StoryFocusArea }) {
+  const top = Math.max(0, Math.min(1, area.top))
+  const left = Math.max(0, Math.min(1, area.left))
+  const width = Math.max(0, Math.min(1 - left, area.width))
+  const height = Math.max(0, Math.min(1 - top, area.height))
+  return (
+    <div
+      className="absolute pointer-events-none border border-dashed border-white/40 rounded-sm"
+      style={{
+        top: `${top * 100}%`,
+        left: `${left * 100}%`,
+        width: `${width * 100}%`,
+        height: `${height * 100}%`,
+      }}
+    >
+      <span className="absolute top-1 left-1 text-[10px] uppercase tracking-wider text-white/60 font-mono bg-black/50 px-1.5 py-0.5 rounded">
+        focal area
+      </span>
+    </div>
+  )
 }
 
 /** Insert a minimal `map:` block at the end of the section's YAML so

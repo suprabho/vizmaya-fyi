@@ -14,6 +14,7 @@ import type {
 import ShareMapBg from '@/components/share/ShareMapBg'
 import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
 import { applyMapPalette, applyMapFontstack } from '@/lib/applyMapPalette'
+import { STORY_LANDSCAPE_FOCUS_AREA } from '@/lib/storyFocusArea'
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 
@@ -585,7 +586,7 @@ function ContentPreview({ unit }: { unit: ResolvedUnit }) {
 
 /* ─── Focus Area Padding (matches MapboxBackground) ─────────────── */
 
-const LANDSCAPE_FOCUS_AREA = { top: 0.4, left: 0, width: 0.37, height: 0.6 }
+const LANDSCAPE_FOCUS_AREA = STORY_LANDSCAPE_FOCUS_AREA
 
 function computeFocusPadding(
   container: HTMLDivElement | null,

@@ -21,7 +21,15 @@ export interface ParsedMarkdown {
 export function parseFrontmatter(md: string): ParsedMarkdown {
   const m = md.match(FRONTMATTER_RE)
   if (!m) return { data: {}, body: md, hadFrontmatter: false }
-  const data = parseYaml(m[1]) as Record<string, unknown> | null
+  // The admin editor calls this on every keystroke, so YAML may be transiently
+  // invalid (unclosed string, hanging key) — swallow parse errors so the
+  // editor doesn't unmount mid-edit.
+  let data: Record<string, unknown> | null = null
+  try {
+    data = parseYaml(m[1]) as Record<string, unknown> | null
+  } catch {
+    data = null
+  }
   return {
     data: data && typeof data === 'object' ? data : {},
     body: m[2] ?? '',

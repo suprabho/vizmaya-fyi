@@ -232,7 +232,18 @@ export default function HomeClient({ stories }: { stories: HomeStory[] }) {
           onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
           aria-label="Vizmaya Labs"
         >
-          <VizmayaLogo className="w-[180px] h-[44px]" />
+          <VizmayaLogo
+            className="w-[180px] h-[44px]"
+            palette={{
+              text: '#111111',
+              teal: '#00E6D9',
+              accent: '#FC3692',
+              accent2: '#004CFF',
+              surface: '#FFFFFF',
+              muted: '#1D1D1D',
+              line: '#111111',
+            }}
+          />
         </button>
         <div className="nav-r">
           <a className="nav-link" href="#work">Work</a>

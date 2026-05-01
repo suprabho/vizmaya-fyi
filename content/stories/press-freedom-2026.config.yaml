@@ -44,17 +44,11 @@
 #   Seoul             126.9780, 37.5665
 
 defaults:
-  mapStyle: mapbox://styles/mapbox/dark-v11
+  mapStyle: mapbox://styles/mapbox/light-v11
   mapOpacity: 0.55
   pinColor: "#d4a04a"
   pinRadius: 12
   flySpeed: 1.2
-  mapPalette:
-    land: "#0a0e14"
-    water: "#06090e"
-    border: "#1f2935"
-    labelText: "#a8b0bd"
-    labelHalo: "#06090e"
 
 sections:
 

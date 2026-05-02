@@ -27,7 +27,10 @@
             "color": "$text",
             "interval": 0,
             "fontSize": 10,
-            "rotate": 30
+            "rotate": 45,
+            "hideOverlap": false,
+            "showMaxLabel": true,
+            "showMinLabel": true
           }
         },
         "yAxis": {

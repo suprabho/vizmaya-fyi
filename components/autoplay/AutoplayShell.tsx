@@ -11,6 +11,7 @@ import {
 import { createBrowserClient } from '@/lib/supabase'
 import type { ResolvedUnit, StoryDefaults } from '@/lib/storyConfig.types'
 import AutoplayAspectToggle, { type AutoplayRatio } from './AutoplayAspectToggle'
+import TunePanel from './AutoplayTunePanel'
 
 /* ─── DB row shapes ────────────────────────────────────────────────── */
 
@@ -79,6 +80,21 @@ export default function AutoplayShell({
 
   const [chunks, setChunks] = useState<ChunkRecord[]>([])
   const [cues, setCues] = useState<CueRecord[]>([])
+
+  /* ─── Tune mode (admin sync nudging) ────────────────────────────── */
+
+  const [tuneMode, setTuneMode] = useState(false)
+  /**
+   * Per-unit local overrides applied on top of the loaded `cues`. Set by the
+   * `[ ] { }` keyboard nudges and persisted via PATCH /api/admin/cues when
+   * the user hits Save. Keys are unit_index. Values include a sentinel
+   * `_dirty` so we can colour the UI for unsaved changes vs already-saved.
+   */
+  const [cueOverrides, setCueOverrides] = useState<Map<number, CueRecord>>(
+    () => new Map()
+  )
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   // Use mobileUnits for 9:16 (vertical), desktop for 16:9
   const isVertical = ratio === '9:16'
@@ -165,11 +181,22 @@ export default function AutoplayShell({
 
   /* ─── Cue / chunk lookup helpers ──────────────────────────────── */
 
+  /**
+   * Base cues with any local tune-mode overrides applied. Everything
+   * downstream (cueByUnit, cuesByChunk, firstCueForVisible) reads from this
+   * so a nudge takes effect on the very next timeupdate without needing a
+   * round-trip to the server.
+   */
+  const effectiveCues = useMemo(() => {
+    if (cueOverrides.size === 0) return cues
+    return cues.map((c) => cueOverrides.get(c.unit_index) ?? c)
+  }, [cues, cueOverrides])
+
   const cueByUnit = useMemo(() => {
     const m = new Map<number, CueRecord>()
-    for (const c of cues) m.set(c.unit_index, c)
+    for (const c of effectiveCues) m.set(c.unit_index, c)
     return m
-  }, [cues])
+  }, [effectiveCues])
 
   /**
    * Cues bucketed by chunk_index, sorted by start_ms — used by the
@@ -177,14 +204,14 @@ export default function AutoplayShell({
    */
   const cuesByChunk = useMemo(() => {
     const m = new Map<number, CueRecord[]>()
-    for (const c of cues) {
+    for (const c of effectiveCues) {
       const arr = m.get(c.chunk_index) ?? []
       arr.push(c)
       m.set(c.chunk_index, arr)
     }
     for (const arr of m.values()) arr.sort((a, b) => a.start_ms - b.start_ms)
     return m
-  }, [cues])
+  }, [effectiveCues])
 
   const chunkByIndex = useMemo(() => {
     const m = new Map<number, ChunkRecord>()
@@ -319,13 +346,15 @@ export default function AutoplayShell({
         const tMs = audio.currentTime * 1000
         const list = cuesByChunk.get(chunk.chunk_index)
         if (!list) return
-        // Linear scan — chunks hold a handful of cues at most.
+        // Pick the latest cue whose start_ms <= tMs. List is sorted by
+        // start_ms, so we can stop at the first cue that hasn't started yet.
+        // This is tolerant of zero-duration cues (e.g. whisper clamping a
+        // hallucinated end-of-chunk word) — they still flash active as the
+        // playhead crosses their start, instead of being silently skipped.
         let active: CueRecord | undefined
         for (const c of list) {
-          if (tMs >= c.start_ms && tMs < c.end_ms) {
-            active = c
-            break
-          }
+          if (c.start_ms <= tMs) active = c
+          else break
         }
         if (!active) return
         const visible = visibleForMobile.get(active.unit_index)
@@ -403,6 +432,118 @@ export default function AutoplayShell({
     }
   }, [])
 
+  /* ─── Tune-mode nudges ────────────────────────────────────────── */
+
+  /**
+   * Shift the boundary at the start of the currently-visible mobile unit by
+   * `deltaMs`. Updates this unit's start_ms and the previous unit's end_ms in
+   * lock-step when they share a chunk, so cues remain back-to-back. At a
+   * chunk boundary only this unit's start_ms moves — the previous chunk's
+   * audio file is on its own time base.
+   */
+  const nudgeBoundary = useCallback(
+    (deltaMs: number) => {
+      // Use the mobile unit index — boundaries are defined per mobile cue,
+      // not per visible (16:9-collapsed) unit.
+      const mobileIdx = audioIndicesPerUnit[activeUnit]?.[0]
+      if (mobileIdx === undefined || mobileIdx === 0) return
+      const baseCur = cues.find((c) => c.unit_index === mobileIdx)
+      if (!baseCur) return
+      const chunk = chunkByIndex.get(baseCur.chunk_index)
+      if (!chunk) return
+
+      const cur = cueOverrides.get(mobileIdx) ?? baseCur
+      const newStart = Math.max(
+        0,
+        Math.min(chunk.duration_ms, cur.start_ms + deltaMs)
+      )
+      if (newStart === cur.start_ms) return
+
+      const updated: CueRecord = {
+        ...cur,
+        start_ms: newStart,
+        end_ms: Math.max(newStart, cur.end_ms),
+      }
+
+      setCueOverrides((prev) => {
+        const next = new Map(prev)
+        next.set(mobileIdx, updated)
+        // Keep prev cue's end_ms aligned when same chunk so cuesByChunk stays
+        // a contiguous timeline. Chunk boundaries are left alone.
+        const basePrev = cues.find((c) => c.unit_index === mobileIdx - 1)
+        if (basePrev && basePrev.chunk_index === cur.chunk_index) {
+          const curPrev = next.get(mobileIdx - 1) ?? prev.get(mobileIdx - 1) ?? basePrev
+          next.set(mobileIdx - 1, {
+            ...curPrev,
+            end_ms: newStart,
+            start_ms: Math.min(curPrev.start_ms, newStart),
+          })
+        }
+        return next
+      })
+    },
+    [activeUnit, audioIndicesPerUnit, cues, cueOverrides, chunkByIndex]
+  )
+
+  const handleSaveTunings = useCallback(async () => {
+    if (cueOverrides.size === 0) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const updates = Array.from(cueOverrides.values()).map((c) => ({
+        unit_index: c.unit_index,
+        start_ms: c.start_ms,
+        end_ms: c.end_ms,
+      }))
+      const res = await fetch(`/api/admin/cues/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        throw new Error(body.error ?? `HTTP ${res.status}`)
+      }
+      // Fold overrides into the base cue array so the dirty count drops to 0
+      // and future renders read the saved values directly.
+      setCues((prev) => prev.map((c) => cueOverrides.get(c.unit_index) ?? c))
+      setCueOverrides(new Map())
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'save failed')
+    } finally {
+      setSaving(false)
+    }
+  }, [slug, cueOverrides])
+
+  const handleResetTunings = useCallback(() => {
+    setCueOverrides(new Map())
+    setSaveError(null)
+  }, [])
+
+  /* ─── Tune-mode keyboard ──────────────────────────────────────── */
+
+  useEffect(() => {
+    if (!tuneMode) return
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+      if (e.key === '[' || e.key === ']') {
+        e.preventDefault()
+        const fine = e.shiftKey
+        const dir = e.key === ']' ? 1 : -1
+        nudgeBoundary(dir * (fine ? 25 : 100))
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault()
+        handleSaveTunings()
+      } else if (e.key === 'Escape') {
+        setTuneMode(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [tuneMode, nudgeBoundary, handleSaveTunings])
+
   /* ─── Render ───────────────────────────────────────────────────── */
 
   const hasAudioForCurrent = firstCueForVisible(activeUnit) !== undefined
@@ -439,6 +580,18 @@ export default function AutoplayShell({
           </div>
           <div className="flex items-center gap-3">
             <AutoplayAspectToggle value={ratio} onChange={setRatio} />
+            <button
+              onClick={() => setTuneMode((v) => !v)}
+              className="px-3 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-wider border transition-colors"
+              style={{
+                color: tuneMode ? 'var(--color-bg)' : 'var(--color-text)',
+                background: tuneMode ? 'var(--color-accent)' : 'transparent',
+                borderColor: tuneMode ? 'var(--color-accent)' : 'var(--color-surface)',
+              }}
+              aria-pressed={tuneMode}
+            >
+              Tune{cueOverrides.size > 0 ? ` · ${cueOverrides.size}*` : ''}
+            </button>
             <div
               className="px-3 py-1.5 rounded-md font-[family-name:var(--font-mono)] text-[0.65rem] tracking-wider"
               style={{ color: 'var(--color-muted)' }}
@@ -550,6 +703,22 @@ export default function AutoplayShell({
           )}
         </div>
       </div>
+
+      {/* Tune panel — visible when tune mode is on. Floats above the stage,
+          left side, so it doesn't compete with the playback controls below. */}
+      {tuneMode && (
+        <TunePanel
+          activeUnit={activeUnit}
+          mobileIdx={audioIndicesPerUnit[activeUnit]?.[0]}
+          baseCues={cues}
+          overrides={cueOverrides}
+          dirtyCount={cueOverrides.size}
+          saving={saving}
+          saveError={saveError}
+          onSave={handleSaveTunings}
+          onReset={handleResetTunings}
+        />
+      )}
 
       {/* Playback controls */}
       <div

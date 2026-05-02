@@ -43,7 +43,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
  * (or centered with no top strip when chartless).
  */
 export default function MapStorySection({ unitIndex, unit }: Props) {
-  const { parentConfig, heading, subheading, paragraphs } = unit
+  const { parentConfig, heading, subheading, paragraphs, heroPart } = unit
   const kind = parentConfig.kind ?? 'text'
   const heroBits = kind === 'hero' ? extractHeroBits(paragraphs) : null
   const hasChart = !!parentConfig.chart
@@ -87,45 +87,53 @@ export default function MapStorySection({ unitIndex, unit }: Props) {
     border: '0.5px solid var(--color-line)',
   }
 
-  // Hero splits into two snap sections on portrait (mobile).
-  // On landscape the full HeroPanel stays in a single section.
-  if (kind === 'hero' && heading) {
+  // Hero rendering. Mobile units pass `heroPart` to address each half by its
+  // own `data-unit-index`; desktop units have heroPart undefined and render
+  // both halves with the same index (the dek section is portrait-hidden, so
+  // landscape only shows the full HeroPanel).
+  if (kind === 'hero') {
+    const showTitle = heroPart === 'title' || heroPart === undefined
+    const showDek = heroPart === 'dek' || heroPart === undefined
     return (
       <>
-        <section
-          data-unit-index={unitIndex}
-          className="snap-start snap-always h-svh w-full relative"
-        >
-          <div className={cardClasses} style={cardStyle}>
-            <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
-              {/* Landscape: full hero */}
-              <div className="hidden [@media(min-aspect-ratio:1/1)]:block">
-                <HeroPanel
-                  title={heading}
-                  dek={heroBits?.dek ?? ''}
-                  byline={heroBits?.byline ?? ''}
-                  eyebrow={parentConfig.eyebrow}
-                />
-              </div>
-              {/* Portrait: eyebrow + title only */}
-              <div className="[@media(min-aspect-ratio:1/1)]:hidden">
-                <HeroPanelTitle title={heading} eyebrow={parentConfig.eyebrow} />
+        {showTitle && heading && (
+          <section
+            data-unit-index={unitIndex}
+            className="snap-start snap-always h-svh w-full relative"
+          >
+            <div className={cardClasses} style={cardStyle}>
+              <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
+                {/* Landscape: full hero (only used when heroPart is undefined,
+                    i.e. desktop units; mobile 'title' units never reach
+                    landscape rendering). */}
+                <div className="hidden [@media(min-aspect-ratio:1/1)]:block">
+                  <HeroPanel
+                    title={heading}
+                    dek={heroBits?.dek ?? ''}
+                    byline={heroBits?.byline ?? ''}
+                    eyebrow={parentConfig.eyebrow}
+                  />
+                </div>
+                {/* Portrait: eyebrow + title only */}
+                <div className="[@media(min-aspect-ratio:1/1)]:hidden">
+                  <HeroPanelTitle title={heading} eyebrow={parentConfig.eyebrow} />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Portrait-only second snap section: dek + byline */}
-        <section
-          data-unit-index={unitIndex}
-          className="snap-start snap-always h-svh w-full relative [@media(min-aspect-ratio:1/1)]:hidden"
-        >
-          <div className={cardClasses} style={cardStyle}>
-            <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
-              <HeroPanelDek dek={heroBits?.dek ?? ''} byline={heroBits?.byline ?? ''} />
+          </section>
+        )}
+        {showDek && (
+          <section
+            data-unit-index={unitIndex}
+            className="snap-start snap-always h-svh w-full relative [@media(min-aspect-ratio:1/1)]:hidden"
+          >
+            <div className={cardClasses} style={cardStyle}>
+              <div className="max-w-[820px] mx-auto h-full flex flex-col justify-center">
+                <HeroPanelDek dek={heroBits?.dek ?? ''} byline={heroBits?.byline ?? ''} />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </>
     )
   }

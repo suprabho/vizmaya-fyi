@@ -170,8 +170,35 @@ export function resolveUnits(
       })
 
       // Mobile units — expand if mobileParagraphs present.
+      // Hero is special: it always splits into 2 mobile units (title, then
+      // dek+byline) because the mobile DOM emits two snap sections for it.
       const mobileStart = mobileUnits.length
-      if (section.mobileParagraphs) {
+      const isHero = (section.kind ?? 'text') === 'hero'
+      if (isHero) {
+        hasMobileOverrides = true
+        // Title-only half. Paragraphs are intentionally empty — the dek
+        // lives on the second mobile unit so it gets its own scroll-snap.
+        mobileUnits.push({
+          parentIndex,
+          subIndex: 0,
+          parentConfig: section,
+          heading,
+          subheading,
+          paragraphs: [],
+          heroPart: 'title',
+        })
+        // Dek + byline half. Inherits the original paragraphs (which is where
+        // the dek `*…*` and byline `**…**` markdown live).
+        mobileUnits.push({
+          parentIndex,
+          subIndex: 0,
+          parentConfig: section,
+          heading: undefined,
+          subheading: undefined,
+          paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
+          heroPart: 'dek',
+        })
+      } else if (section.mobileParagraphs) {
         hasMobileOverrides = true
         section.mobileParagraphs.forEach((mobileSpec, sliceIdx) => {
           mobileUnits.push({

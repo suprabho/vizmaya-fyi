@@ -11,19 +11,28 @@
  *   - story_audio_chunks (one row per chunk)
  *   - story_audio_cues   (one row per mobile unit, with start_ms/end_ms)
  *
- * Cue timings here are proportional (allocate chunk duration by character
- * count). Forced alignment is a follow-up.
+ * Cue timings default to proportional (allocate chunk duration by character
+ * count). Set USE_WHISPER_ALIGNMENT=1 + WHISPER_MODEL=<path> to run
+ * whisper.cpp on each chunk and derive cues from word-level timings instead.
+ * Falls back to proportional silently on any whisper failure.
  *
  * Usage:
  *   npx tsx scripts/generate-audio.ts                       # all stories
  *   npx tsx scripts/generate-audio.ts south-korea-gpu-hour  # one story
  *   npx tsx scripts/generate-audio.ts --force               # regenerate all
  *   CHUNK_WORD_TARGET=500 npx tsx scripts/generate-audio.ts # tune chunk size
+ *
+ * Whisper alignment (optional, requires `brew install whisper-cpp` + a model):
+ *   USE_WHISPER_ALIGNMENT=1 \
+ *   WHISPER_MODEL=/path/to/ggml-base.en.bin \
+ *     npx tsx scripts/generate-audio.ts <slug> --force
  */
 
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import crypto from 'crypto'
+import { spawn } from 'child_process'
 import matter from 'gray-matter'
 import { parse as parseYaml } from 'yaml'
 import { createClient } from '@supabase/supabase-js'
@@ -111,7 +120,26 @@ interface UnitInfo {
   paragraphs: string[]
   kind: string
   chart?: string
+  /**
+   * Hero kind splits into 'title' (heading-only) and 'dek' (dek+byline)
+   * mobile units to match the two snap sections rendered on portrait. Other
+   * kinds leave this undefined.
+   */
+  heroPart?: 'title' | 'dek'
+  /**
+   * Skip TTS for this unit. Methodology and similar reference-only sections
+   * are visible in the story page but don't get audio. Cues aren't written
+   * for skipped units — autoplay shows their dot with "no audio".
+   */
+  skipTts?: boolean
 }
+
+/**
+ * Section IDs whose mobile units should not be sent to TTS. Methodology
+ * is always the trailing block of a story; spoken narration sounds awkward
+ * there and burns Gemini quota for content readers don't typically listen to.
+ */
+const TTS_SKIP_IDS = new Set(['methodology'])
 
 /**
  * Resolve mobile units — the smallest grain. When a section/subsection has
@@ -127,6 +155,7 @@ function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
 
   for (const section of config.sections) {
     const kind = section.kind ?? 'text'
+    const skipTts = TTS_SKIP_IDS.has(section.id ?? '')
     const subs = section.subsections
     if (subs && subs.length > 0) {
       for (const sub of subs) {
@@ -141,6 +170,7 @@ function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
               paragraphs: sliceParagraphs(allP, mobileSpec),
               kind,
               chart: section.chart,
+              skipTts,
             })
           })
         } else {
@@ -149,6 +179,7 @@ function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
             paragraphs: sliceParagraphs(allP, sub.paragraphs),
             kind,
             chart: section.chart,
+            skipTts,
           })
         }
       }
@@ -157,13 +188,33 @@ function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
       const allP = md ? getParagraphs(md) : []
       const heading = section.heading ?? md?.heading
 
-      if (section.mobileParagraphs) {
+      if (kind === 'hero') {
+        // Hero splits into two mobile units to match the two portrait snap
+        // sections: title-only, then dek+byline. Each gets its own cue.
+        units.push({
+          heading,
+          paragraphs: [],
+          kind,
+          chart: section.chart,
+          heroPart: 'title',
+          skipTts,
+        })
+        units.push({
+          heading: undefined,
+          paragraphs: sliceParagraphs(allP, section.paragraphs),
+          kind,
+          chart: section.chart,
+          heroPart: 'dek',
+          skipTts,
+        })
+      } else if (section.mobileParagraphs) {
         section.mobileParagraphs.forEach((mobileSpec: number | [number, number], sliceIdx: number) => {
           units.push({
             heading: sliceIdx === 0 ? heading : undefined,
             paragraphs: sliceParagraphs(allP, mobileSpec),
             kind,
             chart: section.chart,
+            skipTts,
           })
         })
       } else {
@@ -172,6 +223,7 @@ function resolveMobileUnitsFlat(slug: string): UnitInfo[] {
           paragraphs: sliceParagraphs(allP, section.paragraphs),
           kind,
           chart: section.chart,
+          skipTts,
         })
       }
     }
@@ -541,11 +593,13 @@ interface AudioChunk {
 
 const CHUNK_SEPARATOR = '. '
 /**
- * Target words per chunk. Gemini 2.5 flash TTS quality drifts past ~5 min
- * of audio, so we aim for ~3 min at ~180 wpm. Override with the env var
- * if a story has unusually short or long sections.
+ * Target words per chunk. Smaller chunks → more stable Gemini output and
+ * tighter whisper alignment (drift accumulates over long audio). At ~180
+ * wpm, 250 words ≈ 80–90s per chunk, which empirically produces cleaner
+ * audio than longer requests. Override via env if a story has unusual
+ * pacing or you're hitting Gemini's daily request quota.
  */
-const CHUNK_WORD_TARGET = Number(process.env.CHUNK_WORD_TARGET ?? 500)
+const CHUNK_WORD_TARGET = Number(process.env.CHUNK_WORD_TARGET ?? 250)
 
 function wordCount(s: string): number {
   return s.trim().split(/\s+/).filter(Boolean).length
@@ -564,6 +618,11 @@ function packUnitsIntoChunks(units: UnitInfo[]): AudioChunk[] {
   let currentWords = 0
 
   for (let i = 0; i < units.length; i++) {
+    // Units flagged skipTts (e.g. methodology) are intentionally absent from
+    // both the chunk transcript and the cue table. The autoplay player shows
+    // their dot with "no audio" — viewers can scroll past them silently.
+    if (units[i].skipTts) continue
+
     const text = unitToNarrationText(units[i])
     const words = wordCount(text)
 
@@ -606,6 +665,125 @@ function computeProportionalCues(
     cues.push({ unit_index: chunk.unitIndices[i], start_ms: startMs, end_ms: endMs })
   }
   return cues
+}
+
+/* ─── Whisper forced alignment (optional) ──────────────────────────── */
+
+const USE_WHISPER = process.env.USE_WHISPER_ALIGNMENT === '1'
+const WHISPER_BIN = process.env.WHISPER_BIN ?? 'whisper-cli'
+const WHISPER_MODEL = process.env.WHISPER_MODEL
+
+interface WhisperSegment {
+  offsets?: { from?: number; to?: number }
+  text?: string
+}
+
+/**
+ * Run whisper.cpp on a chunk's audio to get word-level timings, then map
+ * them onto units by word-index ratio. Returns null on any failure so the
+ * caller can fall back to proportional cues.
+ *
+ * Word-index ratio (vs. char-aware alignment) is intentionally simple: we
+ * trust input/whisper word counts to be within ~10% of each other, and
+ * whisper's per-word timings already reflect speech rate and pauses, which
+ * is the main thing the proportional method gets wrong.
+ */
+async function runWhisperAlignment(
+  wavBuffer: Buffer,
+  chunk: AudioChunk,
+  durationMs: number
+): Promise<CueRow[] | null> {
+  if (!WHISPER_MODEL) {
+    console.error('  whisper: WHISPER_MODEL not set')
+    return null
+  }
+
+  const tag = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const wavPath = path.join(os.tmpdir(), `vizmaya-tts-${tag}.wav`)
+  const outPrefix = path.join(os.tmpdir(), `vizmaya-tts-${tag}`)
+  const jsonPath = `${outPrefix}.json`
+
+  try {
+    fs.writeFileSync(wavPath, wavBuffer)
+
+    await new Promise<void>((resolve, reject) => {
+      const proc = spawn(
+        WHISPER_BIN,
+        [
+          '-m', WHISPER_MODEL,
+          '-f', wavPath,
+          '-oj',           // output JSON
+          '-ml', '1',      // max segment length 1 → one word per entry
+          '-nt',           // no inline timestamps in printed text
+          '-of', outPrefix,
+        ],
+        { stdio: 'ignore' }
+      )
+      proc.on('error', reject)
+      proc.on('exit', (code) => {
+        code === 0 ? resolve() : reject(new Error(`whisper exit ${code}`))
+      })
+    })
+
+    if (!fs.existsSync(jsonPath)) {
+      console.error('  whisper: no JSON output')
+      return null
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) as {
+      transcription?: WhisperSegment[]
+    }
+
+    const words = (parsed.transcription ?? []).filter(
+      (s) => (s.text ?? '').trim().length > 0 && s.offsets
+    )
+    if (words.length === 0) {
+      console.error('  whisper: 0 words transcribed')
+      return null
+    }
+
+    const unitWords = chunk.texts.map(wordCount)
+    const totalInputWords = unitWords.reduce((a, b) => a + b, 0)
+    if (totalInputWords === 0) return null
+
+    const clamp = (ms: number) => Math.max(0, Math.min(durationMs, ms))
+    const wordStart = (idx: number) =>
+      clamp(words[Math.min(idx, words.length - 1)]?.offsets?.from ?? 0)
+    const wordEnd = (idx: number) =>
+      clamp(words[Math.max(0, Math.min(idx, words.length - 1))]?.offsets?.to ?? durationMs)
+
+    const cues: CueRow[] = []
+    let cumIn = 0
+    for (let i = 0; i < chunk.unitIndices.length; i++) {
+      const startWordIdx = Math.floor((cumIn / totalInputWords) * words.length)
+      cumIn += unitWords[i]
+      const isLast = i === chunk.unitIndices.length - 1
+      const endWordIdx = isLast
+        ? words.length - 1
+        : Math.max(startWordIdx, Math.floor((cumIn / totalInputWords) * words.length) - 1)
+
+      const startMs = wordStart(startWordIdx)
+      const endMs = isLast ? durationMs : Math.max(startMs, wordEnd(endWordIdx))
+      cues.push({
+        unit_index: chunk.unitIndices[i],
+        start_ms: startMs,
+        end_ms: endMs,
+      })
+    }
+    return cues
+  } catch (err) {
+    console.error(
+      '  whisper alignment failed:',
+      err instanceof Error ? err.message : String(err)
+    )
+    return null
+  } finally {
+    for (const p of [wavPath, jsonPath]) {
+      if (fs.existsSync(p)) {
+        try { fs.unlinkSync(p) } catch { /* ignore */ }
+      }
+    }
+  }
 }
 
 /* ─── Main ─────────────────────────────────────────────────────────── */
@@ -661,12 +839,18 @@ async function processStory(slug: string, force: boolean) {
     }
 
     const durationMs = wavDurationMs(audioBuffer)
-    const cues = computeProportionalCues(chunk, durationMs)
+    let cues: CueRow[] | null = null
+    let cueSource: 'whisper' | 'proportional' = 'proportional'
+    if (USE_WHISPER) {
+      cues = await runWhisperAlignment(audioBuffer, chunk, durationMs)
+      if (cues) cueSource = 'whisper'
+    }
+    if (!cues) cues = computeProportionalCues(chunk, durationMs)
     const publicUrl = await uploadChunk(slug, i, hash, audioBuffer, durationMs, cues)
 
     if (publicUrl) {
       console.log(
-        `✓ ${(audioBuffer.length / 1024).toFixed(0)}KB / ${(durationMs / 1000).toFixed(1)}s → Supabase`
+        `✓ ${(audioBuffer.length / 1024).toFixed(0)}KB / ${(durationMs / 1000).toFixed(1)}s [${cueSource}] → Supabase`
       )
       generated++
     } else {
@@ -698,6 +882,13 @@ async function main() {
 
   console.log(`Audio generation for: ${storySlugs.join(', ')}`)
   if (force) console.log('(--force: regenerating all)')
+  if (USE_WHISPER) {
+    if (!WHISPER_MODEL) {
+      console.error('USE_WHISPER_ALIGNMENT=1 but WHISPER_MODEL is not set. Aborting.')
+      process.exit(1)
+    }
+    console.log(`(whisper alignment ON: ${WHISPER_BIN}, model=${path.basename(WHISPER_MODEL)})`)
+  }
 
   for (const slug of storySlugs) {
     await processStory(slug, force)

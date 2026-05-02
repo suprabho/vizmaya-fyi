@@ -21,6 +21,9 @@ sections:
   - id: stat-850
     kind: stat
     text: "850"
+    # Portrait drops the 2nd body paragraph to fit max-h-[50svh] at 375×667.
+    mobileParagraphs:
+      - [1, 2]
     map:
       center: [77.2090, 28.6139]
       zoom: 9
@@ -198,6 +201,9 @@ sections:
 
   - id: methodology
     text: "Methodology & Sources"
+    # Portrait hides the italic attribution line to fit max-h-[50svh] at 375×667.
+    mobileParagraphs:
+      - [0, 2]
     map:
       center: [78.9629, 20.5937]
       zoom: 3.0

@@ -1,12 +1,8 @@
 /**
- * Prebuild hook: sync filesystem stories into Supabase before `next build`
- * runs SSG. During the cutover phase (docs/db-backed-content-plan.md) the
- * filesystem remains source of truth, so every build force-upserts every
- * story (markdown + config.yaml + share.yaml + chart JSONs).
- *
- * Set SYNC_SKIP_EXISTING=true to fall back to seed-only mode (skip stories
- * already in DB) — appropriate once an admin UI ships and DB edits must be
- * preserved across deploys.
+ * Prebuild hook: seed new filesystem stories into Supabase before `next build`
+ * runs SSG. Stories that already exist in the DB are left untouched — the DB
+ * is the source of truth post-publish. Use `npm run migrate-content` for an
+ * explicit force-resync.
  *
  * No-ops silently when CONTENT_SOURCE !== 'db' (local dev on fs) or when
  * Supabase credentials are absent so CI builds without a DB connection don't
@@ -35,13 +31,12 @@ async function main() {
     return
   }
 
-  const skipIfExists = process.env.SYNC_SKIP_EXISTING === 'true'
-  const results = await syncAll({ skipIfExists })
+  const results = await syncAll({ skipIfExists: true })
   let failed = 0
   for (const r of results) {
     if (!r.ok) { console.error(`[sync] ✗ ${r.slug}: ${r.error}`); failed++ }
     else if (r.skipped) console.log(`[sync] · ${r.slug} (already in DB, skipped)`)
-    else console.log(`[sync] ✓ ${r.slug} (${skipIfExists ? 'seeded' : 'upserted'})`)
+    else console.log(`[sync] ✓ ${r.slug} (seeded)`)
   }
   if (failed > 0) process.exit(1)
 }

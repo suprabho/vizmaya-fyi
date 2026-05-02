@@ -136,9 +136,14 @@ export default function MapPickerModal({
     // and the canvas renders as a narrow strip.
     //
     // Also re-applies the story's focal padding so the picker is WYSIWYG with
-    // the live story render, and re-projects to the active target's view —
-    // padding alone does not re-center the camera, so a jumpTo is required.
-    function applyFocusLayout() {
+    // the live story render. The initial mount needs a jumpTo because padding
+    // alone does not re-center the camera, but ResizeObserver fires every
+    // time the container resizes — on mobile, that includes URL-bar
+    // showing/hiding on every scroll. Calling jumpTo there aborted each
+    // in-flight tile load before it finished, leaving the canvas black. So
+    // resize-only events skip the jumpTo and let Mapbox preserve the geo
+    // center across the new padding.
+    function applyFocusPadding() {
       const m = mapRef.current
       const c = containerRef.current
       if (!m || !c) return
@@ -146,6 +151,11 @@ export default function MapPickerModal({
       m.setPadding(
         computeStoryFocusPadding(c, STORY_LANDSCAPE_FOCUS_AREA, STORY_PORTRAIT_FOCUS_AREA)
       )
+    }
+    function applyInitialFocus() {
+      const m = mapRef.current
+      if (!m) return
+      applyFocusPadding()
       const v = targetRef.current === 'desktop' ? desktopViewRef.current : mobileViewRef.current
       m.jumpTo({
         center: v.center,
@@ -154,9 +164,9 @@ export default function MapPickerModal({
         bearing: v.bearing,
       })
     }
-    const ro = new ResizeObserver(() => applyFocusLayout())
+    const ro = new ResizeObserver(() => applyFocusPadding())
     ro.observe(containerRef.current)
-    requestAnimationFrame(() => applyFocusLayout())
+    requestAnimationFrame(() => applyInitialFocus())
 
     return () => {
       ro.disconnect()
@@ -282,7 +292,12 @@ export default function MapPickerModal({
                 : undefined
             }
           >
-            <div ref={containerRef} className="absolute inset-0" />
+            {/* Mapbox sets `.mapboxgl-map { position: relative }` on its
+                container, which beats `.absolute` at the same specificity and
+                later in the cascade — so `inset-0` becomes positional offsets
+                instead of sizing, and the container collapses to 0×0. Use
+                explicit width/height like MapboxBackground does. */}
+            <div ref={containerRef} className="w-full h-full" />
             <FocusAreaOverlay
               area={target === 'mobile' ? STORY_PORTRAIT_FOCUS_AREA : STORY_LANDSCAPE_FOCUS_AREA}
             />

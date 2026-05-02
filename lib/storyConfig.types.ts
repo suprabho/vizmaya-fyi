@@ -352,4 +352,10 @@ export interface ResolvedUnit {
   heading: string | undefined
   subheading: string | undefined
   paragraphs: string[]
+  /**
+   * Mobile-only: hero kind splits into two scroll-snap sections (title, then
+   * dek+byline). `heroPart` identifies which half this mobile unit renders.
+   * Undefined for desktop units and for non-hero kinds.
+   */
+  heroPart?: 'title' | 'dek'
 }

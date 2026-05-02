@@ -57,6 +57,8 @@ interface Props {
   highlightColor?: string
   /** Story `defaults.mapOpacity`. */
   mapOpacity?: number
+  /** Story `defaults.mapStyle` — Mapbox style URL pulled from the per-story config. */
+  mapStyle?: string
   /** Story `defaults.pinColor`. */
   defaultPinColor?: string
   /** Story `defaults.pinRadius`. */
@@ -83,7 +85,7 @@ function extractHeroBits(paragraphs: string[]): { dek: string; byline: string } 
 }
 
 const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
-  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, highlightCountry, highlightColor, mapOpacity, defaultPinColor, defaultPinRadius, logo, disableDownload = false },
+  { unit, index, ratio, slug, title, accessToken, variant = 'auto', shareOverride, palette, fontstack, highlightCountry, highlightColor, mapOpacity, mapStyle, defaultPinColor, defaultPinRadius, logo, disableDownload = false },
   ref
 ) {
   const captureRef = useRef<HTMLDivElement>(null)
@@ -272,6 +274,7 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
               zoom={mapZoom!}
               pitch={mapPitch}
               bearing={mapBearing}
+              style={mapStyle}
               accessToken={accessToken}
               pins={allPins}
               regions={mapRegions}
@@ -290,47 +293,51 @@ const ShareCard = forwardRef<ShareCardHandle, Props>(function ShareCard(
           {/* Content layer */}
           <div className="relative z-10 h-full flex flex-col">
             {isMapTitle ? (
-              /* Map + section heading overlay card */
-              <div className="flex flex-col justify-end h-full px-6 py-6"
-                style={{ background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.7))' }}
-              >
-                {parentConfig.eyebrow && (
-                  <div
-                    className="font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-[0.15em] mb-2"
-                    style={{ color: 'var(--color-accent)' }}
-                  >
-                    {parentConfig.eyebrow}
-                  </div>
-                )}
-                <h2
-                  className="font-serif text-[1.6rem] font-bold leading-[1.2]"
-                  style={{ color: 'var(--color-text)' }}
+              /* Map + section heading overlay card — heading sits in a
+                 translucent panel mirroring MapStorySection on the story
+                 page so the share view matches the live story aesthetic. */
+              <div className="flex flex-col justify-end h-full p-4">
+                <div
+                  className="rounded-lg p-5 backdrop-blur-sm"
+                  style={{
+                    background: 'rgb(var(--color-panel-rgb) / 0.2)',
+                    border: '0.5px solid var(--color-line)',
+                  }}
                 >
-                  {heading || title}
-                </h2>
-                {subheading && (
-                  <p
-                    className="text-[0.85rem] leading-[1.4] mt-2"
-                    style={{ color: 'var(--color-muted)' }}
+                  {parentConfig.eyebrow && (
+                    <div
+                      className="font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-[0.15em] mb-2"
+                      style={{ color: 'var(--color-accent)' }}
+                    >
+                      {parentConfig.eyebrow}
+                    </div>
+                  )}
+                  <h2
+                    className="font-serif text-[1.6rem] font-bold leading-[1.2]"
+                    style={{ color: 'var(--color-text)' }}
                   >
-                    {subheading}
-                  </p>
-                )}
-                {kind === 'hero' && (() => {
-                  const { dek, byline } = extractHeroBits(paragraphs)
-                  return (
-                    <>
-                      {dek && (
-                        <p
-                          className="text-[0.8rem] leading-[1.4] mt-3 max-w-[80%]"
-                          style={{ color: 'var(--color-muted)' }}
-                        >
-                          {dek}
-                        </p>
-                      )}
-                    </>
-                  )
-                })()}
+                    {heading || title}
+                  </h2>
+                  {subheading && (
+                    <p
+                      className="text-[0.85rem] leading-[1.4] mt-2"
+                      style={{ color: 'var(--color-muted)' }}
+                    >
+                      {subheading}
+                    </p>
+                  )}
+                  {kind === 'hero' && (() => {
+                    const { dek } = extractHeroBits(paragraphs)
+                    return dek ? (
+                      <p
+                        className="text-[0.8rem] leading-[1.4] mt-3 max-w-[80%]"
+                        style={{ color: 'var(--color-muted)' }}
+                      >
+                        {dek}
+                      </p>
+                    ) : null
+                  })()}
+                </div>
               </div>
             ) : isGraph && hasChart ? (
               /* Chart-only card — one per subsection, with activeStep

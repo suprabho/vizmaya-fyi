@@ -349,6 +349,7 @@ export default function ShareShell({ slug, units, config, title, accessToken, sh
                   highlightCountry={config.defaults.highlightCountry}
                   highlightColor={config.defaults.highlightColor}
                   mapOpacity={config.defaults.mapOpacity}
+                  mapStyle={config.defaults.mapStyle}
                   defaultPinColor={config.defaults.pinColor}
                   defaultPinRadius={config.defaults.pinRadius}
                   logo={logo}

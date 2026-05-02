@@ -24,7 +24,10 @@
             "Hindi Heartland"
           ],
           "axisLabel": {
-            "color": "$text"
+            "color": "$text",
+            "interval": 0,
+            "fontSize": 10,
+            "rotate": 30
           }
         },
         "yAxis": {

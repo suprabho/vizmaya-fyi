@@ -261,6 +261,9 @@ export default function StoryMapShell({
             [@media(min-aspect-ratio:1/1)]:w-[63vw]
             [@media(min-aspect-ratio:1/1)]:aspect-auto
             [@media(min-aspect-ratio:1/1)]:h-[50vh]
+            [@media(max-aspect-ratio:1/1)_and_(max-height:700px)]:top-[72px]
+            [@media(max-aspect-ratio:1/1)_and_(max-height:700px)]:translate-y-0
+            [@media(max-aspect-ratio:1/1)_and_(max-height:700px)]:max-h-[calc(50svh-88px)]
             flex items-center justify-center backdrop-blur-3xl
           "
         >

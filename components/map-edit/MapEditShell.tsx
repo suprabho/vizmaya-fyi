@@ -14,6 +14,7 @@ import type {
 import ShareMapBg from '@/components/share/ShareMapBg'
 import { formatInlineMarkdown } from '@/lib/formatInlineMarkdown'
 import { applyMapPalette, applyMapFontstack } from '@/lib/applyMapPalette'
+import { applyAdminWorldview, buildCountryFilter } from '@/lib/mapboxWorldview'
 import { STORY_LANDSCAPE_FOCUS_AREA } from '@/lib/storyFocusArea'
 
 /* ─── Types ─────────────────────────────────────────────────────── */
@@ -861,6 +862,9 @@ function InteractiveMap({
 
 function addCountryHighlight(map: mapboxgl.Map, iso: string, color: string) {
   const resolvedColor = resolvePaintColor(color)
+  const code = iso.toUpperCase()
+  applyAdminWorldview(map, code)
+  const highlightFilter = buildCountryFilter(code) as unknown as mapboxgl.FilterSpecification
 
   if (!map.getSource('country-boundaries')) {
     map.addSource('country-boundaries', {
@@ -884,7 +888,7 @@ function addCountryHighlight(map: mapboxgl.Map, iso: string, color: string) {
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
-        filter: ['==', ['get', 'iso_3166_1'], iso.toUpperCase()],
+        filter: highlightFilter,
         paint: { 'fill-color': resolvedColor, 'fill-opacity': 0.22 },
       },
       beforeId
@@ -898,7 +902,7 @@ function addCountryHighlight(map: mapboxgl.Map, iso: string, color: string) {
         type: 'line',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
-        filter: ['==', ['get', 'iso_3166_1'], iso.toUpperCase()],
+        filter: highlightFilter,
         paint: { 'line-color': resolvedColor, 'line-width': 1.4, 'line-opacity': 0.85 },
       },
       beforeId

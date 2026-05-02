@@ -11,6 +11,7 @@ import type {
 } from '@/types/story'
 import type { MapPalette } from '@/lib/storyConfig.types'
 import { applyMapPalette, applyMapFontstack } from '@/lib/applyMapPalette'
+import { applyAdminWorldview, buildCountryFilter } from '@/lib/mapboxWorldview'
 
 export type { MapStep, MapPin }
 
@@ -283,13 +284,20 @@ async function applyRegionLayer(
         url: 'mapbox://mapbox.country-boundaries-v1',
       })
     }
+    // When a single supported worldview is in play (e.g. only "IN"), pick the
+    // matching polygon. Mixed selections fall back to the plain ISO match.
+    const worldview = codes.length === 1 ? codes[0] : undefined
+    const fillFilter =
+      worldview
+        ? (buildCountryFilter(worldview) as unknown as mapboxgl.FilterSpecification)
+        : (['in', ['get', 'iso_3166_1'], ['literal', codes]] as unknown as mapboxgl.FilterSpecification)
     map.addLayer(
       {
         id: STORY_REGION_FILL_ID,
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
-        filter: ['in', ['get', 'iso_3166_1'], ['literal', codes]],
+        filter: fillFilter,
         paint: {
           'fill-color': ['match', ['get', 'iso_3166_1'], ...matchColorPairs, '#000000'],
           'fill-opacity': ['match', ['get', 'iso_3166_1'], ...matchOpacityPairs, 0],
@@ -303,7 +311,7 @@ async function applyRegionLayer(
         type: 'line',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
-        filter: ['in', ['get', 'iso_3166_1'], ['literal', codes]],
+        filter: fillFilter,
         paint: {
           'line-color': lineColor,
           'line-width': lineWidth,
@@ -527,6 +535,10 @@ export default function MapboxBackground({
       if (highlightCountry) {
         const iso = highlightCountry.toUpperCase()
         const color = resolvePaintColor(highlightColor ?? defaultPinColor)
+        // Render basemap admin lines from the highlighted country's worldview
+        // (e.g. for IN, this puts PoK + Aksai Chin inside India's outline).
+        applyAdminWorldview(map, iso)
+        const highlightFilter = buildCountryFilter(iso) as unknown as mapboxgl.FilterSpecification
 
         if (!map.getSource('country-boundaries')) {
           map.addSource('country-boundaries', {
@@ -548,7 +560,7 @@ export default function MapboxBackground({
               type: 'fill',
               source: 'country-boundaries',
               'source-layer': 'country_boundaries',
-              filter: ['==', ['get', 'iso_3166_1'], iso],
+              filter: highlightFilter,
               paint: {
                 'fill-color': color,
                 'fill-opacity': 0.22,
@@ -565,7 +577,7 @@ export default function MapboxBackground({
               type: 'line',
               source: 'country-boundaries',
               'source-layer': 'country_boundaries',
-              filter: ['==', ['get', 'iso_3166_1'], iso],
+              filter: highlightFilter,
               paint: {
                 'line-color': color,
                 'line-width': 1.4,

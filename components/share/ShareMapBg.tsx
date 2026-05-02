@@ -49,7 +49,7 @@ export default function ShareMapBg({
   zoom,
   pitch = 0,
   bearing = 0,
-  style = 'mapbox://styles/mapbox/dark-v11',
+  style,
   accessToken,
   pins,
   regions,
@@ -122,7 +122,7 @@ export default function ShareMapBg({
   const focusArea = { top: 0.05, left: 0, width: 1.0, height: 0.45 }
 
   return (
-    <div ref={hostRef} className="absolute inset-0" style={{ opacity: 0.9 }}>
+    <div ref={hostRef} className="absolute inset-0">
       {mounted && (
         <MapboxBackground
           accessToken={accessToken}

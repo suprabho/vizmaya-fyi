@@ -292,7 +292,12 @@ export default function MapPickerModal({
                 : undefined
             }
           >
-            <div ref={containerRef} className="absolute inset-0" />
+            {/* Mapbox sets `.mapboxgl-map { position: relative }` on its
+                container, which beats `.absolute` at the same specificity and
+                later in the cascade — so `inset-0` becomes positional offsets
+                instead of sizing, and the container collapses to 0×0. Use
+                explicit width/height like MapboxBackground does. */}
+            <div ref={containerRef} className="w-full h-full" />
             <FocusAreaOverlay
               area={target === 'mobile' ? STORY_PORTRAIT_FOCUS_AREA : STORY_LANDSCAPE_FOCUS_AREA}
             />

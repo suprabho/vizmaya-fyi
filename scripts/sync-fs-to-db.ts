@@ -1,8 +1,16 @@
 /**
- * Prebuild hook: seed new filesystem stories into Supabase before `next build`
- * runs SSG. Stories that already exist in the DB are left untouched — the DB
- * is the source of truth post-publish. Use `npm run migrate-content` for an
- * explicit force-resync.
+ * Prebuild hook: insert-only seeding from fs to Supabase before `next build`.
+ *
+ * DB is the source of truth. This script CANNOT and MUST NOT overwrite an
+ * existing story or chart row. It only inserts brand-new (slug,) and
+ * (slug,chart_id) rows — the no-overwrite guarantee is enforced at the
+ * Postgres layer via ignoreDuplicates (ON CONFLICT DO NOTHING) inside
+ * lib/syncToDb.ts, not by this script's own logic.
+ *
+ * Do NOT add an env var that flips this to a force-upsert mode. Editing
+ * existing content goes through the admin UI (or `npm run migrate-content`
+ * run by hand against a known-empty / development DB only). A previous
+ * attempt to add a SYNC_SKIP_EXISTING override caused production data loss.
  *
  * No-ops silently when CONTENT_SOURCE !== 'db' (local dev on fs) or when
  * Supabase credentials are absent so CI builds without a DB connection don't

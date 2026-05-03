@@ -144,11 +144,11 @@ const css = `
 .vz .bn.wide{grid-column:span 2}
 .vz .bn.tall{grid-column:span 2;grid-row:span 2}
 .vz .bn.accent-pink{background:var(--pink);border-color:transparent;color:#fff}
-.vz .bn.accent-pink h3,.vz .bn.accent-pink p,.vz .bn.accent-pink .bn-k,.vz .bn.accent-pink .bn-a{color:#fff}
-.vz .bn.accent-pink p,.vz .bn.accent-pink .bn-k{color:rgba(255,255,255,.8)}
+.vz .bn.accent-pink:not(.has-aura) h3,.vz .bn.accent-pink:not(.has-aura) p,.vz .bn.accent-pink:not(.has-aura) .bn-k,.vz .bn.accent-pink:not(.has-aura) .bn-a{color:#fff}
+.vz .bn.accent-pink:not(.has-aura) p,.vz .bn.accent-pink:not(.has-aura) .bn-k{color:rgba(255,255,255,.8)}
 .vz .bn.accent-blue{background:var(--blue);border-color:transparent;color:#fff}
-.vz .bn.accent-blue h3,.vz .bn.accent-blue p,.vz .bn.accent-blue .bn-k,.vz .bn.accent-blue .bn-a{color:#fff}
-.vz .bn.accent-blue p,.vz .bn.accent-blue .bn-k{color:rgba(255,255,255,.8)}
+.vz .bn.accent-blue:not(.has-aura) h3,.vz .bn.accent-blue:not(.has-aura) p,.vz .bn.accent-blue:not(.has-aura) .bn-k,.vz .bn.accent-blue:not(.has-aura) .bn-a{color:#fff}
+.vz .bn.accent-blue:not(.has-aura) p,.vz .bn.accent-blue:not(.has-aura) .bn-k{color:rgba(255,255,255,.8)}
 
 /* Manifesto ---------------------------------------------- */
 .vz .manifesto{padding:120px clamp(24px,5vw,56px);background:var(--cream);border-top:1px solid var(--line)}

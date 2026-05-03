@@ -14,7 +14,10 @@ const RATIOS: { label: string; value: AutoplayRatio; desc: string }[] = [
 
 export default function AutoplayAspectToggle({ value, onChange }: Props) {
   return (
-    <div className="flex gap-1 rounded-lg p-1" style={{ background: 'var(--color-surface)' }}>
+    <div
+      className="flex gap-1 rounded-lg p-1"
+      style={{ background: 'rgb(var(--color-bg-rgb) / 0.5)' }}
+    >
       {RATIOS.map((r) => (
         <button
           key={r.value}

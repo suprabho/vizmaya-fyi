@@ -19,14 +19,14 @@ export type StoryFocusArea = {
 }
 
 export const STORY_LANDSCAPE_FOCUS_AREA: StoryFocusArea = {
-  top: 0.55,
+  top: 0.4,
   left: 0,
   width: 0.37,
-  height: 0.6,
+  height: 0.8,
 }
 
 export const STORY_PORTRAIT_FOCUS_AREA: StoryFocusArea = {
-  top: 0.4,
+  top: 0.25,
   left: 0,
   width: 1.0,
   height: 0.45,

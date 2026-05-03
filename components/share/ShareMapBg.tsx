@@ -5,6 +5,24 @@ import type { MapPinConfig, MapPalette } from '@/lib/storyConfig.types'
 import type { MapRegionLayer, HeatmapLayer, MapStep } from '@/types/story'
 import MapboxBackground from '@/components/story/charts/MapboxBackground'
 
+// Match the story page's camera framing so the share card shows the same
+// visible region. The story applies a focus area via `map.setPadding` so the
+// YAML `center` lands inside the visible card region (not the canvas
+// centroid) — story configs pick coordinates assuming that shift. Without
+// these here, share cards render the same `center` at dead-center, which
+// generally pushes the subject behind the bottom title-overlay gradient.
+//
+// Share cards put the title overlay at the bottom (gradient transparent →
+// 70% black). We want the geographic center to land in the upper half so
+// the subject sits clear of the overlay regardless of aspect ratio.
+//
+// Hoisted to module scope so the object identity is stable across renders.
+// MapboxBackground's region/heatmap effect lists these focus-area props in
+// its deps; an inline literal would be a fresh object every render and would
+// cause the effect to tear down and rebuild the choropleth on every parent
+// re-render — a visible flicker, especially with custom GeoJSON regions.
+const SHARE_FOCUS_AREA = { top: 0.05, left: 0, width: 1.0, height: 0.45 }
+
 interface Props {
   center: [number, number]
   zoom: number
@@ -109,18 +127,6 @@ export default function ShareMapBg({
     [center, zoom, pitch, bearing, scaledPins, regions, heatmap]
   )
 
-  // Match the story page's camera framing so the share card shows the same
-  // visible region. The story applies a focus area via `map.setPadding` so the
-  // YAML `center` lands inside the visible card region (not the canvas
-  // centroid) — story configs pick coordinates assuming that shift. Without
-  // these here, share cards render the same `center` at dead-center, which
-  // generally pushes the subject behind the bottom title-overlay gradient.
-  //
-  // Share cards put the title overlay at the bottom (gradient transparent →
-  // 70% black). We want the geographic center to land in the upper half so
-  // the subject sits clear of the overlay regardless of aspect ratio.
-  const focusArea = { top: 0.05, left: 0, width: 1.0, height: 0.45 }
-
   return (
     <div ref={hostRef} className="absolute inset-0">
       {mounted && (
@@ -140,8 +146,8 @@ export default function ShareMapBg({
           defaultOpacity={defaultOpacity}
           defaultPinColor={defaultPinColor}
           defaultPinRadius={defaultPinRadius}
-          landscapeFocusArea={focusArea}
-          portraitFocusArea={focusArea}
+          landscapeFocusArea={SHARE_FOCUS_AREA}
+          portraitFocusArea={SHARE_FOCUS_AREA}
         />
       )}
     </div>

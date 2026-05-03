@@ -558,8 +558,8 @@ export default function AutoplayShell({
       <div
         className="shrink-0 backdrop-blur-md border-b z-50"
         style={{
-          borderColor: 'var(--color-surface)',
-          background: 'rgba(5,47,74,0.85)',
+          borderColor: 'var(--color-line)',
+          background: 'rgb(var(--color-panel-rgb) / 0.85)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
@@ -662,8 +662,8 @@ export default function AutoplayShell({
                   background:
                     i <= activeUnit
                       ? 'var(--color-accent)'
-                      : 'rgba(255,255,255,0.2)',
-                  opacity: i <= activeUnit ? 1 : 0.5,
+                      : 'var(--color-muted)',
+                  opacity: i <= activeUnit ? 1 : 0.4,
                 }}
                 aria-label={`Jump to section ${i + 1}`}
               />
@@ -674,7 +674,7 @@ export default function AutoplayShell({
           {!iframeReady && (
             <div
               className="absolute inset-0 flex items-center justify-center"
-              style={{ background: 'rgba(5,47,74,0.6)' }}
+              style={{ background: 'rgb(var(--color-bg-rgb) / 0.6)' }}
             >
               <div
                 className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
@@ -724,8 +724,8 @@ export default function AutoplayShell({
       <div
         className="shrink-0 border-t backdrop-blur-md z-50"
         style={{
-          borderColor: 'var(--color-surface)',
-          background: 'rgba(5,47,74,0.9)',
+          borderColor: 'var(--color-line)',
+          background: 'rgb(var(--color-panel-rgb) / 0.9)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">

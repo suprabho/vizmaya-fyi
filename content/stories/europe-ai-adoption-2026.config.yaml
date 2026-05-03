@@ -1,11 +1,15 @@
 # Story config — europe-ai-adoption-2026
 #
-# Map beats trace Eurostat's early-2026 release on individuals' use of
-# AI tools in the preceding three months. The opening choropleth colors
-# each country by its AI-usage rate; later beats zoom into the Nordic
-# and Baltic lead, the Mediterranean split (Malta / Cyprus / Greece vs
-# Italy / Turkey), the lagging large economies (Germany, UK, France),
-# and the eastern edge of adoption.
+# Two indicators, one map. Map beats trace Eurostat's early-2026 release on
+# individuals' use of AI tools in the preceding three months. The story now
+# pairs that with Eurostat's youth (16-29) social-network use figures plus an
+# Ofcom UK supplement, so each act compares both waves on the same continent.
+# The opening choropleth keeps the AI ramp; later beats zoom into the Nordic
+# and Baltic lead, the Mediterranean split (Malta / Cyprus / Greece vs Italy
+# / Turkey), the lagging large economies (Germany, UK, France), the youth
+# social-media floor (Cyprus 98.3 ceiling, Italy 80.3 floor), and the eastern
+# edge — where the two waves come apart most sharply (Balkans top on social,
+# bottom on AI).
 #
 # COORDINATES (capitals):
 #   Oslo, Norway             10.7522, 59.9139
@@ -26,10 +30,17 @@
 #   Warsaw, Poland           21.0122, 52.2297
 #   Bucharest, Romania       26.1025, 44.4268
 #   Sofia, Bulgaria          23.3219, 42.6977
+#   Skopje, North Macedonia  21.4254, 41.9981
+#   Belgrade, Serbia         20.4489, 44.7872
 #
-# Choropleth ramp (share of residents using AI in last three months, %):
+# AI choropleth ramp (share of residents using AI in last three months, %):
 #   [18, 30, 42, 56]  →  [$red, $surface, $accent2, $accent]
 #   Red = bottom tier, surface = mid-band, purple → cyan = top tier.
+#
+# Social-media ramp (share of 16-29-year-olds using social networks, %):
+#   [80, 88, 92, 97]  →  [$red, $surface, $accent2, $accent]
+#   Same color tokens, narrower band — only used where the section spotlights
+#   the social-media indicator (cyprus-stat, italy-stat).
 
 defaults:
   mapStyle: mapbox://styles/mapbox/dark-v11
@@ -52,7 +63,7 @@ sections:
 
   - id: hero
     kind: hero
-    text: "Mapped: AI Adoption Across Europe"
+    text: "Mapped: Europe's Two Digital Waves"
     eyebrow: "Technology · April 2026"
     map:
       center: [15.0, 54.0]
@@ -79,7 +90,7 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [10.7522, 59.9139]
-          label: "Oslo — 56.3% recent AI use"
+          label: "Oslo — 56.3% AI · 95.7% social"
           color: "#5ac8d4"
       regions:
         level: country
@@ -91,6 +102,7 @@ sections:
 
   - id: continent-tiers
     text: "A continent splitting in tiers"
+    chart: data:digital-geography
     mobileParagraphs:
       - [0, 1]
       - [1, 2]
@@ -190,14 +202,14 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [10.7522, 59.9139]
-          label: "Oslo — 56.3%"
+          label: "Oslo — 56.3% AI · 95.7% social"
           color: "#5ac8d4"
         - coordinates: [12.5683, 55.6761]
-          label: "Copenhagen — 48.4%"
+          label: "Copenhagen — 48.4% AI · 96.9% social"
           color: "#5ac8d4"
           labelAnchor: bottom
         - coordinates: [24.7536, 59.4370]
-          label: "Tallinn — 46.6%"
+          label: "Tallinn — 46.6% AI · 91.4% social"
           color: "#5ac8d4"
       regions:
         level: country
@@ -231,7 +243,7 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [7.4474, 46.9480]
-          label: "Bern — 47.0%"
+          label: "Bern — 47.0% AI · 95.8% social"
           color: "#5ac8d4"
       regions:
         level: country
@@ -260,21 +272,21 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [14.5146, 35.8997]
-          label: "Malta — 46.5%"
+          label: "Malta — 46.5% AI · 91.9% social"
           color: "#5ac8d4"
         - coordinates: [33.3823, 35.1856]
-          label: "Nicosia — 44.2%"
+          label: "Nicosia — 44.2% AI · 98.3% social"
           color: "#5ac8d4"
           labelAnchor: bottom
         - coordinates: [23.7275, 37.9838]
-          label: "Athens — 44.1%"
+          label: "Athens — 44.1% AI · 90.6% social"
           color: "#5ac8d4"
         - coordinates: [12.4964, 41.9028]
-          label: "Rome — 19.9%"
+          label: "Rome — 19.9% AI · 80.3% social"
           color: "#d96548"
           labelAnchor: top
         - coordinates: [32.8541, 39.9334]
-          label: "Ankara — 18.6%"
+          label: "Ankara — 18.6% AI · 93.4% social"
           color: "#d96548"
       regions:
         level: country
@@ -310,7 +322,7 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [14.5146, 35.8997]
-          label: "Valletta — 46.5%"
+          label: "Valletta — 46.5% AI · 91.9% social"
           color: "#5ac8d4"
       regions:
         level: country
@@ -338,14 +350,14 @@ sections:
       opacity: 0.55
       pins:
         - coordinates: [13.4050, 52.5200]
-          label: "Berlin — 32.3%"
+          label: "Berlin — 32.3% AI · 84.2% social"
           color: "#d96548"
         - coordinates: [-0.1278, 51.5074]
-          label: "London — 34.3%"
+          label: "London — 34.3% AI · 97.0% social"
           color: "#d96548"
           labelAnchor: top
         - coordinates: [2.3522, 48.8566]
-          label: "Paris — 37.5%"
+          label: "Paris — 37.5% AI · 93.9% social"
           color: "#d9a84a"
           labelAnchor: bottom
       regions:
@@ -380,7 +392,7 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [13.4050, 52.5200]
-          label: "Berlin — 32.3%"
+          label: "Berlin — 32.3% AI · 84.2% social"
           color: "#d96548"
       regions:
         level: country
@@ -390,60 +402,151 @@ sections:
           - code: "DE"
             value: 32.3
 
-  - id: youth-divergence
-    text: "The youth divergence"
+  # ═══════════════════════════════════════════════
+  # YOUTH SOCIAL-MEDIA BEAT
+  # ═══════════════════════════════════════════════
+
+  - id: social-media-youth
+    text: "The youth on every platform"
+    chart: data:social-media-ranking
     mobileParagraphs:
       - [0, 1]
       - [1, 2]
       - [2, 3]
     map:
-      center: [-1.0, 52.5]
-      zoom: 5.0
-      pitch: 25
+      center: [14.0, 51.0]
+      zoom: 3.2
+      pitch: 0
       bearing: 0
       opacity: 0.55
-      pins:
-        - coordinates: [-0.1278, 51.5074]
-          label: "London — 34% overall · 24% daily (15–24)"
-          color: "#5ac8d4"
       regions:
         level: country
-        ramp: [18, 42]
-        colors: ["$red", "$accent2"]
+        ramp: [80, 88, 92, 97]
+        colors: ["$red", "$surface", "$accent2", "$accent"]
         items:
+          - code: "CY"
+            value: 98.3
+          - code: "MK"
+            value: 97.7
+          - code: "CZ"
+            value: 97.2
+          - code: "RS"
+            value: 97.2
           - code: "GB"
-            value: 34.3
+            value: 97.0
+          - code: "DK"
+            value: 96.9
+          - code: "FI"
+            value: 96.6
+          - code: "AT"
+            value: 96.1
+          - code: "ME"
+            value: 96.1
+          - code: "CH"
+            value: 95.8
+          - code: "NO"
+            value: 95.7
+          - code: "IE"
+            value: 94.4
+          - code: "NL"
+            value: 94.2
+          - code: "FR"
+            value: 93.9
+          - code: "LV"
+            value: 93.8
+          - code: "TR"
+            value: 93.4
+          - code: "RO"
+            value: 92.1
+          - code: "MT"
+            value: 91.9
+          - code: "ES"
+            value: 91.6
+          - code: "PT"
+            value: 91.6
+          - code: "EE"
+            value: 91.4
+          - code: "HU"
+            value: 91.1
+          - code: "SI"
+            value: 91.0
+          - code: "HR"
+            value: 90.7
+          - code: "GR"
+            value: 90.6
+          - code: "PL"
+            value: 90.5
+          - code: "LT"
+            value: 89.8
+          - code: "BG"
+            value: 89.4
+          - code: "SK"
+            value: 88.7
+          - code: "SE"
+            value: 88.4
+          - code: "BE"
+            value: 88.3
+          - code: "LU"
+            value: 84.8
+          - code: "DE"
+            value: 84.2
+          - code: "IT"
+            value: 80.3
 
-  - id: youth-stat
+  - id: cyprus-stat
     kind: stat
-    text: "24%"
+    text: "98.3%"
     mobileParagraphs:
       - [0, 1]
       - [1, 2]
     map:
-      center: [-1.0, 53.0]
-      zoom: 4.8
-      pitch: 0
+      center: [33.3823, 35.1856]
+      zoom: 7.8
+      pitch: 30
       bearing: 0
-      opacity: 0.50
+      opacity: 0.60
       pins:
-        - coordinates: [-0.1278, 51.5074]
-          label: "UK 15–24 daily use"
+        - coordinates: [33.3823, 35.1856]
+          label: "Nicosia — 98.3% youth social"
           color: "#5ac8d4"
       regions:
         level: country
-        ramp: [18, 42]
-        colors: ["$red", "$accent2"]
+        ramp: [80, 88, 92, 97]
+        colors: ["$red", "$surface", "$accent2", "$accent"]
         items:
-          - code: "GB"
-            value: 34.3
+          - code: "CY"
+            value: 98.3
+
+  - id: italy-stat
+    kind: stat
+    text: "80.3%"
+    mobileParagraphs:
+      - [0, 1]
+      - [1, 2]
+    map:
+      center: [12.4964, 42.5]
+      zoom: 5.0
+      pitch: 25
+      bearing: 0
+      opacity: 0.60
+      pins:
+        - coordinates: [12.4964, 41.9028]
+          label: "Rome — 80.3% youth social"
+          color: "#d96548"
+      regions:
+        level: country
+        ramp: [80, 88, 92, 97]
+        colors: ["$red", "$surface", "$accent2", "$accent"]
+        items:
+          - code: "IT"
+            value: 80.3
 
   # ═══════════════════════════════════════════════
-  # ACT IV — EASTERN EDGE
+  # ACT IV — EASTERN EDGE FRAGMENTS
   # ═══════════════════════════════════════════════
 
   - id: act-iv
-    text: "Act IV: The eastern edge of adoption"
+    text: "Act IV: The eastern edge fragments"
     mobileParagraphs:
       - [0, 1]
       - [1, 2]
@@ -456,15 +559,22 @@ sections:
       opacity: 0.60
       pins:
         - coordinates: [21.0122, 52.2297]
-          label: "Warsaw — 22.7%"
+          label: "Warsaw — 22.7% AI · 90.5% social"
           color: "#d96548"
         - coordinates: [23.3219, 42.6977]
-          label: "Sofia — 22.5%"
+          label: "Sofia — 22.5% AI · 89.4% social"
           color: "#d96548"
           labelAnchor: bottom
         - coordinates: [26.1025, 44.4268]
-          label: "Bucharest — 17.8%"
+          label: "Bucharest — 17.8% AI · 92.1% social"
           color: "#d96548"
+        - coordinates: [21.4254, 41.9981]
+          label: "Skopje — 22.0% AI · 97.7% social"
+          color: "#5ac8d4"
+          labelAnchor: bottom
+        - coordinates: [20.4489, 44.7872]
+          label: "Belgrade — 97.2% social"
+          color: "#5ac8d4"
       regions:
         level: country
         ramp: [18, 30, 42, 56]

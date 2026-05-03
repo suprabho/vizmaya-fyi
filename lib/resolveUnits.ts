@@ -128,13 +128,17 @@ export function resolveUnits(
         if (sub.shareParagraphs) {
           hasShareOverrides = true
           sub.shareParagraphs.forEach((shareSpec, sliceIdx) => {
+            const rawShare = sliceParagraphs(allParagraphs, shareSpec)
+            const shareParagraphs = isStat
+              ? extractStatSubheading(rawShare, sub.subheading).paragraphs
+              : rawShare
             shareUnits.push({
               parentIndex,
               subIndex,
               parentConfig: section,
               heading: sliceIdx === 0 ? heading : undefined,
               subheading: sliceIdx === 0 ? subheading : undefined,
-              paragraphs: sliceParagraphs(allParagraphs, shareSpec),
+              paragraphs: shareParagraphs,
             })
           })
         } else {
@@ -144,7 +148,7 @@ export function resolveUnits(
             parentConfig: section,
             heading,
             subheading,
-            paragraphs: sliceParagraphs(allParagraphs, sub.paragraphs),
+            paragraphs: statParagraphs,
           })
         }
       })
@@ -229,13 +233,17 @@ export function resolveUnits(
       if (section.shareParagraphs) {
         hasShareOverrides = true
         section.shareParagraphs.forEach((shareSpec, sliceIdx) => {
+          const rawShare = sliceParagraphs(allParagraphs, shareSpec)
+          const shareParagraphs = isStat
+            ? extractStatSubheading(rawShare, section.subheading).paragraphs
+            : rawShare
           shareUnits.push({
             parentIndex,
             subIndex: 0,
             parentConfig: section,
             heading: sliceIdx === 0 ? heading : undefined,
             subheading: sliceIdx === 0 ? subheading : undefined,
-            paragraphs: sliceParagraphs(allParagraphs, shareSpec),
+            paragraphs: shareParagraphs,
           })
         })
       } else {
@@ -245,7 +253,7 @@ export function resolveUnits(
           parentConfig: section,
           heading,
           subheading,
-          paragraphs: sliceParagraphs(allParagraphs, section.paragraphs),
+          paragraphs: statParagraphs,
         })
       }
     }

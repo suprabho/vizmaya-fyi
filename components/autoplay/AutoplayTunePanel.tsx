@@ -48,38 +48,41 @@ export default function AutoplayTunePanel({
 
   return (
     <div
-      className="fixed left-4 bottom-20 z-40 rounded-md border backdrop-blur-md font-[family-name:var(--font-mono)]"
+      className="fixed left-4 bottom-20 z-40 rounded-md border font-[family-name:var(--font-mono)]"
       style={{
-        background: 'rgba(5,47,74,0.92)',
-        borderColor: 'var(--color-surface)',
-        color: 'var(--color-text)',
+        background: 'var(--color-chrome-bg)',
+        borderColor: 'rgba(255,255,255,0.08)',
+        color: 'var(--color-chrome-text)',
         minWidth: 260,
       }}
     >
       <div
-        className="px-3 py-2 border-b text-[0.6rem] uppercase tracking-wider opacity-80"
-        style={{ borderColor: 'var(--color-surface)' }}
+        className="px-3 py-2 border-b text-[0.6rem] uppercase tracking-wider"
+        style={{
+          borderColor: 'rgba(255,255,255,0.08)',
+          color: 'var(--color-chrome-text-dim)',
+        }}
       >
         Tune cues
       </div>
 
       <div className="px-3 py-2 text-[0.7rem] leading-relaxed">
         <div className="flex justify-between">
-          <span className="opacity-60">visible unit</span>
+          <span style={{ color: 'var(--color-chrome-text-dim)' }}>visible unit</span>
           <span>{activeUnit + 1}</span>
         </div>
         <div className="flex justify-between">
-          <span className="opacity-60">cue index</span>
+          <span style={{ color: 'var(--color-chrome-text-dim)' }}>cue index</span>
           <span>{mobileIdx ?? '—'}</span>
         </div>
         {cur ? (
           <>
             <div className="flex justify-between">
-              <span className="opacity-60">chunk</span>
+              <span style={{ color: 'var(--color-chrome-text-dim)' }}>chunk</span>
               <span>{cur.chunk_index}</span>
             </div>
             <div className="flex justify-between">
-              <span className="opacity-60">start</span>
+              <span style={{ color: 'var(--color-chrome-text-dim)' }}>start</span>
               <span>
                 {(cur.start_ms / 1000).toFixed(2)}s
                 {delta !== 0 && (
@@ -94,22 +97,25 @@ export default function AutoplayTunePanel({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="opacity-60">end</span>
+              <span style={{ color: 'var(--color-chrome-text-dim)' }}>end</span>
               <span>{(cur.end_ms / 1000).toFixed(2)}s</span>
             </div>
           </>
         ) : (
-          <div className="opacity-60">no cue at this unit</div>
+          <div style={{ color: 'var(--color-chrome-text-dim)' }}>no cue at this unit</div>
         )}
       </div>
 
       <div
-        className="px-3 py-2 border-t text-[0.6rem] opacity-70 leading-relaxed"
-        style={{ borderColor: 'var(--color-surface)' }}
+        className="px-3 py-2 border-t text-[0.6rem] leading-relaxed"
+        style={{
+          borderColor: 'rgba(255,255,255,0.08)',
+          color: 'var(--color-chrome-text-dim)',
+        }}
       >
         <div>
-          <kbd className="opacity-100">[</kbd> /{' '}
-          <kbd className="opacity-100">]</kbd> shift ±100ms
+          <kbd style={{ color: 'var(--color-chrome-text)' }}>[</kbd> /{' '}
+          <kbd style={{ color: 'var(--color-chrome-text)' }}>]</kbd> shift ±100ms
         </div>
         <div>
           <kbd>shift</kbd> + key for ±25ms
@@ -129,13 +135,13 @@ export default function AutoplayTunePanel({
 
       <div
         className="px-3 py-2 border-t flex items-center justify-end gap-2"
-        style={{ borderColor: 'var(--color-surface)' }}
+        style={{ borderColor: 'rgba(255,255,255,0.08)' }}
       >
         <button
           onClick={onReset}
           disabled={dirtyCount === 0 || saving}
           className="px-3 py-1 rounded text-[0.65rem] uppercase tracking-wider transition-opacity disabled:opacity-30"
-          style={{ color: 'var(--color-text)' }}
+          style={{ color: 'var(--color-chrome-text)' }}
         >
           Reset
         </button>
@@ -145,7 +151,7 @@ export default function AutoplayTunePanel({
           className="px-3 py-1 rounded text-[0.65rem] uppercase tracking-wider transition-opacity disabled:opacity-40"
           style={{
             background: 'var(--color-accent)',
-            color: 'var(--color-bg)',
+            color: '#fff',
           }}
         >
           {saving ? 'Saving…' : `Save${dirtyCount > 0 ? ` ${dirtyCount}` : ''}`}

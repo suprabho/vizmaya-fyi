@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
+import FileActions from './FileActions'
 
 export default function ChartEditorClient({
   slug,
@@ -80,6 +81,14 @@ export default function ChartEditorClient({
           </div>
         </div>
       </div>
+
+      <FileActions
+        filename={`${chartId}.json`}
+        accept=".json,application/json"
+        mime="application/json;charset=utf-8"
+        value={value}
+        onUpload={setValue}
+      />
 
       <textarea
         value={value}

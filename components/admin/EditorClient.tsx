@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import ThemeEditor from './ThemeEditor'
 import YamlCardsView from './YamlCardsView'
+import FileActions from './FileActions'
 import { parseFrontmatter, serializeFrontmatter } from '@/lib/frontmatter'
 import { useTabIndent } from '@/lib/useTabIndent'
 import type { Theme } from '@/types/story'
@@ -153,21 +155,48 @@ export default function EditorClient({ slug, initial }: { slug: string; initial:
       <div className="flex-1 flex flex-col min-h-0">
         {tab === 'theme' && <ThemeEditor theme={theme} onChange={updateTheme} />}
         {tab === 'markdown' && (
-          <CodeArea value={markdown} onChange={setMarkdown} />
+          <>
+            <FileActions
+              filename={`${slug}.md`}
+              accept=".md,.markdown,text/markdown"
+              mime="text/markdown;charset=utf-8"
+              value={markdown}
+              onUpload={setMarkdown}
+            />
+            <CodeArea value={markdown} onChange={setMarkdown} />
+          </>
         )}
         {tab === 'config' && (
-          <YamlCardsView
-            value={config}
-            onChange={setConfig}
-            placeholder="# no config yet — paste YAML to create"
-          />
+          <>
+            <FileActions
+              filename={`${slug}.config.yaml`}
+              accept=".yaml,.yml,text/yaml,application/yaml"
+              mime="application/yaml;charset=utf-8"
+              value={config}
+              onUpload={setConfig}
+            />
+            <YamlCardsView
+              value={config}
+              onChange={setConfig}
+              placeholder="# no config yet — paste YAML to create"
+            />
+          </>
         )}
         {tab === 'share' && (
-          <CodeArea
-            value={share}
-            onChange={setShare}
-            placeholder="# no share overrides — paste YAML to create"
-          />
+          <>
+            <FileActions
+              filename={`${slug}.share.yaml`}
+              accept=".yaml,.yml,text/yaml,application/yaml"
+              mime="application/yaml;charset=utf-8"
+              value={share}
+              onUpload={setShare}
+            />
+            <CodeArea
+              value={share}
+              onChange={setShare}
+              placeholder="# no share overrides — paste YAML to create"
+            />
+          </>
         )}
         {tab === 'charts' && <ChartsList slug={slug} charts={initial.charts} />}
         {tab === 'settings' && (
@@ -221,28 +250,121 @@ function CodeArea({
   )
 }
 
-function ChartsList({ slug, charts }: { slug: string; charts: string[] }) {
-  if (charts.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8 text-neutral-500 text-sm">
-        No charts for this story.
-      </div>
-    )
+function ChartsList({ slug, charts: initialCharts }: { slug: string; charts: string[] }) {
+  const [charts, setCharts] = useState(initialCharts)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+
+  async function downloadChart(id: string) {
+    setError(null)
+    const res = await fetch(`/api/admin/stories/${slug}/charts/${id}`)
+    if (!res.ok) {
+      setError(`Failed to fetch ${id}.json (HTTP ${res.status})`)
+      return
+    }
+    const body = await res.json()
+    const text = JSON.stringify(body.data, null, 2) + '\n'
+    const blob = new Blob([text], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${id}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   }
+
+  async function uploadChart(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    // Filename (sans .json) becomes the chart id; the API restricts ids to
+    // [a-zA-Z0-9_-], so reject anything else early with a clear message.
+    const id = file.name.replace(/\.json$/i, '')
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+      setError(`Bad filename "${file.name}" — chart id must match [a-zA-Z0-9_-].`)
+      return
+    }
+    const text = await file.text()
+    try {
+      JSON.parse(text)
+    } catch (err) {
+      setError(`JSON parse: ${err instanceof Error ? err.message : 'invalid'}`)
+      return
+    }
+    setUploading(true)
+    const res = await fetch(`/api/admin/stories/${slug}/charts/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ raw: text }),
+    })
+    setUploading(false)
+    if (!res.ok) {
+      const body = await res.json().catch(() => null)
+      setError(body?.error ?? `HTTP ${res.status}`)
+      return
+    }
+    setCharts((prev) => (prev.includes(id) ? prev : [...prev, id].sort()))
+    router.push(`/admin/${slug}/charts/${id}`)
+  }
+
   return (
-    <ul className="divide-y divide-white/5">
-      {charts.map((id) => (
-        <li key={id}>
-          <Link
-            href={`/admin/${slug}/charts/${id}`}
-            className="flex items-center justify-between px-4 py-4 active:bg-white/5"
-          >
-            <span className="font-mono text-sm">{id}.json</span>
-            <span className="text-neutral-500">›</span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex items-center gap-2 px-2 py-1.5 border-b border-white/5 bg-neutral-900/40 shrink-0">
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          className="text-xs px-2 py-1 rounded text-neutral-400 hover:text-white hover:bg-white/5 disabled:opacity-40"
+        >
+          {uploading ? 'Uploading…' : '↑ Upload chart'}
+        </button>
+        <span className="text-xs text-neutral-600">filename → id</span>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={uploadChart}
+          className="hidden"
+        />
+      </div>
+      {error && (
+        <div className="px-4 py-2 text-xs text-red-400 border-b border-white/5 shrink-0">
+          {error}
+        </div>
+      )}
+      {charts.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center p-8 text-neutral-500 text-sm">
+          No charts for this story.
+        </div>
+      ) : (
+        <ul className="divide-y divide-white/5">
+          {charts.map((id) => (
+            <li key={id} className="flex items-center">
+              <Link
+                href={`/admin/${slug}/charts/${id}`}
+                className="flex-1 flex items-center justify-between px-4 py-4 active:bg-white/5 min-w-0"
+              >
+                <span className="font-mono text-sm truncate">{id}.json</span>
+                <span className="text-neutral-500 shrink-0 ml-2">›</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => downloadChart(id)}
+                className="px-3 py-4 text-sm text-neutral-400 hover:text-white hover:bg-white/5 shrink-0"
+                title={`Download ${id}.json`}
+              >
+                ↓
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 

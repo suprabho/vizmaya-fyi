@@ -10,11 +10,16 @@ import type { Theme } from '@/types/story'
 
 type Tab = 'theme' | 'markdown' | 'config' | 'share' | 'charts' | 'settings'
 
+interface ChartEntry {
+  id: string
+  editable: boolean
+}
+
 interface InitialState {
   markdown: string
   config_yaml: string
   share_yaml: string
-  charts: string[]
+  charts: ChartEntry[]
 }
 
 const TABS: { id: Tab; label: string }[] = [
@@ -221,7 +226,7 @@ function CodeArea({
   )
 }
 
-function ChartsList({ slug, charts }: { slug: string; charts: string[] }) {
+function ChartsList({ slug, charts }: { slug: string; charts: ChartEntry[] }) {
   if (charts.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center p-8 text-neutral-500 text-sm">
@@ -231,17 +236,31 @@ function ChartsList({ slug, charts }: { slug: string; charts: string[] }) {
   }
   return (
     <ul className="divide-y divide-white/5">
-      {charts.map((id) => (
-        <li key={id}>
-          <Link
-            href={`/admin/${slug}/charts/${id}`}
-            className="flex items-center justify-between px-4 py-4 active:bg-white/5"
-          >
-            <span className="font-mono text-sm">{id}.json</span>
-            <span className="text-neutral-500">›</span>
-          </Link>
-        </li>
-      ))}
+      {charts.map((c) =>
+        c.editable ? (
+          <li key={c.id}>
+            <Link
+              href={`/admin/${slug}/charts/${c.id}`}
+              className="flex items-center justify-between px-4 py-4 active:bg-white/5"
+            >
+              <span className="font-mono text-sm">{c.id}.json</span>
+              <span className="text-neutral-500">›</span>
+            </Link>
+          </li>
+        ) : (
+          <li key={c.id}>
+            <div
+              className="flex items-center justify-between px-4 py-4 text-neutral-500"
+              title="Hardcoded React component — not editable as JSON"
+            >
+              <span className="font-mono text-sm">{c.id}</span>
+              <span className="text-[10px] uppercase tracking-wider border border-white/10 rounded px-1.5 py-0.5">
+                code
+              </span>
+            </div>
+          </li>
+        )
+      )}
     </ul>
   )
 }

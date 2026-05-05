@@ -12,11 +12,16 @@ import type { Theme } from '@/types/story'
 
 type Tab = 'theme' | 'markdown' | 'config' | 'share' | 'charts' | 'settings'
 
+interface ChartEntry {
+  id: string
+  editable: boolean
+}
+
 interface InitialState {
   markdown: string
   config_yaml: string
   share_yaml: string
-  charts: string[]
+  charts: ChartEntry[]
 }
 
 const TABS: { id: Tab; label: string }[] = [
